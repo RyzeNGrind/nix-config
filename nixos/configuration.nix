@@ -152,8 +152,52 @@
         
       ];
       # TODO: Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)
-      extraGroups = ["root", "wheel", "docker", "kmem", "tty", "messagebus", "disk", "audio", "floppy", "uucp", "lp", "cdrom", "tape", "video", "dialout", "utmp", "adm", "networkmanager", "systemd-journal", "keys", "users", "systemd-journal-gateway", "gdm", "systemd-network", "systemd-resolve", "systemd-timesync", "input", "nm-openvpn", "kvm", "render", "sgx", "shadow", "flatpak", "systemd-oom", "systemd-coredump", "rtkit", "polkituser", "nscd", "geoclue", "colord", "avahi", "nixbld", "nogroup" ];
-    };
+      extraGroups = [
+        "root"
+        "wheel"
+        "docker"
+        "kmem"
+        "tty"
+        "messagebus"
+        "disk"
+        "audio"
+        "floppy"
+        "uucp"
+        "lp"
+        "cdrom"
+        "tape"
+        "video"
+        "dialout"
+        "utmp"
+        "adm"
+        "networkmanager"
+        "systemd-journal"
+        "keys"
+        "users"
+        "systemd-journal-gateway"
+        "gdm"
+        "systemd-network"
+        "systemd-resolve"
+        "systemd-timesync"
+        "input"
+        "nm-openvpn"
+        "kvm"
+        "render"
+        "sgx"
+        "shadow"
+        "flatpak"
+        "systemd-oom"
+        "systemd-coredump"
+        "rtkit"
+        "polkituser"
+        "nscd"
+        "geoclue"
+        "colord"
+        "avahi"
+        "nixbld"
+        "nogroup"
+      ];
+
   };
 
   # This setups a SSH server. Very important if you're setting up a headless system.

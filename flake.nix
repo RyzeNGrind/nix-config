@@ -26,6 +26,7 @@
     self,
     nixpkgs,
     home-manager,
+    nixos-wsl,
     ...
   } @ inputs: let
     inherit (self) outputs;
@@ -58,12 +59,14 @@
     homeManagerModules = import ./modules/home-manager;
 
     # NixOS configuration entrypoint~
-    # Available through 'nixos-rebuild --flake .#shinobi'
+    # Available through 'nixos-rebuild --flake .#daimyo00'
     nixosConfigurations = {
       # FIXME replace with your hostname
-      shinobi = nixpkgs.lib.nixosSystem {
+      daimyo00 = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
+          # Include the WSL-specific module from nixos-wsl
+          nixos-wsl.nixosModules.wsl
           # > Our main nixos configuration file <
           ./nixos/configuration.nix
         ];
@@ -71,10 +74,10 @@
     };
 
     # Standalone home-manager configuration entrypoint
-    # Available through 'home-manager --flake .#ryzengrind@shinobi'
+    # Available through 'home-manager --flake .#ryzengrind@daimyo00'
     homeConfigurations = {
       # FIXME replace with your username@hostname
-      "ryzengrind@shinobi" = home-manager.lib.homeManagerConfiguration {
+      "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [

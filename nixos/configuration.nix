@@ -197,7 +197,7 @@
         "nixbld"
         "nogroup"
       ];
-
+    };
   };
 
   # This setups a SSH server. Very important if you're setting up a headless system.
@@ -223,5 +223,5 @@
   system.autoUpgrade.enable = true;
   system.autoUpgrade.allowReboot = true;
   system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11"; 
-}
+};
 

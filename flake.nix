@@ -65,7 +65,7 @@
             # Include the WSL-specific module from nixos-wsl
             nixos-wsl.nixosModules.wsl
             # > Our main nixos configuration file <
-            ./nixos/configuration.nix
+            ./hosts/daimyo00/configuration.nix
           ];
         };
       };

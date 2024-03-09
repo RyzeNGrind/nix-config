@@ -168,7 +168,8 @@
     };
   };
 
-  # disable teamviewer for nixos-wsl, replace with rustdesk for all non-headless systems (i.e except wsl and server systems)
+  # disable teamviewer for nixos-wsl, 
+  # TODO: replace with rustdesk for all non-headless systems (i.e except wsl and server systems)
   services.teamviewer.enable = false;
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;

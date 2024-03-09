@@ -221,6 +221,6 @@
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = config.system.nixos.release;
   system.autoUpgrade.enable = true;
-  system.autoUpgrade.allowReboot = true;
+  system.autoUpgrade.allowReboot = false;
   system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11"; 
 }

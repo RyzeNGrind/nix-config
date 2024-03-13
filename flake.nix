@@ -61,6 +61,7 @@
         # FIXME replace with your hostname
         daimyo00 = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs outputs; };
+          system = "x86_64-linux"; # Explicitly set the system to resolve the error
           modules = [
             # Include the WSL-specific module from nixos-wsl
             nixos-wsl.nixosModules.wsl

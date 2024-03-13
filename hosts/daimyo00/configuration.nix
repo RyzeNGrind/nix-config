@@ -19,6 +19,7 @@
     ];
     config = {
       allowUnfree = true;
+      system = "x86_64-linux"; # Explicitly set the system to resolve the error
     };
   };
 

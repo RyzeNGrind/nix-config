@@ -56,7 +56,7 @@
   };
 
   services.printing.enable = true;
-  services.flatpak.enable = true;
+  services.flatpak.enable = false;
   services.zerotierone.enable = true;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ];
 

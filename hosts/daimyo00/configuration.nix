@@ -41,7 +41,8 @@
 
   networking.hostName = "daimyo00";
   networking.networkmanager.enable = true;
-
+  systemd.services.NetworkManager-wait-online.enable = false;
+  
   boot.loader.systemd-boot.enable = false; # Disable for WSL
   boot.loader.efi.canTouchEfiVariables = false; # Disable for WSL
 

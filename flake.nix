@@ -64,7 +64,7 @@
           system = "x86_64-linux"; # Explicitly set the system to resolve the error
           modules = [
             # Include the WSL-specific module from nixos-wsl
-            nixos-wsl.nixosModules.default
+            inputs.nixos-wsl.nixosModules.default
             # > Our main nixos configuration file <
             ./hosts/daimyo00/configuration.nix
           ];

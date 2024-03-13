@@ -57,7 +57,7 @@
 
   services.printing.enable = true;
   services.flatpak.enable = false;
-  services.zerotierone.enable = true;
+  services.zerotierone.enable = false;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ];
 
   sound.enable = false; # Adjust based on your setup, typically disabled for WSL

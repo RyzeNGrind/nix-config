@@ -1,12 +1,11 @@
 # This is your system's configuration file.
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
-{
-  inputs,
-  outputs,
-  lib,
-  config,
-  pkgs,
-  ...
+{ inputs
+, outputs
+, lib
+, config
+, pkgs
+, ...
 }: {
   imports = [
     ./hardware-configuration.nix
@@ -24,16 +23,16 @@
     };
   };
 
-  nix.registry = (lib.mapAttrs (_: flake: {inherit flake;})) ((lib.filterAttrs (_: lib.isType "flake")) inputs);
+  nix.registry = (lib.mapAttrs (_: flake: { inherit flake; })) ((lib.filterAttrs (_: lib.isType "flake")) inputs);
 
-  nix.nixPath = ["/etc/nix/path"];
+  nix.nixPath = [ "/etc/nix/path" ];
   environment.etc =
     lib.mapAttrs'
-    (name: value: {
-      name = "nix/path/${name}";
-      value.source = value.flake;
-    })
-    config.nix.registry;
+      (name: value: {
+        name = "nix/path/${name}";
+        value.source = value.flake;
+      })
+      config.nix.registry;
 
   nix.settings = {
     experimental-features = "nix-command flakes repl-flake";
@@ -49,7 +48,7 @@
   time.timeZone = "America/Toronto";
 
   i18n.defaultLocale = "en_CA.UTF-8";
-  
+
   services.xserver = {
     enable = false; # Typically disabled for WSL, adjust based on your setup
     desktopManager.gnome.enable = false; # Adjust based on your GUI needs
@@ -57,7 +56,7 @@
   };
 
   services.printing.enable = true;
-  services.flatpak.enable = true;  
+  services.flatpak.enable = true;
   services.zerotierone.enable = true;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ];
 

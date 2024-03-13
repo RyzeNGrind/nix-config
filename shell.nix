@@ -9,10 +9,10 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    echo "nixpkgs-fmt, deadnix, statix, and nixpkgs-lint are now available in this shell."
-    echo "Use 'nixpkgs-fmt <file or directory>' to format Nix code."
-    echo "Use 'statix check <file or directory>' to lint Nix code with statix."
-    echo "Use 'deadnix <file or directory>' to remove unused variables in Nix code."
-    echo "Use 'nixpkgs-lint <file or directory>' for additional linting of Nixpkgs specifics."
+    echo -e "\e[1;34mnixpkgs-fmt, deadnix, statix, and nixpkgs-lint are now available in this shell.\e[0m"
+    echo -e "\e[1;34mUse 'nixpkgs-fmt <file or directory>' to format Nix code.\e[0m"
+    echo -e "\e[1;34mUse 'statix check <file or directory>' to lint Nix code with statix.\e[0m"
+    echo -e "\e[1;34mUse 'deadnix <file or directory>' to remove unused variables in Nix code.\e[0m"
+    echo -e "\e[1;34mUse 'nixpkgs-lint <file or directory>' for additional linting of Nixpkgs specifics.\e[0m"
   '';
 }

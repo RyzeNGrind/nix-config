@@ -2,8 +2,10 @@
 
 pkgs.mkShell {
   buildInputs = [
+    pkgs.deadnix
+    pkgs.statix
     pkgs.nixpkgs-fmt
-    pkgs.nix-linter
+    pkgs.nixpkgs-lint
   ];
 
   shellHook = ''

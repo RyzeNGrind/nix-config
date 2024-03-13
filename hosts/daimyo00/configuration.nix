@@ -35,7 +35,7 @@
       config.nix.registry;
 
   nix.settings = {
-    experimental-features = "nix-command flakes repl-flake";
+    experimental-features = "nix-command flakes repl-flake auto-allocate-uids";
     auto-optimise-store = true;
   };
 

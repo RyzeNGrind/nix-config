@@ -80,7 +80,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
   # Enable networking
   networking.networkmanager.enable = true;
-# networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # TODO: This is just an example, be sure to use whatever bootloader you prefer
   boot.loader.systemd-boot.enable = true;
@@ -141,7 +141,7 @@
       # TODO: You can set an initial password for your user.
       # If you do, you can skip setting a root password by passing '--no-root-passwd' to nixos-install.
       # Be sure to change it (using passwd) after rebooting!
-      #initialPassword = "correcthorsebatterystaple";
+      hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq."; ##EDIT_ME##
       isNormalUser = true;
       openssh.authorizedKeys.keys = [
         # TODO: Add your SSH public key(s) here, if you plan on using SSH to connect
@@ -152,7 +152,51 @@
         
       ];
       # TODO: Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)
-      extraGroups = ["root", "wheel", "docker", "kmem", "tty", "messagebus", "disk", "audio", "floppy", "uucp", "lp", "cdrom", "tape", "video", "dialout", "utmp", "adm", "networkmanager", "systemd-journal", "keys", "users", "systemd-journal-gateway", "gdm", "systemd-network", "systemd-resolve", "systemd-timesync", "input", "nm-openvpn", "kvm", "render", "sgx", "shadow", "flatpak", "systemd-oom", "systemd-coredump", "rtkit", "polkituser", "nscd", "geoclue", "colord", "avahi", "nixbld", "nogroup" ];
+      extraGroups = [
+        "root"
+        "wheel"
+        "docker"
+        "kmem"
+        "tty"
+        "messagebus"
+        "disk"
+        "audio"
+        "floppy"
+        "uucp"
+        "lp"
+        "cdrom"
+        "tape"
+        "video"
+        "dialout"
+        "utmp"
+        "adm"
+        "networkmanager"
+        "systemd-journal"
+        "keys"
+        "users"
+        "systemd-journal-gateway"
+        "gdm"
+        "systemd-network"
+        "systemd-resolve"
+        "systemd-timesync"
+        "input"
+        "nm-openvpn"
+        "kvm"
+        "render"
+        "sgx"
+        "shadow"
+        "flatpak"
+        "systemd-oom"
+        "systemd-coredump"
+        "rtkit"
+        "polkituser"
+        "nscd"
+        "geoclue"
+        "colord"
+        "avahi"
+        "nixbld"
+        "nogroup"
+      ];
     };
   };
 
@@ -168,15 +212,15 @@
     };
   };
 
-  # enable teamviewer
-  services.teamviewer.enable = true;
+  # disable teamviewer for nixos-wsl, 
+  # TODO: replace with rustdesk for all non-headless systems (i.e except wsl and server systems)
+  services.teamviewer.enable = false;
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = "23.05";
+  system.stateVersion = config.system.nixos.release;
   system.autoUpgrade.enable = true;
-  system.autoUpgrade.allowReboot = true;
+  system.autoUpgrade.allowReboot = false;
   system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11"; 
 }
-

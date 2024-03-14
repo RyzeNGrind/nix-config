@@ -33,7 +33,7 @@ let
   '';
 in
 {
-  system.build.tarballBuilder = pkgs.writeShellApplication {
+  system.build.tarballBuilder = lib.mkOverride 10 (pkgs.writeShellApplication {
     name = "nixos-wsl-tarball-builder-custom";
     runtimeInputs = [ pkgs.coreutils pkgs.e2fsprogs pkgs.gnutar pkgs.nixos-install-tools pkgs.pigz config.nix.package ];
     text = ''

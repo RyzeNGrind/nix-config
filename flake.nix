@@ -65,7 +65,7 @@
           modules = [
             # Include the WSL-specific module from nixos-wsl
             inputs.nixos-wsl.nixosModules.default
-            ./override-tarball-builder.nix
+            ./modules/nixos-wsl/override-build-tarball.nix
             # > Our main nixos configuration file <
             ./hosts/daimyo00/configuration.nix
           ];

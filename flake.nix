@@ -58,13 +58,30 @@
       # NixOS configuration entrypoint~
       # Available through 'nixos-rebuild --flake .#daimyo00'
       nixosConfigurations = let
-        initialConfig = { config, ... }: {
+        initialConfig = { config, pkgs, ... }: {
           networking.firewall.allowedTCPPorts = [ 22 ]; # Open SSH port
           system.stateVersion = config.system.nixos.release;
           services.openssh = {
             enable = true;
             permitRootLogin = "true";
             passwordAuthentication = true;
+          };
+        };
+
+        sshConfig = { config, pkgs, ... }: {
+          imports = [ initialConfig ];
+          services.openssh = {
+            permitRootLogin = "prohibit-password";
+            passwordAuthentication = false; # Disable password authentication for security
+            authorizedKeys.keys = let
+              githubKeysUrl = "https://github.com/RyzeNGrind.keys";
+              githubKeysSha256 = pkgs.lib.fileContents (pkgs.runCommandLocal "fetch-github-keys-sha" {} ''
+                ${pkgs.curl}/bin/curl --silent ${githubKeysUrl} | ${pkgs.coreutils}/bin/sha256sum | ${pkgs.coreutils}/bin/cut -d' ' -f1 > $out
+              '');
+            in pkgs.fetchurl {
+              url = githubKeysUrl;
+              sha256 = githubKeysSha256;
+            };
           };
         };
       in {

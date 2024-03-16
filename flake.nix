@@ -71,8 +71,15 @@
         sshConfig = { config, pkgs, ... }: {
           imports = [ initialConfig ];
           services.openssh = {
+            enable = true;
             permitRootLogin = "prohibit-password";
             passwordAuthentication = false; # Disable password authentication for security
+            challengeResponseAuthentication = false; # Disable challenge-response authentication
+            usePAM = true; # Enable Pluggable Authentication Modules
+            x11Forwarding = true; # Enable X11 forwarding for GUI applications over SSH
+            printMotd = false; # Disable the message of the day as it's unnecessary
+            clientAliveInterval = 120; # Set client alive interval to prevent timeout
+            clientAliveCountMax = 3; # Set maximum number of client alive messages
             authorizedKeys.keys = let
               githubKeysUrl = "https://github.com/RyzeNGrind.keys";
               githubKeysSha256 = pkgs.lib.fileContents (pkgs.runCommandLocal "fetch-github-keys-sha" {} ''

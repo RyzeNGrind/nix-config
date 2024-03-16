@@ -79,6 +79,19 @@
             ./modules/nixos-wsl/override-build-tarball.nix
             # > Our main nixos configuration file <
             ./hosts/daimyo00/configuration.nix
+            
+          ];
+        };
+        nixos-live = {
+          specialArgs = { inherit inputs outputs; };
+          system = "x86_64-linux";
+          modules = [
+            initialConfig
+            # Include the WSL-specific module from nixos-wsl
+            inputs.nixos-wsl.nixosModules.default
+            ./modules/nixos-wsl/override-build-tarball.nix
+            # > Our main nixos configuration file <
+            ./hosts/nixos-live/configuration.nix
           ];
         };
       };
@@ -86,7 +99,6 @@
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#ryzengrind@daimyo00'
       homeConfigurations = {
-        # FIXME replace with your username@hostname
         "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
           pkgs =
             nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance

@@ -57,12 +57,23 @@
 
       # NixOS configuration entrypoint~
       # Available through 'nixos-rebuild --flake .#daimyo00'
-      nixosConfigurations = {
+      nixosConfigurations = let
+        initialConfig = { config, ... }: {
+          networking.firewall.allowedTCPPorts = [ 22 ]; # Open SSH port
+          system.stateVersion = config.system.nixos.release;
+          services.openssh = {
+            enable = true;
+            permitRootLogin = "true";
+            passwordAuthentication = true;
+          };
+        };
+      in {
         # FIXME replace with your hostname
         daimyo00 = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs outputs; };
           system = "x86_64-linux"; # Explicitly set the system to resolve the error
           modules = [
+            initialConfig
             # Include the WSL-specific module from nixos-wsl
             inputs.nixos-wsl.nixosModules.default
             ./modules/nixos-wsl/override-build-tarball.nix

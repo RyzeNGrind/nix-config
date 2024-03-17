@@ -16,13 +16,13 @@
     # TODO: Add any other flake you might need
     hardware.url = "github:nixos/nixos-hardware";
     nixos-wsl.url = "github:nix-community/nixos-wsl";
-
+    flake-utils.url = "github:numtide/flake-utils/v1.0.0";
     # Shameless plug: looking for a way to nixify your themes and make
     # everything match nicely? Try nix-colors!
     # nix-colors.url = "github:misterio77/nix-colors";
   };
 
-  outputs = { self, nixpkgs, home-manager, nixos-wsl, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, nixos-wsl, flake-utils, ... }@inputs:
     let
       inherit (self) outputs;
       # Supported systems for your flake packages, shell, etc.
@@ -137,5 +137,43 @@
           ];
         };
       };
+
+      # QEMU VM setup for testing nixos-live configuration
+      nixosTestConfigurations = flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+
+          base = { lib, modulesPath, ... }: {
+            imports = [ "${modulesPath}/virtualisation/qemu-vm.nix" ];
+
+            networking.nameservers = lib.mkIf pkgs.stdenv.isDarwin [ "8.8.8.8" ];
+
+            virtualisation = {
+              graphics = false;
+              host = { inherit pkgs; };
+            };
+          };
+
+          machine = nixpkgs.lib.nixosSystem {
+            system = builtins.replaceStrings [ "darwin" ] [ "linux" ] system;
+            modules = [ base ./hosts/nixos-live/configuration.nix ];
+          };
+
+          program = pkgs.writeShellScript "run-vm.sh" ''
+            export NIX_DISK_IMAGE=$(mktemp -u -t nixos.qcow2)
+
+            trap "rm -f $NIX_DISK_IMAGE" EXIT
+
+            ${machine.config.system.build.vm}/bin/run-nixos-vm
+          '';
+        in
+          { packages = { inherit machine; };
+
+            apps.default = {
+              type = "app";
+              program = "${program}";
+            };
+          }
+      );
     };
 }

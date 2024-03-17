@@ -63,8 +63,10 @@
           system.stateVersion = config.system.nixos.release;
           services.openssh = {
             enable = true;
-            permitRootLogin = "true";
-            passwordAuthentication = true;
+            settings = {
+              PermitRootLogin = "yes";
+              PasswordAuthentication = "yes";
+            };
           };
         };
 
@@ -72,9 +74,11 @@
           imports = [ initialConfig ];
           services.openssh = {
             enable = true;
-            permitRootLogin = "prohibit-password";
-            passwordAuthentication = false; # Disable password authentication for security
-            challengeResponseAuthentication = false; # Disable challenge-response authentication
+            settings = {
+              PermitRootLogin = "prohibit-password";
+              PasswordAuthentication = "no"; # Disable password authentication for security
+              ChallengeResponseAuthentication = "no"; # Disable challenge-response authentication
+            };
             usePAM = true; # Enable Pluggable Authentication Modules
             x11Forwarding = true; # Enable X11 forwarding for GUI applications over SSH
             printMotd = false; # Disable the message of the day as it's unnecessary

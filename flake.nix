@@ -51,7 +51,7 @@
           };
           machine = nixpkgs.lib.nixosSystem {
             system = builtins.replaceStrings [ "darwin" ] [ "linux" ] system;
-            modules = [ base ./hosts/nixos-live/configuration.nix ];
+            modules = [ base ./nixos/configuration.nix ];
           };
           program = pkgs.writeShellScript "run-vm.sh" ''
             export NIX_DISK_IMAGE=$(mktemp -u -t nixos.qcow2)
@@ -146,7 +146,7 @@
             inputs.nixos-wsl.nixosModules.default
             ./modules/nixos-wsl/override-build-tarball.nix
             # > Our main nixos configuration file <
-            ./hosts/nixos-live/configuration.nix
+            ./nixos/configuration.nix
           ];
         };
       };

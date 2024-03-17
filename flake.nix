@@ -56,7 +56,7 @@
       homeManagerModules = import ./modules/home-manager;
 
       # NixOS configuration entrypoint~
-      # Available through 'nixos-rebuild --flake .#daimyo00'
+      # Available through 'sudo nixos-rebuild switch --flake 'github:RyzeNGrind/nix-config#daimyo00''
       nixosConfigurations = {
         # FIXME replace with your hostname
         daimyo00 = nixpkgs.lib.nixosSystem {

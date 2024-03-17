@@ -56,7 +56,7 @@
     displayManager.gdm.enable = false; # Adjust based on your GUI needs
   };
 
-  services.printing.enable = true;
+  services.printing.enable = false;
   services.flatpak.enable = false;
   services.zerotierone.enable = false;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ];

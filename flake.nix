@@ -52,7 +52,6 @@
         machine = nixpkgs.lib.nixosSystem {
           system = builtins.replaceStrings [ "darwin" ] [ "linux" ] system;
           modules = [ base ./nixos/configuration.nix ];
-          services.getty.autologinUser = "root";
         };
         program = pkgs.writeShellScript "run-vm.sh" ''
           export NIX_DISK_IMAGE=$(mktemp -u -t nixos.qcow2)

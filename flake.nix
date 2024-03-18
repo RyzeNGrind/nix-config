@@ -41,7 +41,7 @@
       # Define apps at the top level for accessibility
       apps = forAllSystems (system: let
         pkgs = nixpkgs.legacyPackages.${system};
-        base = { lib, modulesPath, ... }: {
+        base = { lib, modulesPath, outputs, ... }@inputs: {
           imports = [ "${modulesPath}/virtualisation/qemu-vm.nix" ];
           networking.nameservers = lib.mkIf pkgs.stdenv.isDarwin [ "8.8.8.8" ];
           virtualisation = {

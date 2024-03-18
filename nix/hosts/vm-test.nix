@@ -1,7 +1,7 @@
-{ pkgs, lib, ... }:
+{ inputs, ... }:
 {
   imports = [
-    <nixpkgs/nixos/modules/virtualisation/qemu-vm.nix>
+    (inputs.nixpkgs.nixosModules.virtualisation.qemu-vm)
   ];
 
   virtualisation.memorySize = 2048; # in MB

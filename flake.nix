@@ -9,9 +9,10 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
-    # Home manager
-    home-manager.url = "github:nix-community/home-manager/release-23.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-23.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # TODO: Add any other flake you might need
     hardware.url = "github:nixos/nixos-hardware";
@@ -38,27 +39,27 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
     in {
       # Define apps at the top level for accessibility
-      apps = forAllSystems (system: {
-        default = let
-          pkgs = nixpkgs.legacyPackages.${system};
-          base = { lib, modulesPath, ... }: {
-            imports = [ "${modulesPath}/virtualisation/qemu-vm.nix" ];
-            networking.nameservers = lib.mkIf pkgs.stdenv.isDarwin [ "8.8.8.8" ];
-            virtualisation = {
-              graphics = false;
-              host = { inherit pkgs; };
-            };
+      apps = forAllSystems (system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+        base = { lib, modulesPath, ... }: {
+          imports = [ "${modulesPath}/virtualisation/qemu-vm.nix" ];
+          networking.nameservers = lib.mkIf pkgs.stdenv.isDarwin [ "8.8.8.8" ];
+          virtualisation = {
+            graphics = false;
+            host = { inherit pkgs; };
           };
-          machine = nixpkgs.lib.nixosSystem {
-            system = builtins.replaceStrings [ "darwin" ] [ "linux" ] system;
-            modules = [ base ./nixos/configuration.nix ];
-          };
-          program = pkgs.writeShellScript "run-vm.sh" ''
-            export NIX_DISK_IMAGE=$(mktemp -u -t nixos.qcow2)
-            trap "rm -f $NIX_DISK_IMAGE" EXIT
-            ${machine.config.system.build.vm}/bin/run-nixos-vm
-          '';
-        in {
+        };
+        machine = nixpkgs.lib.nixosSystem {
+          system = builtins.replaceStrings [ "darwin" ] [ "linux" ] system;
+          modules = [ base ./nixos/configuration.nix ];
+        };
+        program = pkgs.writeShellScript "run-vm.sh" ''
+          export NIX_DISK_IMAGE=$(mktemp -u -t nixos.qcow2)
+          trap "rm -f $NIX_DISK_IMAGE" EXIT
+          ${machine.config.system.build.vm}/bin/run-nixos-vm
+        '';
+      in {
+        default = {
           type = "app";
           program = "${program}";
         };
@@ -166,3 +167,4 @@
       };
     };
 }
+

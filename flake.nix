@@ -28,50 +28,32 @@
         inherit system;
         overlays = [ ];
       };
-      
-      # Assuming vm-test.nix returns a NixOS configuration
-      vmConfig = std.growOn {
-        inherit inputs;
-        cellsFrom = ./nix;
-        cellBlocks = with std.blockTypes; [
-          (nixosConfiguration "vm-test" (import ./nix/hosts/vm-test.nix { inherit system; }))
-        ];
-      }.nixosConfigurations."vm-test";
-      
-      # Create the VM startup script
+
+      vm-test-config = import ./nix/hosts/vm-test.nix { inherit pkgs lib; };
+
       runVmScript = pkgs.writeShellScript "run-vm.sh" ''
         export NIX_DISK_IMAGE=$(mktemp -u -t nixos.qcow2)
         trap "rm -f $NIX_DISK_IMAGE" EXIT
-        ${vmConfig.config.system.build.vm}/bin/run-nixos-vm
+        ${vm-test-config.config.system.build.vm}/bin/run-nixos-vm
       '';
     in
     {
-      apps.x86_64-linux.vm = {
-        type = "app";
-        program = runVmScript;
-      };
-
-      defaultApp.x86_64-linux = self.apps.x86_64-linux.vm;
-
-      devShells = {
-        x86_64-linux = {
-          vm-test = pkgs.mkShell {
-            buildInputs = [ pkgs.hello ]; # Define your development environment here
-          };
-        };
-      };
-
       nixosConfigurations = std.growOn {
         inherit inputs;
         cellsFrom = ./nix;
-
         cellBlocks = with std.blockTypes; [
-          (nixosConfiguration "vm-test" (import ./nix/hosts/vm-test.nix { inherit system; }))
+          #(nixosConfiguration "vm-test" (import ./nix/hosts/vm-test.nix { inherit pkgs lib; }))
+          (nixosConfiguration "vm-test-config")
           (nixosConfiguration "base-system" (import ./nix/hosts/base-system.nix { inherit system; }))
           (homeManagerConfiguration "ryzengrind" ./nix/users/ryzengrind.nix)
           (nixago "configs" ./nix/repo/configs.nix)
           (devshells "shells" ./nix/repo/shells.nix)
         ];
+      };
+
+      apps.x86_64-linux.vm = {
+        type = "app";
+        program = runVmScript;
       };
     };
 }

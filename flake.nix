@@ -9,9 +9,11 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     std = {
       url = "github:divnix/std";
-      inputs.devshell.url = "github:numtide/devshell";
-      inputs.nixago.url = "github:nix-community/nixago";
-      inputs.nixpkgs.follows = "nixpkgs"; #This makes `std`'s `nixpkgs` follow the top-level `nixpkgs`
+      inputs = {
+        devshell.url = "github:numtide/devshell";
+        nixago.url = "github:nix-community/nixago";
+        nixpkgs.follows = "nixpkgs"; # Corrected follows usage
+      };
     };
     home-manager.url = "github:nix-community/home-manager/release-23.11";
     flake-utils.url = "github:numtide/flake-utils";

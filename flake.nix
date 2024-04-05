@@ -23,8 +23,9 @@
 
   outputs = { self, nixpkgs, std, home-manager, flake-utils, ... } @ inputs:
     let
+      system = "x86_64-linux";
       pkgs = import inputs.nixpkgs {
-        system = "x86_64-linux";
+        inherit system;
         overlays = [ ];
       };
       
@@ -33,10 +34,9 @@
         inherit inputs;
         cellsFrom = ./nix;
         cellBlocks = with std.blockTypes; [
-          (nixosConfiguration "vm-test" ./nix/hosts/vm-test.nix)
-          # Add other configurations as needed
+          (nixosConfiguration "vm-test" (import ./nix/hosts/vm-test.nix { inherit system; }))
         ];
-      }.nixosConfigurations.vm-test;
+      }.nixosConfigurations."vm-test";
       
       # Create the VM startup script
       runVmScript = pkgs.writeShellScript "run-vm.sh" ''
@@ -66,8 +66,8 @@
         cellsFrom = ./nix;
 
         cellBlocks = with std.blockTypes; [
-          (nixosConfiguration "vm-test" ./nix/hosts/vm-test.nix)
-          (nixosConfiguration "base-system" ./nix/hosts/base-system.nix)
+          (nixosConfiguration "vm-test" (import ./nix/hosts/vm-test.nix { inherit system; }))
+          (nixosConfiguration "base-system" (import ./nix/hosts/base-system.nix { inherit system; }))
           (homeManagerConfiguration "ryzengrind" ./nix/users/ryzengrind.nix)
           (nixago "configs" ./nix/repo/configs.nix)
           (devshells "shells" ./nix/repo/shells.nix)

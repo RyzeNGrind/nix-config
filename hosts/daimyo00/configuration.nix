@@ -170,7 +170,7 @@
     fi &&
     if [ ${toString config.wsl.docker-desktop} = "true" ]; then
         echo "Docker Desktop integration is enabled."
-    fi
+    fi &&
   '';
 }
 

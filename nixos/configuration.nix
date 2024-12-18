@@ -112,7 +112,7 @@
   };
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+  services.printing.enable = false;
   services.flatpak.enable = true;  
   services.zerotierone.enable = true;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ]; # ZT NETWORK ID

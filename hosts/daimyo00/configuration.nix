@@ -168,9 +168,6 @@
       sudo nixos-rebuild switch --upgrade --show-trace &&
       echo "NixOS system upgrade completed."
     fi &&
-    if [ ${toString config.wsl.docker-desktop} = "true" ]; then
-        echo "Docker Desktop integration is enabled."
-    fi &&
   '';
 }
 

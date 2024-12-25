@@ -66,7 +66,7 @@
 
   nix.settings = {
     # Enable flakes and new 'nix' command
-    experimental-features = "nix-command flakes repl-flake";
+    experimental-features = "nix-command flakes ";
     # Deduplicate and optimize nix store
     auto-optimise-store = true;
   };
@@ -117,8 +117,6 @@
   services.zerotierone.enable = true;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ]; # ZT NETWORK ID
 
-  # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -222,5 +220,5 @@
   system.stateVersion = config.system.nixos.release;
   system.autoUpgrade.enable = true;
   system.autoUpgrade.allowReboot = false;
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11"; 
+  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-24.11"; 
 }

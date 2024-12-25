@@ -63,8 +63,8 @@
     termius
     gnumake
     comma
-    nixFlakes
-    nixops_unstable
+    nixVersions.stable
+    nixops_unstable_full
     nixops-dns
     rnix-lsp
     nixpkgs-fmt

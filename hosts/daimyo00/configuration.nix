@@ -35,7 +35,7 @@
       config.nix.registry;
 
   nix.settings = {
-    experimental-features = "nix-command flakes repl-flake auto-allocate-uids";
+    experimental-features = "nix-command flakes auto-allocate-uids";
     auto-optimise-store = true;
   };
 
@@ -61,7 +61,6 @@
   services.zerotierone.enable = false;
   services.zerotierone.joinNetworks = [ "fada62b0158621fe" ];
 
-  sound.enable = false; # Adjust based on your setup, typically disabled for WSL
   services.pipewire.enable = false; # Adjust based on your setup, typically disabled for WSL
 
   users.users = {
@@ -90,6 +89,7 @@
       PasswordAuthentication = true;
       AddressFamily = "any";
       Port = "2222"; # Use alternate port 2222 if default port 22 is unavailable
+      Macs = ["hmac-sha2-256"];
     };
   };
 
@@ -143,9 +143,9 @@
     sd-switch
     dconf2nix
     screen
-    nixops_unstable
+    nixops_unstable_full
     nixops-dns
-    nixFlakes
+    nixVersions.stable
   ];
 
   virtualisation.docker = {

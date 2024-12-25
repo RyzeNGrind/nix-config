@@ -100,7 +100,7 @@
   system.stateVersion = config.system.nixos.release; # Adjust according to your NixOS version
   system.autoUpgrade.enable = true;
   system.autoUpgrade.allowReboot = false; # Adjust for WSL, typically reboots are not managed through NixOS in WSL
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11";
+  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-24.11";
 
   # Custom configurations specific to my NixOS-WSL setup
   wsl = {

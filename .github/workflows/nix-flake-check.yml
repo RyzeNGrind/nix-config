@@ -1,0 +1,314 @@
+name: "Nix Flake Checks"
+
+on:
+  pull_request:
+    branches: [ main, feature/* ]
+  push:
+    branches: [ main, feature/*, upstream/*, release/* ]
+
+env:
+  TELEGRAM_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  MATRIX_WEBHOOK: ${{ secrets.MATRIX_WEBHOOK }}
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+
+jobs:
+  nix-flake-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            substituters = https://cache.nixos.org https://nix-community.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Check for outdated flake inputs
+        id: flake-inputs
+        run: |
+          {
+            if nix flake update --dry-run 2>&1 | grep -q 'Updated input'; then
+              echo "::warning::Some flake inputs are outdated"
+              nix flake update --dry-run
+              echo "status=outdated" >> $GITHUB_OUTPUT
+            else
+              echo "✅ All flake inputs are up to date"
+              echo "status=current" >> $GITHUB_OUTPUT
+            fi
+          } || {
+            echo "::error::Failed to check flake inputs"
+            exit 1
+          }
+      
+      - name: Verify flake.lock integrity
+        id: flake-lock
+        run: |
+          {
+            if [ ! -f flake.lock ]; then
+              echo "::error::flake.lock is missing"
+              exit 1
+            fi
+            nix flake metadata --json > flake_meta.json
+            if ! jq empty flake_meta.json; then
+              echo "::error::Invalid flake metadata"
+              exit 1
+            fi
+            echo "✅ flake.lock is valid"
+            echo "status=valid" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Failed to verify flake.lock"
+            exit 1
+          }
+      
+      - name: Check Nix flake inputs
+        id: flake-check
+        run: |
+          {
+            nix flake check
+            echo "✅ Flake check passed"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Flake check failed"
+            exit 1
+          }
+      
+      - name: Run formatter check
+        id: format-check
+        run: |
+          {
+            nix run nixpkgs#nixpkgs-fmt -- --check .
+            echo "✅ Format check passed"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Format check failed"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          }
+      
+      - name: Run statix for static analysis
+        id: static-analysis
+        continue-on-error: true
+        run: |
+          {
+            nix run nixpkgs#statix -- check
+            echo "✅ Static analysis passed"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          } || {
+            echo "::warning::Static analysis found issues"
+            echo "status=warnings" >> $GITHUB_OUTPUT
+          }
+      
+      - name: Run deadnix to find dead code
+        id: dead-code
+        continue-on-error: true
+        run: |
+          {
+            nix run nixpkgs#deadnix -- .
+            echo "✅ No dead code found"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          } || {
+            echo "::warning::Dead code found"
+            echo "status=warnings" >> $GITHUB_OUTPUT
+          }
+      
+      - name: Build all flake outputs
+        id: build
+        run: |
+          {
+            nix build .# --no-link --keep-going
+            echo "✅ All outputs built successfully"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Build failed"
+            exit 1
+          }
+          
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      
+      - name: Run vulnix security scanner
+        id: vulnix
+        continue-on-error: true
+        run: |
+          {
+            nix run nixpkgs#vulnix -- --system
+            echo "✅ No vulnerabilities found"
+            echo "status=secure" >> $GITHUB_OUTPUT
+          } || {
+            echo "::warning::Vulnerabilities found"
+            echo "status=vulnerable" >> $GITHUB_OUTPUT
+          }
+          
+      - name: Check for sensitive data
+        id: gitleaks
+        run: |
+          {
+            nix run nixpkgs#gitleaks -- detect --source . --verbose
+            echo "✅ No sensitive data found"
+            echo "status=secure" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Sensitive data found"
+            exit 1
+          }
+          
+      - name: Notify on Security Issues
+        if: failure() || steps.vulnix.outputs.status == 'vulnerable'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Security scan issues in ${{ github.repository }}!\nBranch: ${{ github.ref }}\nCommit: ${{ github.sha }}\nVulnix: ${{ steps.vulnix.outputs.status }}\nGitleaks: ${{ steps.gitleaks.outputs.status }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+          
+  test-environments:
+    needs: [nix-flake-checks, security-scan]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: wsl
+            system: x86_64-linux
+            host: daimyo00
+            checks: |
+              nix eval .#nixosConfigurations.${{ matrix.host }}.config.wsl.enable --assert true
+              nix eval .#nixosConfigurations.${{ matrix.host }}.config.wsl.docker-desktop.enable --assert true
+          - name: rpi4-cluster
+            system: aarch64-linux
+            host: rpi4-node
+            checks: |
+              nix eval .#nixosConfigurations.${{ matrix.host }}.config.boot.kernelPackages.name --assert "contains 'raspberry'"
+              nix eval .#nixosConfigurations.${{ matrix.host }}.config.networking.hostName --assert true
+          - name: xeon-server
+            system: x86_64-linux
+            host: xeon-server
+            checks: |
+              nix eval .#nixosConfigurations.${{ matrix.host }}.config.boot.kernelPackages.name --assert "contains 'linux'"
+              nix eval .#nixosConfigurations.${{ matrix.host }}.config.services.openssh.enable --assert true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Set up QEMU
+        if: matrix.system == 'aarch64-linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+        
+      - name: Test ${{ matrix.name }} configuration
+        id: build-test
+        run: |
+          {
+            echo "Building configuration for ${{ matrix.name }}..."
+            nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel \
+              --system ${{ matrix.system }} \
+              --option system-features kvm,big-parallel \
+              --keep-going
+            
+            if [ ! -e result/bin ]; then
+              echo "::error::Build failed for ${{ matrix.name }}"
+              exit 1
+            fi
+            
+            echo "Running environment-specific checks..."
+            ${{ matrix.checks }}
+            
+            echo "✅ All checks passed for ${{ matrix.name }}"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Tests failed for ${{ matrix.name }}"
+            exit 1
+          }
+      
+      - name: Notify on Environment Test Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Environment test failed for ${{ matrix.name }} in ${{ github.repository }}!\nBranch: ${{ github.ref }}\nCommit: ${{ github.sha }}\nStatus: ${{ steps.build-test.outputs.status }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+  test-activation:
+    needs: [test-environments]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+        
+      - name: Test NixOS configuration
+        id: nixos-test
+        run: |
+          {
+            echo "Building NixOS configuration..."
+            nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel --keep-going
+            
+            if [ ! -e result/bin ]; then
+              echo "::error::NixOS configuration build failed"
+              exit 1
+            fi
+            
+            echo "Running dry-activation..."
+            ./result/bin/switch-to-configuration dry-activate
+            
+            echo "✅ NixOS configuration tests passed"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::NixOS configuration tests failed"
+            exit 1
+          }
+      
+      - name: Test home-manager configuration
+        id: home-test
+        run: |
+          {
+            echo "Building home-manager configuration..."
+            nix build .#homeConfigurations."ryzengrind@daimyo00".activationPackage --keep-going
+            
+            if [ ! -e result/activate ]; then
+              echo "::error::Home-manager configuration build failed"
+              exit 1
+            fi
+            
+            echo "Running dry-activation..."
+            ./result/activate --dry-run
+            
+            echo "✅ Home-manager configuration tests passed"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Home-manager configuration tests failed"
+            exit 1
+          }
+
+      - name: Notify on Activation Test Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Activation test failed in ${{ github.repository }}!\nBranch: ${{ github.ref }}\nCommit: ${{ github.sha }}\nNixOS Status: ${{ steps.nixos-test.outputs.status }}\nHome Manager Status: ${{ steps.home-test.outputs.status }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            } 

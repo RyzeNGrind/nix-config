@@ -2,9 +2,9 @@ name: "Nix Flake Checks"
 
 on:
   pull_request:
-    branches: [ main, feature/* ]
+    branches: [ master, feature/* ]
   push:
-    branches: [ main, feature/*, upstream/*, release/* ]
+    branches: [ master, feature/*, upstream/*, release/* ]
 
 env:
   TELEGRAM_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -179,25 +179,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
+        config:
           - name: wsl
             system: x86_64-linux
             host: daimyo00
-            checks: |
-              nix eval .#nixosConfigurations.${{ matrix.host }}.config.wsl.enable --assert true
-              nix eval .#nixosConfigurations.${{ matrix.host }}.config.wsl.docker-desktop.enable --assert true
           - name: rpi4-cluster
             system: aarch64-linux
             host: rpi4-node
-            checks: |
-              nix eval .#nixosConfigurations.${{ matrix.host }}.config.boot.kernelPackages.name --assert "contains 'raspberry'"
-              nix eval .#nixosConfigurations.${{ matrix.host }}.config.networking.hostName --assert true
           - name: xeon-server
             system: x86_64-linux
             host: xeon-server
-            checks: |
-              nix eval .#nixosConfigurations.${{ matrix.host }}.config.boot.kernelPackages.name --assert "contains 'linux'"
-              nix eval .#nixosConfigurations.${{ matrix.host }}.config.services.openssh.enable --assert true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -209,33 +200,49 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Set up QEMU
-        if: matrix.system == 'aarch64-linux'
+        if: matrix.config.system == 'aarch64-linux'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
         
-      - name: Test ${{ matrix.name }} configuration
+      - name: Test ${{ matrix.config.name }} configuration
         id: build-test
         run: |
           {
-            echo "Building configuration for ${{ matrix.name }}..."
-            nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel \
-              --system ${{ matrix.system }} \
+            echo "Building configuration for ${{ matrix.config.name }}..."
+            nix build .#nixosConfigurations.${{ matrix.config.host }}.config.system.build.toplevel \
+              --system ${{ matrix.config.system }} \
               --option system-features kvm,big-parallel \
               --keep-going
             
             if [ ! -e result/bin ]; then
-              echo "::error::Build failed for ${{ matrix.name }}"
+              echo "::error::Build failed for ${{ matrix.config.name }}"
               exit 1
             fi
             
             echo "Running environment-specific checks..."
-            ${{ matrix.checks }}
+            case "${{ matrix.config.name }}" in
+              wsl)
+                # WSL-specific checks
+                nix eval .#nixosConfigurations.${{ matrix.config.host }}.config.wsl.enable --assert true
+                nix eval .#nixosConfigurations.${{ matrix.config.host }}.config.wsl.docker-desktop.enable --assert true
+                ;;
+              rpi4-cluster)
+                # RPI4 cluster checks
+                nix eval .#nixosConfigurations.${{ matrix.config.host }}.config.boot.kernelPackages.name --assert "contains 'raspberry'"
+                nix eval .#nixosConfigurations.${{ matrix.config.host }}.config.networking.hostName --assert true
+                ;;
+              xeon-server)
+                # Server-specific checks
+                nix eval .#nixosConfigurations.${{ matrix.config.host }}.config.boot.kernelPackages.name --assert "contains 'linux'"
+                nix eval .#nixosConfigurations.${{ matrix.config.host }}.config.services.openssh.enable --assert true
+                ;;
+            esac
             
-            echo "✅ All checks passed for ${{ matrix.name }}"
+            echo "✅ All checks passed for ${{ matrix.config.name }}"
             echo "status=success" >> $GITHUB_OUTPUT
           } || {
-            echo "::error::Tests failed for ${{ matrix.name }}"
+            echo "::error::Tests failed for ${{ matrix.config.name }}"
             exit 1
           }
       
@@ -245,7 +252,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "🚨 Environment test failed for ${{ matrix.name }} in ${{ github.repository }}!\nBranch: ${{ github.ref }}\nCommit: ${{ github.sha }}\nStatus: ${{ steps.build-test.outputs.status }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🚨 Environment test failed for ${{ matrix.config.name }} in ${{ github.repository }}!\nBranch: ${{ github.ref }}\nCommit: ${{ github.sha }}\nStatus: ${{ steps.build-test.outputs.status }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
   test-activation:

@@ -41,6 +41,40 @@
       # Accessible through 'nix build', 'nix shell', etc
       packages =
         forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+      
+      # Development shells
+      devShells = forAllSystems (system:
+        let 
+          pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          default = pkgs.mkShell {
+            name = "nix-config";
+            packages = with pkgs; [
+              nixpkgs-fmt
+              nil
+              statix
+              nixd
+              alejandra
+              nix-output-monitor
+              git
+              home-manager
+              deadnix
+              nixpkgs-lint
+              _1password-cli
+            ];
+            shellHook = ''
+              echo "Welcome to nix-config development shell"
+              echo "Available tools: nixpkgs-fmt, nil, statix, nixd, alejandra, nom, git, home-manager"
+              echo -e "\e[1;34mnixpkgs-fmt, deadnix, statix, and nixpkgs-lint are now available in this shell.\e[0m"
+              echo -e "\e[1;34mUse 'nixpkgs-fmt <file or directory>' to format Nix code.\e[0m"
+              echo -e "\e[1;34mUse 'statix check <file or directory>' to lint Nix code with statix.\e[0m"
+              echo -e "\e[1;34mUse 'deadnix <file or directory>' to remove unused variables in Nix code.\e[0m"
+              echo -e "\e[1;34mUse 'nixpkgs-lint <file or directory>' for additional linting of Nixpkgs specifics.\e[0m"
+            '';
+          };
+        }
+      );
+
       # Formatter for your nix files, available through 'nix fmt'
       # Other options beside 'alejandra' include 'nixpkgs-fmt'
       formatter =

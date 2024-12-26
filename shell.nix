@@ -6,6 +6,7 @@ pkgs.mkShell {
     pkgs.statix
     pkgs.nixpkgs-fmt
     pkgs.nixpkgs-lint
+    pkgs._1password-cli
   ];
 
   shellHook = ''

@@ -138,6 +138,7 @@
     neofetch
     nvtop
     _1password-gui-beta
+    _1password-cli
     fish
     home-manager
     sd-switch

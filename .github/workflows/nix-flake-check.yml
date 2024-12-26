@@ -7,7 +7,7 @@ on:
     branches: [ master, feature/*, upstream/*, release/* ]
 
 env:
-  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
   TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
   NIX_CONFIG: "experimental-features = nix-command flakes"
 

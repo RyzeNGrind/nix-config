@@ -45,31 +45,104 @@
       # Development shells
       devShells = forAllSystems (system:
         let 
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = import nixpkgs {
+            inherit system;
+            config = {
+              allowUnfree = true;
+              allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
+                "1password"
+                "1password-cli"
+              ];
+            };
+          };
+          
+          # Create a custom package set for 1Password
+          onepassword = pkgs.symlinkJoin {
+            name = "1password-combined";
+            paths = with pkgs; [ _1password-cli ];
+            buildInputs = with pkgs; [ makeWrapper ];
+            postBuild = ''
+              # Ensure proper runtime environment
+              wrapProgram $out/bin/op \
+                --set NIXPKGS_ALLOW_UNFREE 1
+            '';
+          };
+          
         in {
           default = pkgs.mkShell {
             name = "nix-config";
+            
             packages = with pkgs; [
+              # Nix development tools
               nixpkgs-fmt
               nil
               statix
               nixd
               alejandra
               nix-output-monitor
-              git
-              home-manager
               deadnix
-              nixpkgs-lint
-              _1password-cli
+              
+              # Version control
+              git
+              gh
+              
+              # System tools
+              home-manager
+              
+              # Build tools
+              gnumake
+              just
+              
+              # CI/CD tools
+              act # For testing GitHub Actions locally
+              
+              # Secrets management
+              sops
+              age
+              ssh-to-age
             ];
+            
+            # Add 1Password separately
+            nativeBuildInputs = [ onepassword ];
+            
+            # Environment variables
             shellHook = ''
-              echo "Welcome to nix-config development shell"
-              echo "Available tools: nixpkgs-fmt, nil, statix, nixd, alejandra, nom, git, home-manager"
-              echo -e "\e[1;34mnixpkgs-fmt, deadnix, statix, and nixpkgs-lint are now available in this shell.\e[0m"
-              echo -e "\e[1;34mUse 'nixpkgs-fmt <file or directory>' to format Nix code.\e[0m"
-              echo -e "\e[1;34mUse 'statix check <file or directory>' to lint Nix code with statix.\e[0m"
-              echo -e "\e[1;34mUse 'deadnix <file or directory>' to remove unused variables in Nix code.\e[0m"
-              echo -e "\e[1;34mUse 'nixpkgs-lint <file or directory>' for additional linting of Nixpkgs specifics.\e[0m"
+              # Allow unfree packages
+              export NIXPKGS_ALLOW_UNFREE=1
+              export NIXPKGS_ALLOW_INSECURE=1
+              
+              # 1Password CLI configuration
+              export OP_BIOMETRIC_UNLOCK_ENABLED=true
+              export OP_PLUGIN_TIMEOUT=3600
+              
+              # GitHub Actions configuration
+              if [ -n "$GITHUB_ACTIONS" ] && [ -n "$OP_SERVICE_ACCOUNT_TOKEN" ]; then
+                echo "Using 1Password Service Account for GitHub Actions"
+              fi
+              
+              echo -e "\033[1;32mWelcome to nix-config development shell\033[0m"
+              echo -e "\033[1;34mAvailable tools:\033[0m"
+              echo -e "  • \033[1;33mnixpkgs-fmt\033[0m : Format Nix code"
+              echo -e "  • \033[1;33mnil\033[0m        : Nix language server"
+              echo -e "  • \033[1;33mstatix\033[0m     : Static analysis for Nix"
+              echo -e "  • \033[1;33mnixd\033[0m       : Nix daemon tools"
+              echo -e "  • \033[1;33malejandra\033[0m  : Alternative Nix formatter"
+              echo -e "  • \033[1;33mnom\033[0m        : Nix output monitor"
+              echo -e "  • \033[1;33mdeadnix\033[0m    : Find dead code"
+              echo -e "  • \033[1;33mjust\033[0m       : Command runner"
+              echo -e "  • \033[1;33m1password\033[0m  : Secrets management (CLI)"
+              echo -e "  • \033[1;33mact\033[0m        : Test GitHub Actions locally"
+              echo -e "  • \033[1;33mgh\033[0m         : GitHub CLI"
+              echo -e "  • \033[1;33msops\033[0m       : Secrets encryption"
+              echo -e "\033[1;36mTip: Use 'nom build' instead of 'nix build' for better output\033[0m"
+              echo -e "\033[1;36mTip: Use 'op' command for 1Password CLI operations\033[0m"
+              echo -e "\033[1;36mTip: Use 'act' to test GitHub Actions locally\033[0m"
+              
+              # Setup local GitHub Actions environment if needed
+              if command -v act &> /dev/null; then
+                echo -e "\033[1;36mTip: Create .secrets file with your 1Password service account token to test GitHub Actions:\033[0m"
+                echo -e "  echo 'OP_SERVICE_ACCOUNT_TOKEN=your_token_here' > .secrets"
+              fi
             '';
           };
         }

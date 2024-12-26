@@ -1,0 +1,257 @@
+name: "Nix Flake Checks"
+
+on:
+  pull_request:
+    branches: [ master, feature/* ]
+  push:
+    branches: [ master, feature/*, upstream/*, release/* ]
+
+env:
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+
+jobs:
+  nix-flake-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            substituters = https://cache.nixos.org https://nix-community.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # ... (previous steps remain unchanged until security-scan job)
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      
+      - name: Run vulnix security scanner
+        id: vulnix
+        continue-on-error: true
+        run: |
+          {
+            nix run nixpkgs#vulnix -- --system
+            echo "✅ No vulnerabilities found"
+            echo "status=secure" >> $GITHUB_OUTPUT
+          } || {
+            echo "::warning::Vulnerabilities found"
+            echo "status=vulnerable" >> $GITHUB_OUTPUT
+          }
+          
+      - name: Check for sensitive data
+        id: gitleaks
+        run: |
+          {
+            nix run nixpkgs#gitleaks -- detect --source . --verbose
+            echo "✅ No sensitive data found"
+            echo "status=secure" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Sensitive data found"
+            exit 1
+          }
+          
+      - name: Notify on Security Issues
+        if: failure() || steps.vulnix.outputs.status == 'vulnerable'
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ env.TELEGRAM_CHAT }}
+          token: ${{ env.TELEGRAM_TOKEN }}
+          message: |
+            🚨 Security scan issues in ${{ github.repository }}!
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Vulnix: ${{ steps.vulnix.outputs.status }}
+            Gitleaks: ${{ steps.gitleaks.outputs.status }}
+            Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+  test-environments:
+    needs: [nix-flake-checks, security-scan]
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: wsl
+            system: x86_64-linux
+            host: daimyo00
+            extra_args: ""
+          - name: rpi4-cluster
+            system: aarch64-linux
+            host: rpi4-node
+            extra_args: "--option system-features big-parallel,kvm"
+          - name: xeon-server
+            system: x86_64-linux
+            host: xeon-server
+            extra_args: "--option system-features kvm,big-parallel"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            extra-platforms = aarch64-linux
+            substituters = https://cache.nixos.org https://nix-community.cachix.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Set up QEMU
+        if: matrix.config.system == 'aarch64-linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+        
+      - name: Test ${{ matrix.config.name }} configuration
+        id: build-test
+        run: |
+          {
+            echo "Building configuration for ${{ matrix.config.name }}..."
+            
+            # Set architecture-specific environment variables
+            if [ "${{ matrix.config.system }}" = "aarch64-linux" ]; then
+              export NIX_CONFIG="$NIX_CONFIG extra-platforms = aarch64-linux"
+            fi
+            
+            # Build with architecture-specific options
+            nix build .#nixosConfigurations.${{ matrix.config.host }}.config.system.build.toplevel \
+              --system ${{ matrix.config.system }} \
+              ${{ matrix.config.extra_args }} \
+              --accept-flake-config \
+              --keep-going
+            
+            if [ ! -e result/bin ]; then
+              echo "::error::Build failed for ${{ matrix.config.name }}"
+              exit 1
+            fi
+            
+            echo "Running environment-specific checks..."
+            case "${{ matrix.config.name }}" in
+              wsl)
+                # WSL-specific checks
+                nix eval --impure .#nixosConfigurations.${{ matrix.config.host }}.config.wsl.enable --apply builtins.toString
+                nix eval --impure .#nixosConfigurations.${{ matrix.config.host }}.config.wsl.docker-desktop.enable --apply builtins.toString
+                ;;
+              rpi4-cluster)
+                # RPI4 cluster checks
+                nix eval --impure .#nixosConfigurations.${{ matrix.config.host }}.config.boot.kernelPackages.name
+                nix eval --impure .#nixosConfigurations.${{ matrix.config.host }}.config.networking.hostName
+                ;;
+              xeon-server)
+                # Server-specific checks
+                nix eval --impure .#nixosConfigurations.${{ matrix.config.host }}.config.boot.kernelPackages.name
+                nix eval --impure .#nixosConfigurations.${{ matrix.config.host }}.config.services.openssh.enable --apply builtins.toString
+                ;;
+            esac
+            
+            echo "✅ All checks passed for ${{ matrix.config.name }}"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Tests failed for ${{ matrix.config.name }}"
+            exit 1
+          }
+      
+      - name: Notify on Environment Test Failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ env.TELEGRAM_CHAT }}
+          token: ${{ env.TELEGRAM_TOKEN }}
+          message: |
+            🚨 Environment test failed for ${{ matrix.config.name }} in ${{ github.repository }}!
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Status: ${{ steps.build-test.outputs.status }}
+            Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  test-activation:
+    needs: [test-environments]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+        
+      - name: Test NixOS configuration
+        id: nixos-test
+        run: |
+          {
+            echo "Building NixOS configuration..."
+            nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel \
+              --accept-flake-config \
+              --keep-going
+            
+            if [ ! -e result/bin ]; then
+              echo "::error::NixOS configuration build failed"
+              exit 1
+            fi
+            
+            echo "Running dry-activation..."
+            ./result/bin/switch-to-configuration dry-activate
+            
+            echo "✅ NixOS configuration tests passed"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::NixOS configuration tests failed"
+            exit 1
+          }
+      
+      - name: Test home-manager configuration
+        id: home-test
+        run: |
+          {
+            echo "Building home-manager configuration..."
+            nix build .#homeConfigurations."ryzengrind@daimyo00".activationPackage \
+              --accept-flake-config \
+              --keep-going
+            
+            if [ ! -e result/activate ]; then
+              echo "::error::Home-manager configuration build failed"
+              exit 1
+            fi
+            
+            echo "Running dry-activation..."
+            ./result/activate --dry-run
+            
+            echo "✅ Home-manager configuration tests passed"
+            echo "status=success" >> $GITHUB_OUTPUT
+          } || {
+            echo "::error::Home-manager configuration tests failed"
+            exit 1
+          }
+
+      - name: Notify on Activation Test Failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ env.TELEGRAM_CHAT }}
+          token: ${{ env.TELEGRAM_TOKEN }}
+          message: |
+            �� Activation test failed in ${{ github.repository }}!
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            NixOS Status: ${{ steps.nixos-test.outputs.status }}
+            Home Manager Status: ${{ steps.home-test.outputs.status }}
+            Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} 

@@ -80,9 +80,34 @@
       # Helper function for format-specific configurations
       mkFormatConfig = { name, system, modules ? [], formatConfig ? {} }: mkSystem name system ([
         {
-          formatConfigs.${name} = formatConfig;
+          formatConfigs.${name} = formatConfig // {
+            system.stateVersion = "24.11";
+          };
         }
       ] ++ modules);
+
+      # Common format configurations
+      formatConfigs = {
+        docker = {
+          services.openssh.enable = false;
+          users.users.root.password = "";
+          virtualisation.docker.enable = true;
+        };
+
+        install-iso = {
+          isoImage.makeEfiBootable = true;
+          isoImage.makeUsbBootable = true;
+        };
+
+        kexec = {
+          boot.loader.grub.enable = false;
+          boot.kernelParams = [ "console=ttyS0,115200" ];
+        };
+
+        sd-aarch64 = {
+          hardware.raspberry-pi."4".enable = true;
+        };
+      };
 
     in {
       # Your custom packages and format outputs
@@ -92,39 +117,6 @@
           
           # Import custom packages
           customPkgs = import ./pkgs pkgs;
-          
-          # Common configuration for all formats
-          baseConfig = {
-            services.openssh.enable = true;
-            users.users.root.password = "nixos";
-          };
-
-          # Format-specific configurations
-          formatConfigs = {
-            docker = {
-              services.openssh.enable = false;
-              users.users.root.password = "";
-              virtualisation.docker.enable = true;
-              system.stateVersion = "24.11";
-            };
-
-            install-iso = {
-              isoImage.makeEfiBootable = true;
-              isoImage.makeUsbBootable = true;
-              system.stateVersion = "24.11";
-            };
-
-            kexec = {
-              boot.loader.grub.enable = false;
-              boot.kernelParams = [ "console=ttyS0,115200" ];
-              system.stateVersion = "24.11";
-            };
-
-            sd-aarch64 = {
-              hardware.raspberry-pi."4".enable = true;
-              system.stateVersion = "24.11";
-            };
-          };
 
         in customPkgs // {
           # Docker image
@@ -141,7 +133,7 @@
           sd-aarch64-test = self.nixosConfigurations.sd-test.config.formats.sd-aarch64-installer;
 
           # Meta package to build and test all formats
-          all-formats = pkgs.stdenv.mkDerivation {
+          all-formats = pkgs.stdenvNoCC.mkDerivation {
             name = "all-formats";
             
             # No source needed, we're just combining outputs
@@ -149,14 +141,6 @@
             
             # Include all format outputs
             nativeBuildInputs = with pkgs; [ makeWrapper ];
-            buildInputs = [
-              self.packages.${system}.docker-test
-              self.packages.${system}.install-iso-test
-              self.packages.${system}.kexec-test
-              self.packages.${system}.kexec-bundle-test
-            ] ++ lib.optional (system == "aarch64-linux") [
-              self.packages.${system}.sd-aarch64-test
-            ];
             
             # Create the output structure
             installPhase = ''

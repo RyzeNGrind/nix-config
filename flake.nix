@@ -79,15 +79,15 @@
 
       # Helper function for format-specific configurations
       mkFormatConfig = { name, system, modules ? [], formatConfig ? {} }: mkSystem name system ([
+        nixos-generators.nixosModules.all-formats
         {
-          formatConfigs.${name} = formatConfig // {
-            system.stateVersion = "24.11";
-          };
+          system.stateVersion = "24.11";
+          formats.${name} = formatConfig;
         }
       ] ++ modules);
 
       # Common format configurations
-      formatConfigs = {
+      baseFormatConfig = {
         docker = {
           services.openssh.enable = false;
           users.users.root.password = "";
@@ -133,87 +133,71 @@
           sd-aarch64-test = self.nixosConfigurations.sd-test.config.formats.sd-aarch64-installer;
 
           # Meta package to build and test all formats
-          all-formats = pkgs.stdenvNoCC.mkDerivation {
-            name = "all-formats";
-            
-            # No source needed, we're just combining outputs
-            dontUnpack = true;
-            
-            # Include all format outputs
+          all-formats = pkgs.runCommand "all-formats" {
             nativeBuildInputs = with pkgs; [ makeWrapper ];
+          } ''
+            mkdir -p $out/bin $out/formats
             
-            # Create the output structure
-            installPhase = ''
-              mkdir -p $out/bin $out/formats
-              
-              # Create test script
-              cat > $out/bin/test-all-formats <<'EOF'
-              #!/usr/bin/env bash
-              set -euo pipefail
-              
-              echo "Testing all formats..."
-              
-              # Test Docker
-              echo "Testing Docker image..."
-              nix build .#checks.${system}.format-tests.testDocker
-              
-              # Test ISO
-              echo "Testing ISO image..."
-              nix build .#checks.${system}.format-tests.testISO
-              
-              # Test Kexec
-              echo "Testing Kexec bundle..."
-              nix build .#checks.${system}.format-tests.testKexec
-              
-              if [ "${system}" = "aarch64-linux" ]; then
-                echo "Testing SD card image..."
-                nix build .#checks.${system}.format-tests.testSDImage
-              fi
-              
-              echo "All tests passed!"
-              EOF
-              chmod +x $out/bin/test-all-formats
-              
-              # Create symlinks to all format outputs
-              ln -s ${self.packages.${system}.docker-test} $out/formats/docker
-              ln -s ${self.packages.${system}.install-iso-test} $out/formats/iso
-              ln -s ${self.packages.${system}.kexec-test} $out/formats/kexec
-              ln -s ${self.packages.${system}.kexec-bundle-test} $out/formats/kexec-bundle
-              ${lib.optionalString (system == "aarch64-linux") ''
-                ln -s ${self.packages.${system}.sd-aarch64-test} $out/formats/sd-aarch64
-              ''}
-              
-              # Create manifest
-              cat > $out/formats/manifest.json <<EOF
-              {
-                "formats": {
-                  "docker": "${self.packages.${system}.docker-test}",
-                  "iso": "${self.packages.${system}.install-iso-test}",
-                  "kexec": "${self.packages.${system}.kexec-test}",
-                  "kexec-bundle": "${self.packages.${system}.kexec-bundle-test}"
-                  ${lib.optionalString (system == "aarch64-linux") '',
-                  "sd-aarch64": "${self.packages.${system}.sd-aarch64-test}"
-                  ''}
-                }
+            # Create test script
+            cat > $out/bin/test-all-formats <<'EOF'
+            #!/usr/bin/env bash
+            set -euo pipefail
+            
+            echo "Testing all formats..."
+            
+            # Test Docker
+            echo "Testing Docker image..."
+            nix build .#checks.${system}.format-tests.testDocker
+            
+            # Test ISO
+            echo "Testing ISO image..."
+            nix build .#checks.${system}.format-tests.testISO
+            
+            # Test Kexec
+            echo "Testing Kexec bundle..."
+            nix build .#checks.${system}.format-tests.testKexec
+            
+            if [ "${system}" = "aarch64-linux" ]; then
+              echo "Testing SD card image..."
+              nix build .#checks.${system}.format-tests.testSDImage
+            fi
+            
+            echo "All tests passed!"
+            EOF
+            chmod +x $out/bin/test-all-formats
+            
+            # Create symlinks to all format outputs
+            ln -s ${self.packages.${system}.docker-test} $out/formats/docker
+            ln -s ${self.packages.${system}.install-iso-test} $out/formats/iso
+            ln -s ${self.packages.${system}.kexec-test} $out/formats/kexec
+            ln -s ${self.packages.${system}.kexec-bundle-test} $out/formats/kexec-bundle
+            ${lib.optionalString (system == "aarch64-linux") ''
+              ln -s ${self.packages.${system}.sd-aarch64-test} $out/formats/sd-aarch64
+            ''}
+            
+            # Create manifest
+            cat > $out/formats/manifest.json <<EOF
+            {
+              "formats": {
+                "docker": "${self.packages.${system}.docker-test}",
+                "iso": "${self.packages.${system}.install-iso-test}",
+                "kexec": "${self.packages.${system}.kexec-test}",
+                "kexec-bundle": "${self.packages.${system}.kexec-bundle-test}"
+                ${lib.optionalString (system == "aarch64-linux") '',
+                "sd-aarch64": "${self.packages.${system}.sd-aarch64-test}"
+                ''}
               }
-              EOF
-            '';
+            }
+            EOF
             
-            # Add required tools to PATH
-            fixupPhase = ''
-              wrapProgram $out/bin/test-all-formats \
-                --prefix PATH : ${lib.makeBinPath (with pkgs; [
-                  nix
-                  coreutils
-                  bash
-                ])}
-            '';
-            
-            meta = {
-              description = "All NixOS formats and their tests";
-              platforms = lib.platforms.linux;
-            };
-          };
+            # Wrap the test script with required tools
+            wrapProgram $out/bin/test-all-formats \
+              --prefix PATH : ${lib.makeBinPath (with pkgs; [
+                nix
+                coreutils
+                bash
+              ])}
+          '';
         });
 
       # Formatter for your nix files

@@ -1,5 +1,5 @@
 {
-  description = "Your new nix config";
+  description = "NixOS Hyperconverged Infrastructure Configuration";
 
   inputs = {
     # Nixpkgs
@@ -9,11 +9,43 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
+    # Add nixos-generators
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager/release-23.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # TODO: Add any other flake you might need
+    # Infrastructure tools
+    infra-ml = {
+      infra-mlops = {
+        edge = {
+          colossalai.url = "github:hpcaitech/ColossalAI";
+        };
+        bleeding-edge = {
+          # Add more MLOps-related bleeding-edge tools here
+        };
+      };
+    };
+
+    infra-dev = {
+      infra-devops = {
+        edge = {
+          flox.url = "github:flox/flox";
+          kubevela.url = "github:kubevela/kubevela";
+          attic.url = "github:zhaofengli/attic";
+          fission.url = "github:fission/fission";
+        };
+        bleeding-edge = {
+          # Add more DevOps-related bleeding-edge tools here
+        };
+      };
+    };
+
+    # System
     hardware.url = "github:nixos/nixos-hardware";
     nixos-wsl.url = "github:nix-community/nixos-wsl";
 
@@ -22,7 +54,7 @@
     # nix-colors.url = "github:misterio77/nix-colors";
   };
 
-  outputs = { self, nixpkgs, home-manager, nixos-wsl, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, nixos-wsl, nixos-generators, ... }@inputs:
     let
       inherit (self) outputs;
       # Supported systems for your flake packages, shell, etc.
@@ -36,6 +68,21 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
+
+      # Helper function to create system configurations
+      mkSystem = hostname: system: extraModules: nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs outputs; };
+        modules = [
+          ./modules/nixos/formats.nix
+          nixos-generators.nixosModules.all-formats
+          {
+            networking.hostName = hostname;
+            nixpkgs.hostPlatform = system;
+          }
+        ] ++ extraModules;
+      };
+
     in {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
@@ -58,19 +105,51 @@
       # NixOS configuration entrypoint~
       # Available through 'sudo nixos-rebuild switch --flake 'github:RyzeNGrind/nix-config#daimyo00''
       nixosConfigurations = {
-        # FIXME replace with your hostname
-        daimyo00 = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs outputs; };
-          system = "x86_64-linux"; # Explicitly set the system to resolve the error
-          modules = [
-            # Include the WSL-specific module from nixos-wsl
-            inputs.nixos-wsl.nixosModules.default
-            ./modules/nixos-wsl/override-build-tarball.nix
-            # > Our main nixos configuration file <
-            ./hosts/daimyo00/configuration.nix
-          ];
-        };
+        # WSL configuration
+        daimyo00 = mkSystem "daimyo00" "x86_64-linux" [
+          inputs.nixos-wsl.nixosModules.default
+          ./modules/nixos-wsl/override-build-tarball.nix
+          ./hosts/daimyo00/configuration.nix
+        ];
+
+        # Example VM configuration
+        vm-test = mkSystem "vm-test" "x86_64-linux" [
+          {
+            formatConfigs.vmware = {
+              services.openssh.enable = true;
+              users.users.root.password = "nixos";
+            };
+          }
+        ];
+
+        # Example container configuration
+        container-test = mkSystem "container-test" "x86_64-linux" [
+          {
+            formatConfigs.docker = {
+              services.openssh.enable = false;
+              users.users.root.password = "";
+            };
+          }
+        ];
       };
+
+      # Add format-specific outputs
+      packages = forAllSystems (system: 
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          # VM images
+          vm-test-vmware = self.nixosConfigurations.vm-test.config.formats.vmware;
+          vm-test-virtualbox = self.nixosConfigurations.vm-test.config.formats.virtualbox;
+          vm-test-qcow2 = self.nixosConfigurations.vm-test.config.formats.qcow2;
+
+          # Container images
+          container-test-docker = self.nixosConfigurations.container-test.config.formats.docker;
+
+          # Installation media
+          vm-test-iso = self.nixosConfigurations.vm-test.config.formats.iso;
+        } // (import ./pkgs pkgs)
+      );
 
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#ryzengrind@daimyo00'
@@ -86,5 +165,24 @@
           ];
         };
       };
+
+      # Add the VM tests
+      checks = forAllSystems (system: {
+        # Test infrastructure tools
+        infra-vmtest = import ./tests/infra-vmtest.nix {
+          inherit (nixpkgs.legacyPackages.${system}) pkgs;
+          nixosModules = {
+            default = self.nixosModules.default;
+          };
+        };
+
+        # Test format configurations
+        formats-vmtest = import ./tests/formats-vmtest.nix {
+          inherit (nixpkgs.legacyPackages.${system}) pkgs;
+          nixosModules = {
+            default = self.nixosModules.default;
+          };
+        };
+      });
     };
 }

@@ -9,6 +9,7 @@
 }: {
   imports = [
     inputs.nixos-wsl.nixosModules.wsl
+    ../../modules/nixos/cluster-tools.nix
   ];
 
   nixpkgs = {
@@ -192,5 +193,58 @@
       fi
     '';
   };
+
+  # Enable infrastructure tools
+  services.infra-tools = {
+    enable = true;
+    enableKubevela = true;
+    enableFission = true;
+    enableAttic = true;
+    enableRay = true;
+    
+    atticCache.endpoint = "https://cache.nixos.org";
+    fission.namespace = "fission-system";
+  };
+
+  # System packages
+  environment.systemPackages = with pkgs; [
+    git
+    vim
+    curl
+    wget
+    htop
+    docker-compose
+  ];
+
+  # Enable Docker and container features
+  virtualisation = {
+    docker = {
+      enable = true;
+      autoPrune.enable = true;
+    };
+    containers.enable = true;
+  };
+
+  # Networking
+  networking = {
+    hostName = "daimyo00";
+    firewall.enable = false;  # Disabled for development
+  };
+
+  # Enable nix flakes
+  nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+    settings = {
+      auto-optimise-store = true;
+      trusted-users = [ "ryzengrind" ];
+    };
+  };
+
+  # This value determines the NixOS release with which your system is to be
+  # compatible, in order to avoid breaking some software.
+  system.stateVersion = "23.11";
 }
 

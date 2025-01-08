@@ -3,7 +3,7 @@
 
   inputs = {
     # Nixpkgs
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -20,29 +20,29 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # Infrastructure tools
-    infra-ml = {
-      infra-mlops = {
-        edge = {
-          colossalai.url = "github:hpcaitech/ColossalAI";
-        };
-        bleeding-edge = {
-          # Add more MLOps-related bleeding-edge tools here
-        };
-      };
+    colossalai = {
+      url = "github:hpcaitech/ColossalAI";
+      flake = false;
     };
 
-    infra-dev = {
-      infra-devops = {
-        edge = {
-          flox.url = "github:flox/flox";
-          kubevela.url = "github:kubevela/kubevela";
-          attic.url = "github:zhaofengli/attic";
-          fission.url = "github:fission/fission";
-        };
-        bleeding-edge = {
-          # Add more DevOps-related bleeding-edge tools here
-        };
-      };
+    flox = {
+      url = "github:flox/flox";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    kubevela = {
+      url = "github:kubevela/kubevela";
+      flake = false;
+    };
+
+    attic = {
+      url = "github:zhaofengli/attic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    fission = {
+      url = "github:fission/fission";
+      flake = false;
     };
 
     # System
@@ -57,6 +57,8 @@
   outputs = { self, nixpkgs, home-manager, nixos-wsl, nixos-generators, ... }@inputs:
     let
       inherit (self) outputs;
+      inherit (nixpkgs) lib;
+      
       # Supported systems for your flake packages, shell, etc.
       systems = [
         "aarch64-linux"
@@ -67,10 +69,10 @@
       ];
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
-      forAllSystems = nixpkgs.lib.genAttrs systems;
+      forAllSystems = lib.genAttrs systems;
 
       # Helper function to create system configurations
-      mkSystem = hostname: system: extraModules: nixpkgs.lib.nixosSystem {
+      mkSystem = hostname: system: extraModules: lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs outputs; };
         modules = [
@@ -83,15 +85,135 @@
         ] ++ extraModules;
       };
 
+      # Helper function for format-specific configurations
+      mkFormatConfig = { name, system, modules ? [], formatConfig ? {} }: mkSystem name system ([
+        {
+          formatConfigs.${name} = formatConfig;
+        }
+      ] ++ modules);
+
     in {
-      # Your custom packages
+      # Your custom packages and format outputs
       # Accessible through 'nix build', 'nix shell', etc
-      packages =
-        forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
-      # Formatter for your nix files, available through 'nix fmt'
-      # Other options beside 'alejandra' include 'nixpkgs-fmt'
-      formatter =
-        forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+      packages = forAllSystems (system: 
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          
+          # Import custom packages
+          customPkgs = import ./pkgs pkgs;
+          
+          # Common configuration for all formats
+          baseConfig = {
+            services.openssh.enable = true;
+            users.users.root.password = "nixos";
+          };
+
+          # Format-specific configurations
+          formatConfigs = {
+            docker = {
+              services.openssh.enable = false;
+              users.users.root.password = "";
+              virtualisation.docker.enable = true;
+              system.stateVersion = "23.11";
+            };
+
+            install-iso = {
+              isoImage.makeEfiBootable = true;
+              isoImage.makeUsbBootable = true;
+              system.stateVersion = "23.11";
+            };
+
+            kexec = {
+              boot.loader.grub.enable = false;
+              boot.kernelParams = [ "console=ttyS0,115200" ];
+              system.stateVersion = "23.11";
+            };
+
+            sd-aarch64 = {
+              hardware.raspberry-pi."4".enable = true;
+              system.stateVersion = "23.11";
+            };
+          };
+
+        in customPkgs // {
+          # Docker image
+          docker-test = self.nixosConfigurations.docker-test.config.formats.docker;
+          
+          # Installation ISO
+          install-iso-test = self.nixosConfigurations.iso-test.config.formats.install-iso;
+          
+          # Kexec bundle
+          kexec-test = self.nixosConfigurations.kexec-test.config.formats.kexec;
+          kexec-bundle-test = self.nixosConfigurations.kexec-test.config.formats.kexec-bundle;
+          
+          # SD card image for aarch64
+          sd-aarch64-test = self.nixosConfigurations.sd-test.config.formats.sd-aarch64-installer;
+
+          # Meta package to build and test all formats
+          all-formats = pkgs.symlinkJoin {
+            name = "all-formats";
+            paths = [
+              self.packages.${system}.docker-test
+              self.packages.${system}.install-iso-test
+              self.packages.${system}.kexec-test
+              self.packages.${system}.kexec-bundle-test
+            ] ++ lib.optional (system == "aarch64-linux") [
+              self.packages.${system}.sd-aarch64-test
+            ];
+            
+            # Add test dependencies
+            buildInputs = [
+              # Add the test results as a dependency
+              (pkgs.runCommand "format-tests" {
+                buildInputs = [
+                  self.checks.${system}.format-tests.testDocker
+                  self.checks.${system}.format-tests.testISO
+                  self.checks.${system}.format-tests.testKexec
+                ] ++ lib.optional (system == "aarch64-linux") [
+                  self.checks.${system}.format-tests.testSDImage
+                ];
+              } ''
+                mkdir -p $out/nix-support
+                touch $out/nix-support/hydra-build-products
+                echo "all-tests-passed" >> $out/nix-support/hydra-build-products
+              '')
+            ];
+            
+            # Add a script to run all tests
+            postBuild = ''
+              mkdir -p $out/bin
+              cat > $out/bin/test-all-formats <<'EOF'
+              #!/usr/bin/env bash
+              set -euo pipefail
+              
+              echo "Testing all formats..."
+              
+              # Test Docker
+              echo "Testing Docker image..."
+              nix build .#checks.${system}.format-tests.testDocker
+              
+              # Test ISO
+              echo "Testing ISO image..."
+              nix build .#checks.${system}.format-tests.testISO
+              
+              # Test Kexec
+              echo "Testing Kexec bundle..."
+              nix build .#checks.${system}.format-tests.testKexec
+              
+              if [ "${system}" = "aarch64-linux" ]; then
+                echo "Testing SD card image..."
+                nix build .#checks.${system}.format-tests.testSDImage
+              fi
+              
+              echo "All tests passed!"
+              EOF
+              chmod +x $out/bin/test-all-formats
+            '';
+          };
+        });
+
+      # Formatter for your nix files
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
@@ -131,25 +253,44 @@
             };
           }
         ];
+
+        # Format-specific configurations
+        docker-test = mkFormatConfig {
+          name = "docker";
+          system = "x86_64-linux";
+          formatConfig = {
+            services.openssh.enable = false;
+            users.users.root.password = "";
+            virtualisation.docker.enable = true;
+          };
+        };
+
+        iso-test = mkFormatConfig {
+          name = "install-iso";
+          system = "x86_64-linux";
+          formatConfig = {
+            isoImage.makeEfiBootable = true;
+            isoImage.makeUsbBootable = true;
+          };
+        };
+
+        kexec-test = mkFormatConfig {
+          name = "kexec";
+          system = "x86_64-linux";
+          formatConfig = {
+            boot.loader.grub.enable = false;
+            boot.kernelParams = [ "console=ttyS0,115200" ];
+          };
+        };
+
+        sd-test = mkFormatConfig {
+          name = "sd-aarch64-installer";
+          system = "aarch64-linux";
+          formatConfig = {
+            hardware.raspberry-pi."4".enable = true;
+          };
+        };
       };
-
-      # Add format-specific outputs
-      packages = forAllSystems (system: 
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in {
-          # VM images
-          vm-test-vmware = self.nixosConfigurations.vm-test.config.formats.vmware;
-          vm-test-virtualbox = self.nixosConfigurations.vm-test.config.formats.virtualbox;
-          vm-test-qcow2 = self.nixosConfigurations.vm-test.config.formats.qcow2;
-
-          # Container images
-          container-test-docker = self.nixosConfigurations.container-test.config.formats.docker;
-
-          # Installation media
-          vm-test-iso = self.nixosConfigurations.vm-test.config.formats.iso;
-        } // (import ./pkgs pkgs)
-      );
 
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#ryzengrind@daimyo00'
@@ -181,6 +322,18 @@
           inherit (nixpkgs.legacyPackages.${system}) pkgs;
           nixosModules = {
             default = self.nixosModules.default;
+          };
+        };
+
+        # Format tests
+        format-tests = import ./tests/format-tests.nix {
+          inherit (nixpkgs.legacyPackages.${system}) pkgs;
+          inherit self;
+          formats = {
+            docker = self.packages.${system}.docker-test;
+            iso = self.packages.${system}.install-iso-test;
+            kexec = self.packages.${system}.kexec-test;
+            sd-aarch64 = self.packages.${system}.sd-aarch64-test;
           };
         };
       });

@@ -246,37 +246,25 @@
         docker-test = mkFormatConfig {
           name = "docker";
           system = "x86_64-linux";
-          formatConfig = {
-            services.openssh.enable = false;
-            users.users.root.password = "";
-            virtualisation.docker.enable = true;
-          };
+          formatConfig = baseFormatConfig.docker;
         };
 
         iso-test = mkFormatConfig {
           name = "install-iso";
           system = "x86_64-linux";
-          formatConfig = {
-            isoImage.makeEfiBootable = true;
-            isoImage.makeUsbBootable = true;
-          };
+          formatConfig = baseFormatConfig.install-iso;
         };
 
         kexec-test = mkFormatConfig {
           name = "kexec";
           system = "x86_64-linux";
-          formatConfig = {
-            boot.loader.grub.enable = false;
-            boot.kernelParams = [ "console=ttyS0,115200" ];
-          };
+          formatConfig = baseFormatConfig.kexec;
         };
 
         sd-test = mkFormatConfig {
-          name = "sd-aarch64-installer";
+          name = "sd-aarch64";
           system = "aarch64-linux";
-          formatConfig = {
-            hardware.raspberry-pi."4".enable = true;
-          };
+          formatConfig = baseFormatConfig.sd-aarch64;
         };
       };
 

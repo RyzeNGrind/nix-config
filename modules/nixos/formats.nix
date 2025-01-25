@@ -3,59 +3,7 @@
 {
   imports = [ ];
 
-  options = {
-    formatConfigs = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule {
-        options = {
-          formatAttr = lib.mkOption {
-            type = lib.types.str;
-            description = "The attribute that contains the build output";
-          };
-          fileExtension = lib.mkOption {
-            type = lib.types.str;
-            description = "The file extension for the output";
-          };
-        };
-      });
-      default = {};
-      description = "Format configurations for different output types";
-    };
-  };
-
   config = {
-    # Default format configurations
-    formatConfigs = {
-      # VM formats
-      virtualbox = {
-        formatAttr = "virtualBoxOVA";
-        fileExtension = ".ova";
-      };
-      vmware = {
-        formatAttr = "vmware";
-        fileExtension = ".vmx";
-      };
-      qcow2 = {
-        formatAttr = "qcow2";
-        fileExtension = ".qcow2";
-      };
-
-      # Container formats
-      docker = {
-        formatAttr = "dockerImage";
-        fileExtension = ".tar.gz";
-      };
-
-      # Installation media
-      iso = {
-        formatAttr = "isoImage";
-        fileExtension = ".iso";
-      };
-      sd-aarch64 = {
-        formatAttr = "sdImage";
-        fileExtension = ".img";
-      };
-    };
-
     # Common configuration for all formats
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
     
@@ -88,5 +36,35 @@
       curl
       wget
     ];
+
+    # Format-specific configurations using nixos-generators' formats option
+    formats = {
+      virtualbox = {
+        virtualisation.virtualbox.enable = true;
+      };
+      
+      vmware = {
+        virtualisation.vmware.enable = true;
+      };
+      
+      qcow2 = {
+        boot.loader.grub.enable = true;
+        boot.loader.grub.device = "/dev/vda";
+      };
+      
+      docker = {
+        virtualisation.docker.enable = true;
+        services.openssh.enable = lib.mkForce false;
+      };
+      
+      install-iso = {
+        isoImage.makeEfiBootable = true;
+        isoImage.makeUsbBootable = true;
+      };
+      
+      sd-aarch64 = {
+        hardware.raspberry-pi."4".enable = true;
+      };
+    };
   };
 } 

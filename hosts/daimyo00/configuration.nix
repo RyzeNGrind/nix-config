@@ -81,7 +81,7 @@
         PasswordAuthentication = true;
       };
     };
-    infra-tools = {
+    /* infra-tools = {
       enable = true;
       enableKubevela = true;
       enableFission = true;
@@ -90,7 +90,7 @@
       
       atticCache.endpoint = "https://cache.nixos.org";
       fission.namespace = "fission-system";
-    };
+    }; */
   };
 
   sound.enable = false;

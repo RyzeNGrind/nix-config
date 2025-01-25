@@ -119,6 +119,9 @@
           customPkgs = import ./pkgs pkgs;
 
         in customPkgs // {
+          # Set default package to all-formats
+          default = self.packages.${system}.all-formats;
+
           # Docker image
           docker-test = self.nixosConfigurations.docker-test.config.formats.docker;
           

@@ -27,7 +27,9 @@ cd nix-config
 
 2. Enter the development shell:
 ```bash
+# These commands are equivalent:
 nix develop
+nix develop .#default
 ```
 
 3. Build and activate a configuration:
@@ -40,6 +42,13 @@ home-manager switch --flake .#ryzengrind@daimyo00
 ```
 
 ## Available Configurations
+
+### Default Package
+
+The default package (`nix build` or `nix develop`) builds the `all-formats` package, which includes:
+- All format outputs (Docker, ISO, etc.)
+- Testing utilities
+- Format validation tools
 
 ### NixOS Configurations
 

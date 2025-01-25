@@ -82,7 +82,9 @@
         nixos-generators.nixosModules.all-formats
         {
           system.stateVersion = "24.11";
-          formats.${name} = formatConfig;
+          formats = {
+            ${name} = formatConfig;
+          };
         }
       ] ++ modules);
 
@@ -90,7 +92,6 @@
       baseFormatConfig = {
         docker = {
           services.openssh.enable = false;
-          users.users.root.password = "";
           virtualisation.docker.enable = true;
         };
 
@@ -228,7 +229,7 @@
         # Example VM configuration
         vm-test = mkSystem "vm-test" "x86_64-linux" [
           {
-            formatConfigs.vmware = {
+            formats.vmware = {
               services.openssh.enable = true;
               users.users.root.password = "nixos";
             };
@@ -238,9 +239,9 @@
         # Example container configuration
         container-test = mkSystem "container-test" "x86_64-linux" [
           {
-            formatConfigs.docker = {
+            formats.docker = {
               services.openssh.enable = false;
-              users.users.root.password = "";
+              virtualisation.docker.enable = true;
             };
           }
         ];
@@ -275,8 +276,7 @@
       # Available through 'home-manager --flake .#ryzengrind@daimyo00'
       homeConfigurations = {
         "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
-          pkgs =
-            nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
+          pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
           extraSpecialArgs = { inherit inputs outputs; };
           modules = [
             # > Our main home-manager configuration file <

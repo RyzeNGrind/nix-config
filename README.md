@@ -113,6 +113,45 @@ nix build .#checks.x86_64-linux.format-tests.testKexec
 nix build .#checks.aarch64-linux.format-tests.testSDImage
 ```
 
+## Troubleshooting
+
+### Common Issues
+
+1. **Duplicate Format Definitions**
+   If you see errors about duplicate format definitions (e.g., "The option `formats.docker' is defined multiple times"), check your configuration for multiple definitions of the same format. Use `lib.mkForce` or `lib.mkDefault` to set priorities:
+   ```nix
+   formats.docker = lib.mkForce {
+     # Your configuration here
+   };
+   ```
+
+2. **Duplicate Package Lists**
+   If you get errors about duplicate `environment.systemPackages`, merge the package lists or use `lib.mkDefault`:
+   ```nix
+   environment.systemPackages = lib.mkDefault (with pkgs; [
+     # Your packages here
+   ]);
+   ```
+
+3. **Development Shell Issues**
+   If `nix develop` fails, try:
+   ```bash
+   # Override nixpkgs input
+   nix develop --override-input nixpkgs git+https://github.com/NixOS/nixpkgs.git
+
+   # Get detailed error traces
+   nix develop --show-trace
+   ```
+
+### Getting Help
+
+If you encounter issues:
+1. Check the error messages carefully
+2. Use `--show-trace` for detailed error information
+3. Review your configuration for duplicate definitions
+4. Make sure all required inputs are available
+5. Check that your flake.lock is up to date
+
 ## Directory Structure
 
 ```

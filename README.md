@@ -113,6 +113,180 @@ nix build .#checks.x86_64-linux.format-tests.testKexec
 nix build .#checks.aarch64-linux.format-tests.testSDImage
 ```
 
+## Testing Infrastructure
+
+The repository includes a comprehensive testing framework for validating different system formats and infrastructure configurations.
+
+### Test Structure
+
+```
+tests/
+├── format-tests.nix    # Tests for different format outputs (Docker, ISO, etc.)
+├── formats-vmtest.nix  # VM-based tests for format configurations
+└── infra-vmtest.nix   # Infrastructure tool integration tests
+```
+
+### Format Tests (`format-tests.nix`)
+
+Tests the build outputs of different system formats:
+
+1. **Docker Image Tests**
+   ```bash
+   nix build .#checks.x86_64-linux.format-tests.testDocker
+   ```
+   - Validates Docker image creation
+   - Tests container startup
+   - Verifies basic functionality
+
+2. **ISO Image Tests**
+   ```bash
+   nix build .#checks.x86_64-linux.format-tests.testISO
+   ```
+   - Tests ISO bootability in QEMU
+   - Validates EFI boot support
+   - Checks installation media integrity
+
+3. **Kexec Bundle Tests**
+   ```bash
+   nix build .#checks.x86_64-linux.format-tests.testKexec
+   ```
+   - Verifies bundle structure
+   - Tests kexec load capability
+   - Validates kernel parameters
+
+4. **SD Card Image Tests** (aarch64 only)
+   ```bash
+   nix build .#checks.aarch64-linux.format-tests.testSDImage
+   ```
+   - Checks image format and structure
+   - Validates partition layout
+   - Tests Raspberry Pi compatibility
+
+### VM-Based Format Tests (`formats-vmtest.nix`)
+
+Tests format configurations in virtual machines:
+
+```bash
+nix build .#checks.x86_64-linux.formats-vmtest
+```
+
+Features tested:
+- Boot process validation
+- Service activation
+- Network configuration
+- Format-specific features
+
+### Infrastructure Tests (`infra-vmtest.nix`)
+
+Tests infrastructure tool integration:
+
+```bash
+nix build .#checks.x86_64-linux.infra-vmtest
+```
+
+Components tested:
+- Container orchestration
+- Service mesh configuration
+- Infrastructure automation
+- Tool compatibility
+
+### Running All Tests
+
+To run all tests for your system:
+
+```bash
+# For x86_64 systems
+nix flake check --system x86_64-linux
+
+# For aarch64 systems
+nix flake check --system aarch64-linux
+```
+
+### Writing New Tests
+
+1. **Format Tests**
+   ```nix
+   # tests/format-tests.nix
+   testNewFormat = image: pkgs.vmTools.runInLinuxVM {
+     inherit (pkgs) system;
+     memSize = 1024;
+     
+     buildInputs = with pkgs; [ /* required tools */ ];
+     
+     script = ''
+       # Your test script here
+     '';
+   };
+   ```
+
+2. **VM Tests**
+   ```nix
+   # tests/formats-vmtest.nix
+   testNewVMFormat = { ... }: {
+     name = "test-new-format";
+     
+     nodes.machine = { ... }: {
+       virtualisation.memorySize = 2048;
+       # Your VM configuration here
+     };
+     
+     testScript = ''
+       # Your Python test script here
+     '';
+   };
+   ```
+
+3. **Add to Flake**
+   ```nix
+   # flake.nix
+   checks.${system} = {
+     format-tests = {
+       testNewFormat = /* your test */;
+     };
+   };
+   ```
+
+### Test Development Tips
+
+1. **Debugging Tests**
+   ```bash
+   # Run with debug shell on failure
+   nix build .#checks.x86_64-linux.format-tests.testDocker --keep-failed
+   
+   # Show test output
+   nix build .#checks.x86_64-linux.format-tests.testDocker --show-trace
+   ```
+
+2. **Test Environment**
+   - Tests run in isolated environments
+   - Use `buildInputs` to specify required tools
+   - Set appropriate VM memory with `memSize`
+   - Use `preVM` and `postVM` hooks for setup/cleanup
+
+3. **Common Test Patterns**
+   ```nix
+   # Verify file existence
+   test -f path/to/file || exit 1
+   
+   # Check service status
+   systemctl is-active service-name
+   
+   # Wait for service
+   until systemctl is-active service-name; do
+     sleep 1
+   done
+   ```
+
+### Continuous Integration
+
+The test suite is integrated with GitHub Actions:
+- Runs on pull requests
+- Tests all supported platforms
+- Validates format builds
+- Checks infrastructure tools
+
+See `.github/workflows/nix-flake-check.yml` for CI configuration.
+
 ## Troubleshooting
 
 ### Common Issues

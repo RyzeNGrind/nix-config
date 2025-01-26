@@ -28,14 +28,11 @@
     registry = (lib.mapAttrs (_: flake: { inherit flake; })) ((lib.filterAttrs (_: lib.isType "flake")) inputs);
     nixPath = [ "/etc/nix/path" ];
     settings = {
-      experimental-features = "nix-command flakes repl-flake auto-allocate-uids";
+      experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" ];
       auto-optimise-store = true;
       trusted-users = [ "ryzengrind" ];
     };
-    package = pkgs.nixFlakes;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
+    package = pkgs.nixVersions.stable;
   };
 
   environment.etc =
@@ -93,7 +90,6 @@
     }; */
   };
 
-  sound.enable = false;
   services.pipewire.enable = false;
 
   users.users.ryzengrind = {
@@ -132,16 +128,16 @@
         else
           echo "Systemd is not enabled. Skipping nix-daemon check."
         fi
-      '';
+      '' + "\n";
     };
   };
 
   system = {
-    stateVersion = "23.11";
+    stateVersion = "24.11";
     autoUpgrade = {
       enable = true;
       allowReboot = false;
-      channel = "https://channels.nixos.org/nixos-23.11";
+      channel = "https://channels.nixos.org/nixos-24.11";
     };
   };
 
@@ -185,16 +181,16 @@
     wget
     htop
     neofetch
-    nvtop
+    nvtopPackages.full
     _1password-gui-beta
     fish
     home-manager
     sd-switch
     dconf2nix
     screen
-    nixops_unstable
+    nixops_unstable_minimal
     nixops-dns
-    nixVersions.nix_2_25
+    nixVersions.latest
     docker-compose
   ];
 

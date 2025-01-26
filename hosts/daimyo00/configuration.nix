@@ -194,7 +194,7 @@
     screen
     nixops_unstable
     nixops-dns
-    nixFlakes
+    nixVersions.nix_2_25
     docker-compose
   ];
 

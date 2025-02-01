@@ -47,7 +47,7 @@
 
   # WSL-specific networking settings
   networking = {
-    useHostResolvConf = true;  # Use Windows DNS
+    useHostResolvConf = false;  # Don't use Windows DNS directly
     # Disable wait-online service as it doesn't make sense in WSL
     networkmanager.enable = true;
     hostName = "daimyo00";
@@ -67,7 +67,7 @@
       };
       network = {
         generateHosts = true;
-        generateResolvConf = false;
+        generateResolvConf = lib.mkForce false;  # Use our own DNS settings
       };
     };
   };

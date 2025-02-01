@@ -5,11 +5,24 @@
   imports = [ 
     inputs.nixos-wsl.nixosModules.wsl
     ../../modules/nixos/wsl.nix  # Common WSL configuration module
+    ./cachix.nix
   ];
+
+  nixpkgs = {
+    config = {
+      allowBroken = true;
+      allowUnfree = true;
+      cudaSupport = true;
+      packageOverrides = pkgs: {
+        cudaPackages = pkgs.cudaPackages_12_1;
+      };
+    };
+  };
 
   nix.settings = {
     experimental-features = "nix-command flakes auto-allocate-uids";
     auto-optimise-store = true;
+    trusted-users = [ "root" "ryzengrind" "@wheel" ];
   };
 
   networking.hostName = "daimyo00";
@@ -68,8 +81,6 @@
       { src = "${su}/bin/usermod"; }
     ];
   };
-
-  nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
     curl

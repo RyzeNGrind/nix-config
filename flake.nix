@@ -6,6 +6,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     # You can access packages and modules from different nixpkgs revs
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-cuda = {
+      url = "github:nixos/nixpkgs/550.78"; # Known working CUDA driver version
+      follows = "nixpkgs";
+    };
 
     # Home manager
     home-manager = {
@@ -18,6 +22,19 @@
     
     # Hardware configuration
     nixos-hardware.url = "github:nixos/nixos-hardware";
+  };
+
+  nixConfig = {
+    extra-substituters = [
+      "https://cuda-maintainers.cachix.org"
+      "https://nix-community.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+    allow-broken = true;
+    accept-flake-config = true;
   };
 
   outputs = { self, nixpkgs, home-manager, nixos-wsl, ... } @ inputs: let
@@ -57,6 +74,14 @@
         modules = [
           # Core modules
           ./hosts/daimyo00/configuration.nix
+          
+          # Allow broken packages
+          {
+            nixpkgs.config = {
+              allowBroken = true;
+              allowUnfree = true;
+            };
+          }
           
           # Home Manager module
           home-manager.nixosModules.home-manager

@@ -71,7 +71,7 @@
       cudaPackages.tensorrt
       cudaPackages.cudnn
       nvidia-docker
-      nvtop.full
+      nvtopPackages.full
     ];
   };
 

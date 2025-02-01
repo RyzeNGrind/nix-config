@@ -23,12 +23,15 @@
         default = true;
         description = "Enable CUDA support for ML frameworks";
       };
-      tensorrt = {
-        enable = lib.mkEnableOption "TensorRT support";
+      pytorch = {
+        enable = lib.mkEnableOption "PyTorch support";
         package = lib.mkOption {
           type = lib.types.package;
-          default = pkgs.cudaPackages.tensorrt;
-          description = "TensorRT package to use";
+          default = pkgs.python3Packages.pytorch.override {
+            cudaSupport = config.profiles.dev.ml.cudaSupport;
+            cudaPackages = pkgs.cudaPackages;
+          };
+          description = "PyTorch package to use";
         };
       };
     };
@@ -92,12 +95,12 @@
       alejandra
       statix # Nix static analysis
 
-      # Python development
+      # Python ML stack with known working versions
       (python3.withPackages (ps: with ps; [
         pip
         virtualenv
         poetry
-        numpy
+        (numpy.override { blas = pkgs.mkl; })
         pandas
         matplotlib
         scikit-learn
@@ -108,31 +111,26 @@
         mypy
         pytest
         # PyTorch with CUDA if enabled
-        (pytorch.override {
-          cudaSupport = config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport;
-        })
-        torchvision
-        torchaudio
+        (lib.mkIf config.profiles.dev.ml.pytorch.enable config.profiles.dev.ml.pytorch.package)
+        (lib.mkIf config.profiles.dev.ml.pytorch.enable torchvision)
+        (lib.mkIf config.profiles.dev.ml.pytorch.enable torchaudio)
         transformers
         pytorch-lightning
         tensorboard
-        wandb  # Weights & Biases
+        wandb
         ray
         optuna
       ]))
 
-      # CUDA development tools if ML is enabled
-    ] ++ lib.optionals (config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport) ([
+      # CUDA development tools
+    ] ++ lib.optionals (config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport) [
       cudaPackages.cuda_cudart
       cudaPackages.cuda_cupti
       cudaPackages.cuda_nvcc
-    ] ++ lib.optionals config.profiles.dev.ml.tensorrt.enable [
-      config.profiles.dev.ml.tensorrt.package
       cudaPackages.cudnn
-    ] ++ [
       nvidia-docker
-      nvtop
-    ]);
+      nvtopPackages.full
+    ];
 
     # VSCode Remote support configuration
     programs.nix-ld = lib.mkIf (config.profiles.dev.vscodeRemote.enable && config.profiles.dev.vscodeRemote.method == "nix-ld") {
@@ -166,6 +164,18 @@
         connect-timeout = 5;
         stalled-download-timeout = 90;
         timeout = 3600;
+        # Increase resource limits for ML workloads
+        sandbox = true;
+        trusted-users = [ "root" "@wheel" ];
+        # Cache settings for better performance
+        substituters = [
+          "https://cache.nixos.org"
+          "https://cuda-maintainers.cachix.org"
+        ];
+        trusted-public-keys = [
+          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+          "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+        ];
       };
     };
 

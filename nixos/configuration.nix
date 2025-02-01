@@ -47,6 +47,9 @@
       allowBroken = true;  # Temporary workaround for TensorRT
       cudaSupport = true;
       allowUnfree = true;
+      packageOverrides = pkgs: {
+        cudaPackages = pkgs.cudaPackages_12_1;  # Use a stable CUDA version
+      };
     };
   };
 
@@ -68,6 +71,18 @@
       max-jobs = 4;
       retry = 5;
       timeout = 300;
+      # Add trusted users and substituters
+      trusted-users = [ "root" "ryzengrind" "@wheel" ];
+      substituters = [
+        "https://cache.nixos.org"
+        "https://cuda-maintainers.cachix.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
     };
   };
 
@@ -212,8 +227,12 @@
     nvidia = lib.mkIf (!config.wsl.enable) {
       package = config.boot.kernelPackages.nvidiaPackages.stable;
       modesetting.enable = true;
-      powerManagement.enable = false;
+      powerManagement = {
+        enable = false;
+        finegrained = false;
+      };
       open = false;
+      nvidiaSettings = true;
     };
     opengl = {
       enable = true;

@@ -1,32 +1,35 @@
 { config, lib, pkgs, ... }:
 
-{
+with lib;
+let
+  cfg = config.profiles.dev;
+in {
   options.profiles.dev = {
-    enable = lib.mkEnableOption "Development environment profile";
-    ide = lib.mkOption {
-      type = lib.types.enum [ "vscode" "vscodium" "neovim" "cursor" ];
+    enable = mkEnableOption "Development environment profile";
+    ide = mkOption {
+      type = types.enum [ "vscode" "vscodium" "neovim" "cursor" ];
       default = "vscodium";
       description = "Primary IDE to use";
     };
     vscodeRemote = {
-      enable = lib.mkEnableOption "VSCode Remote support";
-      method = lib.mkOption {
-        type = lib.types.enum [ "nix-ld" "patch" ];
+      enable = mkEnableOption "VSCode Remote support";
+      method = mkOption {
+        type = types.enum [ "nix-ld" "patch" ];
         default = "nix-ld";
         description = "Method to enable VSCode Remote support (nix-ld or patch)";
       };
     };
     ml = {
-      enable = lib.mkEnableOption "Machine Learning support";
-      cudaSupport = lib.mkOption {
-        type = lib.types.bool;
+      enable = mkEnableOption "Machine Learning support";
+      cudaSupport = mkOption {
+        type = types.bool;
         default = true;
         description = "Enable CUDA support for ML frameworks";
       };
       pytorch = {
-        enable = lib.mkEnableOption "PyTorch support";
-        package = lib.mkOption {
-          type = lib.types.package;
+        enable = mkEnableOption "PyTorch support";
+        package = mkOption {
+          type = types.package;
           default = pkgs.python3Packages.pytorch.override {
             cudaSupport = config.profiles.dev.ml.cudaSupport;
             cudaPackages = pkgs.cudaPackages;
@@ -37,7 +40,7 @@
     };
   };
 
-  config = lib.mkIf config.profiles.dev.enable {
+  config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       # Version Control
       git
@@ -61,8 +64,8 @@
       ltrace
 
       # IDE and editor
-      (lib.mkIf (config.profiles.dev.ide == "vscode") vscode)
-      (lib.mkIf (config.profiles.dev.ide == "vscodium") 
+      (mkIf (cfg.ide == "vscode") vscode)
+      (mkIf (cfg.ide == "vscodium") 
         (vscode-with-extensions.override {
           vscode = vscodium;
           vscodeExtensions = with pkgs.vscode-extensions; [
@@ -87,7 +90,7 @@
           ];
         })
       )
-      (lib.mkIf (config.profiles.dev.ide == "neovim") neovim)
+      (mkIf (cfg.ide == "neovim") neovim)
 
       # Language servers and formatters
       nil # Nix LSP
@@ -111,9 +114,9 @@
         mypy
         pytest
         # PyTorch with CUDA if enabled
-        (lib.mkIf config.profiles.dev.ml.pytorch.enable config.profiles.dev.ml.pytorch.package)
-        (lib.mkIf config.profiles.dev.ml.pytorch.enable torchvision)
-        (lib.mkIf config.profiles.dev.ml.pytorch.enable torchaudio)
+        (mkIf cfg.ml.pytorch.enable cfg.ml.pytorch.package)
+        (mkIf cfg.ml.pytorch.enable torchvision)
+        (mkIf cfg.ml.pytorch.enable torchaudio)
         transformers
         pytorch-lightning
         tensorboard
@@ -123,7 +126,7 @@
       ]))
 
       # CUDA development tools
-    ] ++ lib.optionals (config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport) [
+    ] ++ optionals (cfg.ml.enable && cfg.ml.cudaSupport) [
       cudaPackages.cuda_cudart
       cudaPackages.cuda_cupti
       cudaPackages.cuda_nvcc
@@ -133,13 +136,13 @@
     ];
 
     # VSCode Remote support configuration
-    programs.nix-ld = lib.mkIf (config.profiles.dev.vscodeRemote.enable && config.profiles.dev.vscodeRemote.method == "nix-ld") {
+    programs.nix-ld = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "nix-ld") {
       enable = true;
       package = pkgs.nix-ld-rs;
     };
 
     # If using patch method, include the vscode-remote-workaround module
-    vscode-remote-workaround.enable = lib.mkIf (config.profiles.dev.vscodeRemote.enable && config.profiles.dev.vscodeRemote.method == "patch") true;
+    vscode-remote-workaround.enable = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") true;
 
     # Development environment configuration
     programs = {
@@ -180,7 +183,7 @@
     };
 
     # Enable NVIDIA support if ML is enabled
-    hardware.nvidia = lib.mkIf (config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport) {
+    hardware.nvidia = mkIf (cfg.ml.enable && cfg.ml.cudaSupport) {
       package = config.boot.kernelPackages.nvidiaPackages.stable;
       modesetting.enable = true;
       powerManagement = {
@@ -192,14 +195,14 @@
     };
 
     # Container support for ML
-    virtualisation = lib.mkIf config.profiles.dev.ml.enable {
+    virtualisation = mkIf cfg.ml.enable {
       docker = {
         enable = true;
-        enableNvidia = config.profiles.dev.ml.cudaSupport;
+        enableNvidia = cfg.ml.cudaSupport;
       };
       podman = {
         enable = true;
-        enableNvidia = config.profiles.dev.ml.cudaSupport;
+        enableNvidia = cfg.ml.cudaSupport;
       };
     };
   };

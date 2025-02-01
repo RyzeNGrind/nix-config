@@ -13,16 +13,10 @@
       allowBroken = true;
       allowUnfree = true;
       cudaSupport = true;
-      packageOverrides = pkgs: {
-        # CUDA 11.x packages
-        cudaPackages_11_8 = pkgs.cudaPackages_11_8;
-        
-        # CUDA 12.x packages
-        cudaPackages_12_0 = pkgs.cudaPackages_12_0;
-        cudaPackages_12_8 = pkgs.cudaPackages_12_8;
-        
-        # Set default CUDA version
-        cudaPackages = pkgs.cudaPackages_11_8;  # Default to CUDA 11.8 for TensorRT 10.8
+      packageOverrides = pkgs: with pkgs; {
+        inherit cudaPackages_11_8 cudaPackages_12_0 cudaPackages_12_8;
+        # Set default CUDA version for TensorRT 10.8
+        cudaPackages = cudaPackages_12_8;  # Updated to use latest CUDA version
       };
       permittedInsecurePackages = [
         "tensorrt-8.6.1.6"

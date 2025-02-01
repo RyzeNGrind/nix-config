@@ -37,6 +37,17 @@
     overlays = import ./overlays { inherit inputs; };
     nixosModules = import ./modules/nixos;
 
+    # Standalone home-manager configuration entrypoint
+    homeConfigurations = {
+      "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        extraSpecialArgs = { inherit inputs outputs; };
+        modules = [
+          ./hosts/daimyo00/home.nix
+        ];
+      };
+    };
+
     # NixOS configuration entrypoint
     nixosConfigurations = {
       # WSL configuration

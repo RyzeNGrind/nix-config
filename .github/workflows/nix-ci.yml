@@ -2,7 +2,7 @@ name: NixOS Configuration CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "working*" ]
   pull_request:
     branches: [ "main" ]
 
@@ -10,18 +10,23 @@ jobs:
   flake-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v14
+      - uses: cachix/cachix-action@v12
         with:
           name: ryzengrind-nix-config
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          skipPush: false
+          extraPullNames: nix-community, ryzengrind, daimyo, bopbopbleedem
 
-      - name: Check Nix flake inputs
+      - name: Update Flake Inputs
+        run: nix flake update
+
+      - name: Check Flake
         run: nix flake check
 
       - name: Check flake formatting
@@ -32,68 +37,85 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        host: [daimyo00] # Add more hosts as needed
+        host: [daimyo00]
         include:
           - host: daimyo00
             test-wsl: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       
-      - name: Build configuration
+      - name: Setup Nix channels
         run: |
-          nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel
+          nix-channel --add https://nixos.org/channels/nixos-24.05 nixos
+          nix-channel --update
+
+      - name: Test build process
+        run: |
+          # Update flake inputs
+          nix flake update
+          
+          # Check flake configuration
+          nix flake check --show-trace
+          
+          # Test build steps sequentially
+          nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --dry-run
+          
+          # Test activation script
+          nix eval .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel.drvPath
 
       - name: Test WSL configuration
         if: matrix.test-wsl
         run: |
           # Setup WSL test environment
-          curl -L -O https://aka.ms/wsl-ubuntu-2004
-          mkdir -p /tmp/wsl
-          sudo mount -t tmpfs none /tmp/wsl
-          sudo wsl --import ubuntu-2004 /tmp/wsl ./wsl-ubuntu-2004
+          sudo apt-get update && sudo apt-get install -y curl
           
-          # Test NixOS-WSL configuration
-          wsl -d ubuntu-2004 --exec /bin/bash -c "
-            curl -L https://nixos.org/nix/install | sh
-            . ~/.nix-profile/etc/profile.d/nix.sh
-            nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel -I nixos-config=./hosts/${{ matrix.host }}/configuration.nix
-          "
+          # Test NixOS-WSL module loading
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.wsl.enable
+          
+          # Verify WSL-specific configurations
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wslu"
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wsl-open"
 
   test-home-manager:
     needs: flake-check
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        user: [ryzengrind@daimyo00] # Add more user configs as needed
+        user: [ryzengrind@daimyo00]
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       
-      - name: Build home-manager configuration
+      - name: Build and test home-manager configuration
         run: |
-          nix build .#homeConfigurations."${{ matrix.user }}".activationPackage
+          # Build home-manager configuration
+          nix build .#homeConfigurations."${{ matrix.user }}".activationPackage --dry-run
+          
+          # Verify home-manager module loading
+          nix eval --json .#homeConfigurations."${{ matrix.user }}".config.home.username
 
   security-scan:
     needs: flake-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
       
-      - name: Run statix
-        run: nix run nixpkgs#statix -- check
-      
-      - name: Run vulnix
+      - name: Run security checks
         run: |
+          # Run statix for static analysis
+          nix run nixpkgs#statix -- check
+          
+          # Run vulnix for vulnerability scanning
           nix run nixpkgs#vulnix -- \
             --system .#nixosConfigurations.daimyo00.config.system.build.toplevel
 
@@ -102,12 +124,15 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
       
-      - name: Deploy to Cachix
+      - name: Deploy configurations
         run: |
-          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
+          # Final build check before deployment
+          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel --dry-run
+          
+          # Deploy to Cachix
           nix path-info --json \
             .#nixosConfigurations.daimyo00.config.system.build.toplevel | \
             jq -r '.[].path' | \

@@ -68,13 +68,11 @@
   # FIXME: Add the rest of your current configuration
 
   # TODO: Set your hostname
-  networking.hostName = "shinobi";
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-  # Enable networking
-  networking.networkmanager.enable = true;
-# networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking = {
+    hostName = "shinobi";
+    networkmanager.enable = true;
+    # wireless.enable = true;  # Enables wireless support via wpa_supplicant
+  };
 
   boot = {
     loader = {
@@ -93,46 +91,65 @@
   i18n.defaultLocale = "en_CA.UTF-8";
   
   # Configure keymap in X11
-  services.xserver = {
-    enable = true;
-    #displayManager.gdm.wayland = false;
-    #displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
-    displayManager.gdm = {
+  services = {
+    xserver = {
       enable = true;
-      wayland = false;
+      #displayManager.gdm.wayland = false;
+      #displayManager.gdm.enable = true;
+      desktopManager.gnome.enable = true;
+      displayManager.gdm = {
+        enable = true;
+        wayland = false;
+      };
+      monitorSection = ''
+        Option "Rotate" "right"
+      '';
+      xkb = {
+        layout = "us";
+        variant = "";
+      };
+      #xkbOptions = "ctrl:swapcaps";
     };
-    monitorSection = ''
-      Option "Rotate" "right"
-    '';
-    xkb = {
-      layout = "us";
-      variant = "";
+
+    # Enable CUPS to print documents.
+    printing.enable = true;
+    flatpak.enable = true;  
+    zerotierone = {
+      enable = true;
+      joinNetworks = [ "fada62b0158621fe" ]; # ZT NETWORK ID
     };
-    #xkbOptions = "ctrl:swapcaps";
-  };
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-  services.flatpak.enable = true;  
-  services.zerotierone.enable = true;
-  services.zerotierone.joinNetworks = [ "fada62b0158621fe" ]; # ZT NETWORK ID
+    # Enable sound with pipewire.
+    sound.enable = true;
+    hardware.pulseaudio.enable = false;
+    security.rtkit.enable = true;
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      # If you want to use JACK applications, uncomment this
+      #jack.enable = true;
 
-  # Enable sound with pipewire.
-  sound.enable = true;
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
+      # use the example session manager (no others are packaged yet so this is enabled by default,
+      # no need to redefine it in your config for now)
+      #media-session.enable = true;
+    };
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
+    # This setups a SSH server. Very important if you're setting up a headless system.
+    # Feel free to remove if you don't need it.
+    openssh = {
+      enable = true;
+      settings = {
+        # Forbid root login through SSH.
+        PermitRootLogin = "yes";
+        # Use keys only. Remove if you want to SSH using password (not recommended)
+        PasswordAuthentication = true;
+      };
+    };
+
+    # Enable TeamViewer
+    teamviewer.enable = true;
   };
 
   # TODO: Configure your system-wide user settings (groups, etc), add more users as needed.
@@ -164,27 +181,20 @@
     };
   };
 
-  # This setups a SSH server. Very important if you're setting up a headless system.
-  # Feel free to remove if you don't need it.
-  services.openssh = {
-    enable = true;
-    settings = {
-      # Forbid root login through SSH.
-      PermitRootLogin = "yes";
-      # Use keys only. Remove if you want to SSH using password (not recommended)
-      PasswordAuthentication = true;
-    };
+  # Disable TTY services
+  systemd.services = {
+    "getty@tty1".enable = false;
+    "autovt@tty1".enable = false;
   };
 
-  # enable teamviewer
-  services.teamviewer.enable = true;
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
-
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = "24.05";
-  system.autoUpgrade.enable = true;
-  system.autoUpgrade.allowReboot = true;
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-24.05"; 
+  system = {
+    stateVersion = "24.05";
+    autoUpgrade = {
+      enable = true;
+      allowReboot = true;
+      channel = "https://channels.nixos.org/nixos-24.05"; 
+    };
+  };
 }
 

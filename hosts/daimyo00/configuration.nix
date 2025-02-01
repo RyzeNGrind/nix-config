@@ -14,8 +14,20 @@
       allowUnfree = true;
       cudaSupport = true;
       packageOverrides = pkgs: {
-        cudaPackages = pkgs.cudaPackages_12_1;
+        # CUDA 11.x packages
+        cudaPackages_11_8 = pkgs.cudaPackages_11_8;
+        
+        # CUDA 12.x packages
+        cudaPackages_12_0 = pkgs.cudaPackages_12_0;
+        cudaPackages_12_8 = pkgs.cudaPackages_12_8;
+        
+        # Set default CUDA version
+        cudaPackages = pkgs.cudaPackages_11_8;  # Default to CUDA 11.8 for TensorRT 10.8
       };
+      permittedInsecurePackages = [
+        "tensorrt-8.6.1.6"
+        "tensorrt-10.8.0.43"
+      ];
     };
   };
 
@@ -88,6 +100,12 @@
     wget
     neofetch
     nvtopPackages.full
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_cupti
+    cudaPackages.cuda_nvrtc
+    cudaPackages.libcublas
+    cudaPackages.cudnn
+    cudaPackages.tensorrt
   ];
 
   virtualisation.docker = {
@@ -97,4 +115,17 @@
   };
 
   users.groups.docker.members = [ config.wsl.defaultUser ];
+
+  # Add environment variables for CUDA and TensorRT
+  environment.variables = {
+    CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
+    LD_LIBRARY_PATH = lib.makeLibraryPath [
+      "${pkgs.cudaPackages.cuda_cudart}/lib"
+      "${pkgs.cudaPackages.cuda_cupti}/lib"
+      "${pkgs.cudaPackages.cuda_nvrtc}/lib"
+      "${pkgs.cudaPackages.libcublas}/lib"
+      "${pkgs.cudaPackages.cudnn}/lib"
+      "${pkgs.cudaPackages.tensorrt}/lib"
+    ];
+  };
 } 

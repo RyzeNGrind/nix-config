@@ -61,10 +61,12 @@
           # Home Manager module
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.ryzengrind = import ./hosts/daimyo00/home.nix;
-            home-manager.extraSpecialArgs = { inherit inputs outputs; };
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.ryzengrind = import ./hosts/daimyo00/home.nix;
+              extraSpecialArgs = { inherit inputs outputs; };
+            };
           }
         ];
       };

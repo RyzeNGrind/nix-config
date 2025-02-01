@@ -7,9 +7,11 @@
   boot.loader.efi.canTouchEfiVariables = false;
 
   # Disable services that don't make sense in WSL
-  services.xserver.enable = false;
-  services.xserver.desktopManager.gnome.enable = false;
-  services.xserver.displayManager.gdm.enable = false;
+  services.xserver = {
+    enable = false;
+    desktopManager.gnome.enable = false;
+    displayManager.gdm.enable = false;
+  };
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
 
@@ -26,6 +28,8 @@
   environment = {
     sessionVariables = {
       NIXOS_WSL = "1";
+      BROWSER = "wslview";
+      DISPLAY = ":0";
     };
     
     pathsToLink = [ "/libexec" ];
@@ -46,6 +50,8 @@
     useHostResolvConf = true;  # Use Windows DNS
     # Disable wait-online service as it doesn't make sense in WSL
     networkmanager.enable = true;
+    hostName = "daimyo00";
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
   # WSL-specific settings
@@ -53,8 +59,6 @@
     enable = true;
     defaultUser = "ryzengrind";
     nativeSystemd = true;
-    
-    # WSL-specific interop settings
     wslConf = {
       automount.enabled = true;
       interop = {
@@ -63,7 +67,7 @@
       };
       network = {
         generateHosts = true;
-        generateResolvConf = true;
+        generateResolvConf = false;
       };
     };
   };

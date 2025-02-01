@@ -39,13 +39,15 @@
 
     # NixOS configuration entrypoint
     nixosConfigurations = {
-      # WSL hardware-scoped specific configuration of daimyo on W11Pro
+      # WSL configuration
       daimyo00 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs outputs; };
         modules = [
-          nixos-wsl.nixosModules.wsl
+          # Core modules
           ./hosts/daimyo00/configuration.nix
+          
+          # Home Manager module
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;

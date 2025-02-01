@@ -1,3 +1,4 @@
+# WSL-specific NixOS configuration
 { config, lib, pkgs, ... }:
 
 {
@@ -21,17 +22,21 @@
     fi
   '';
 
-  # WSL-specific environment variables
-  environment.sessionVariables = {
-    NIXOS_WSL = "1";
-  };
+  # WSL-specific environment configuration
+  environment = {
+    sessionVariables = {
+      NIXOS_WSL = "1";
+    };
+    
+    pathsToLink = [ "/libexec" ];
 
-  # Common system packages for WSL environments
-  environment.systemPackages = with pkgs; [
-    wslu  # WSL utilities
-    wsl-open  # WSL browser opener
-    wsl-clipboard  # WSL clipboard integration
-  ];
+    systemPackages = with pkgs; [
+      wslu  # WSL utilities including wslview
+      wsl-open  # WSL browser opener
+      xclip  # X11 clipboard tool
+      xsel   # X11 selection tool
+    ];
+  };
 
   # WSL-specific security settings
   security.sudo.wheelNeedsPassword = false;  # Easier sudo access in WSL
@@ -41,5 +46,37 @@
     useHostResolvConf = true;  # Use Windows DNS
     # Disable wait-online service as it doesn't make sense in WSL
     networkmanager.enable = true;
+  };
+
+  # WSL-specific settings
+  wsl = {
+    enable = true;
+    defaultUser = "ryzengrind";
+    nativeSystemd = true;
+    
+    # WSL-specific interop settings
+    wslConf = {
+      automount.enabled = true;
+      interop = {
+        enabled = true;
+        appendWindowsPath = false;
+      };
+      network = {
+        generateHosts = true;
+        generateResolvConf = true;
+      };
+    };
+  };
+
+  # System-level configuration
+  system.stateVersion = "24.05";
+
+  # Enable basic services
+  services = {
+    # DBus for various system services
+    dbus = {
+      enable = true;
+      packages = [ pkgs.dconf ];
+    };
   };
 } 

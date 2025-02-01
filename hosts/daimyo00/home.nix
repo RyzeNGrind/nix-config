@@ -1,15 +1,18 @@
+# Host-specific home configuration for daimyo00
 { config, lib, pkgs, inputs, outputs, ... }:
 
 {
   imports = [
-    ../../modules/home-manager/wsl.nix  # Common WSL home-manager configurations
+    ../../modules/home-manager/wsl.nix  # Import our WSL module
   ];
 
+  # Basic home-manager settings
   home = {
     username = "ryzengrind";
     homeDirectory = "/home/ryzengrind";
     stateVersion = "24.05";
     
+    # Host-specific packages
     packages = with pkgs; [
       # Development tools
       git
@@ -38,9 +41,11 @@
     ];
   };
 
+  # Enable home-manager
+  programs.home-manager.enable = true;
+
+  # Host-specific program configurations
   programs = {
-    home-manager.enable = true;
-    
     git = {
       enable = true;
       userName = "ryzengrind";
@@ -62,11 +67,6 @@
         rebuild = "sudo nixos-rebuild switch --flake .#daimyo00";
         update = "nix flake update";
       };
-      initExtra = ''
-        # Custom bash initialization
-        export EDITOR=vim
-        export PATH=$HOME/.local/bin:$PATH
-      '';
     };
 
     direnv = {

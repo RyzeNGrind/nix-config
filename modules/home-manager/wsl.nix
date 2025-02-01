@@ -6,6 +6,9 @@
     WSLENV = "NIXOS_WSL";
     BROWSER = "wslview";
     DISPLAY = ":0";
+    # VSCode Remote settings
+    VSCODE_WSL_EXT_LOCATION = "$HOME/.vscode-server/extensions";
+    DONT_PROMPT_WSL_INSTALL = "1";
   };
 
   # WSL-specific program configurations
@@ -15,8 +18,13 @@
         # WSL-specific bash configuration
         if [ -n "$NIXOS_WSL" ]; then
           # Integration with Windows clipboard
-          alias pbcopy="clip.exe"
-          alias pbpaste="powershell.exe -command 'Get-Clipboard' | tr -d '\r'"
+          if command -v clip.exe >/dev/null 2>&1; then
+            alias pbcopy="clip.exe"
+            alias pbpaste="powershell.exe -command 'Get-Clipboard' | tr -d '\r'"
+          else
+            alias pbcopy="xclip -selection clipboard"
+            alias pbpaste="xclip -selection clipboard -o"
+          fi
           
           # Windows integration aliases
           alias explorer="explorer.exe"
@@ -41,16 +49,17 @@
                 ;;
             esac
           }
+
+          # VSCode Remote helper
+          code() {
+            if [ $# -eq 0 ]; then
+              command code .
+            else
+              command code "$@"
+            fi
+          }
         fi
       '';
-    };
-
-    # VSCode WSL configuration if needed
-    vscode = {
-      enable = true;
-      extensions = with pkgs.vscode-extensions; [
-        ms-vscode-remote.remote-wsl
-      ];
     };
   };
 

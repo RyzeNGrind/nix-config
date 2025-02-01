@@ -4,9 +4,17 @@
   options.profiles.dev = {
     enable = lib.mkEnableOption "Development environment profile";
     ide = lib.mkOption {
-      type = lib.types.enum [ "vscode" "vscodium" "neovim" ];
-      default = "vscode";
+      type = lib.types.enum [ "vscode" "vscodium" "neovim" "cursor" ];
+      default = "vscodium";
       description = "Primary IDE to use";
+    };
+    vscodeRemote = {
+      enable = lib.mkEnableOption "VSCode Remote support";
+      method = lib.mkOption {
+        type = lib.types.enum [ "nix-ld" "patch" ];
+        default = "nix-ld";
+        description = "Method to enable VSCode Remote support (nix-ld or patch)";
+      };
     };
   };
 
@@ -25,6 +33,7 @@
       # Development tools
       direnv
       nix-direnv
+      wget # Required for VSCode Remote
 
       # Debugging and profiling
       gdb
@@ -34,7 +43,31 @@
 
       # IDE and editor
       (lib.mkIf (config.profiles.dev.ide == "vscode") vscode)
-      (lib.mkIf (config.profiles.dev.ide == "vscodium") vscodium)
+      (lib.mkIf (config.profiles.dev.ide == "vscodium") 
+        (vscode-with-extensions.override {
+          vscode = vscodium;
+          vscodeExtensions = with pkgs.vscode-extensions; [
+            # Development
+            ms-vscode.cpptools
+            ms-python.python
+            ms-vscode.cmake-tools
+            
+            # Remote Development
+            ms-vscode-remote.remote-ssh
+            
+            # Git
+            eamodio.gitlens
+            
+            # Nix
+            bbenoist.nix
+            jnoortheen.nix-ide
+            arrterian.nix-env-selector
+            
+            # Theme and UI
+            pkief.material-icon-theme
+          ];
+        })
+      )
       (lib.mkIf (config.profiles.dev.ide == "neovim") neovim)
 
       # Language servers and formatters
@@ -43,6 +76,15 @@
       alejandra
       statix # Nix static analysis
     ];
+
+    # VSCode Remote support configuration
+    programs.nix-ld = lib.mkIf (config.profiles.dev.vscodeRemote.enable && config.profiles.dev.vscodeRemote.method == "nix-ld") {
+      enable = true;
+      package = pkgs.nix-ld-rs;
+    };
+
+    # If using patch method, include the vscode-remote-workaround module
+    vscode-remote-workaround.enable = lib.mkIf (config.profiles.dev.vscodeRemote.enable && config.profiles.dev.vscodeRemote.method == "patch") true;
 
     # Development environment configuration
     programs = {

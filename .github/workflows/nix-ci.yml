@@ -1,0 +1,117 @@
+name: NixOS Configuration CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  flake-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ryzengrind-nix-config
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Check Nix flake inputs
+        run: nix flake check
+
+      - name: Check flake formatting
+        run: nix fmt
+
+  test-configurations:
+    needs: flake-check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host: [daimyo00] # Add more hosts as needed
+        include:
+          - host: daimyo00
+            test-wsl: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build configuration
+        run: |
+          nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel
+
+      - name: Test WSL configuration
+        if: matrix.test-wsl
+        run: |
+          # Setup WSL test environment
+          curl -L -O https://aka.ms/wsl-ubuntu-2004
+          mkdir -p /tmp/wsl
+          sudo mount -t tmpfs none /tmp/wsl
+          sudo wsl --import ubuntu-2004 /tmp/wsl ./wsl-ubuntu-2004
+          
+          # Test NixOS-WSL configuration
+          wsl -d ubuntu-2004 --exec /bin/bash -c "
+            curl -L https://nixos.org/nix/install | sh
+            . ~/.nix-profile/etc/profile.d/nix.sh
+            nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel -I nixos-config=./hosts/${{ matrix.host }}/configuration.nix
+          "
+
+  test-home-manager:
+    needs: flake-check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        user: [ryzengrind@daimyo00] # Add more user configs as needed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build home-manager configuration
+        run: |
+          nix build .#homeConfigurations."${{ matrix.user }}".activationPackage
+
+  security-scan:
+    needs: flake-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+      
+      - name: Run statix
+        run: nix run nixpkgs#statix -- check
+      
+      - name: Run vulnix
+        run: |
+          nix run nixpkgs#vulnix -- \
+            --system .#nixosConfigurations.daimyo00.config.system.build.toplevel
+
+  deploy:
+    needs: [test-configurations, test-home-manager, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+      
+      - name: Deploy to Cachix
+        run: |
+          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
+          nix path-info --json \
+            .#nixosConfigurations.daimyo00.config.system.build.toplevel | \
+            jq -r '.[].path' | \
+            xargs nix copy --to "s3://ryzengrind-nix-cache?region=us-east-1"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 

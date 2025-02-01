@@ -106,8 +106,10 @@
     monitorSection = ''
       Option "Rotate" "right"
     '';
-    layout = "us";
-    xkbVariant = "";
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
     #xkbOptions = "ctrl:swapcaps";
   };
 
@@ -152,7 +154,14 @@
         
       ];
       # TODO: Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)
-      extraGroups = ["root", "wheel", "docker", "kmem", "tty", "messagebus", "disk", "audio", "floppy", "uucp", "lp", "cdrom", "tape", "video", "dialout", "utmp", "adm", "networkmanager", "systemd-journal", "keys", "users", "systemd-journal-gateway", "gdm", "systemd-network", "systemd-resolve", "systemd-timesync", "input", "nm-openvpn", "kvm", "render", "sgx", "shadow", "flatpak", "systemd-oom", "systemd-coredump", "rtkit", "polkituser", "nscd", "geoclue", "colord", "avahi", "nixbld", "nogroup" ];
+      extraGroups = [
+        "root" "wheel" "docker" "kmem" "tty" "messagebus" "disk" "audio"
+        "floppy" "uucp" "lp" "cdrom" "tape" "video" "dialout" "utmp" "adm"
+        "networkmanager" "systemd-journal" "keys" "users" "systemd-journal-gateway"
+        "gdm" "systemd-network" "systemd-resolve" "systemd-timesync" "input"
+        "nm-openvpn" "kvm" "render" "sgx" "shadow" "flatpak" "systemd-oom"
+        "systemd-coredump" "rtkit" "polkituser"
+      ];
     };
   };
 
@@ -174,9 +183,9 @@
   systemd.services."autovt@tty1".enable = false;
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = "23.05";
+  system.stateVersion = "24.05";
   system.autoUpgrade.enable = true;
   system.autoUpgrade.allowReboot = true;
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11"; 
+  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-24.05"; 
 }
 

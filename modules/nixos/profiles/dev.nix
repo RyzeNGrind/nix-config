@@ -16,6 +16,22 @@
         description = "Method to enable VSCode Remote support (nix-ld or patch)";
       };
     };
+    ml = {
+      enable = lib.mkEnableOption "Machine Learning support";
+      cudaSupport = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable CUDA support for ML frameworks";
+      };
+      tensorrt = {
+        enable = lib.mkEnableOption "TensorRT support";
+        package = lib.mkOption {
+          type = lib.types.package;
+          default = pkgs.cudaPackages.tensorrt;
+          description = "TensorRT package to use";
+        };
+      };
+    };
   };
 
   config = lib.mkIf config.profiles.dev.enable {
@@ -75,7 +91,48 @@
       nixpkgs-fmt
       alejandra
       statix # Nix static analysis
-    ];
+
+      # Python development
+      (python3.withPackages (ps: with ps; [
+        pip
+        virtualenv
+        poetry
+        numpy
+        pandas
+        matplotlib
+        scikit-learn
+        jupyter
+        ipython
+        black
+        pylint
+        mypy
+        pytest
+        # PyTorch with CUDA if enabled
+        (pytorch.override {
+          cudaSupport = config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport;
+        })
+        torchvision
+        torchaudio
+        transformers
+        pytorch-lightning
+        tensorboard
+        wandb  # Weights & Biases
+        ray
+        optuna
+      ]))
+
+      # CUDA development tools if ML is enabled
+    ] ++ lib.optionals (config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport) ([
+      cudaPackages.cuda_cudart
+      cudaPackages.cuda_cupti
+      cudaPackages.cuda_nvcc
+    ] ++ lib.optionals config.profiles.dev.ml.tensorrt.enable [
+      config.profiles.dev.ml.tensorrt.package
+      cudaPackages.cudnn
+    ] ++ [
+      nvidia-docker
+      nvtop
+    ]);
 
     # VSCode Remote support configuration
     programs.nix-ld = lib.mkIf (config.profiles.dev.vscodeRemote.enable && config.profiles.dev.vscodeRemote.method == "nix-ld") {
@@ -101,6 +158,38 @@
         warn-dirty = false;
         keep-outputs = true;
         keep-derivations = true;
+        # Optimizations for ML development
+        auto-optimise-store = true;
+        cores = 0;  # Use all cores
+        max-jobs = "auto";
+        # Increase timeout for large package downloads
+        connect-timeout = 5;
+        stalled-download-timeout = 90;
+        timeout = 3600;
+      };
+    };
+
+    # Enable NVIDIA support if ML is enabled
+    hardware.nvidia = lib.mkIf (config.profiles.dev.ml.enable && config.profiles.dev.ml.cudaSupport) {
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      modesetting.enable = true;
+      powerManagement = {
+        enable = false;
+        finegrained = false;
+      };
+      open = false;
+      nvidiaSettings = true;
+    };
+
+    # Container support for ML
+    virtualisation = lib.mkIf config.profiles.dev.ml.enable {
+      docker = {
+        enable = true;
+        enableNvidia = config.profiles.dev.ml.cudaSupport;
+      };
+      podman = {
+        enable = true;
+        enableNvidia = config.profiles.dev.ml.cudaSupport;
       };
     };
   };

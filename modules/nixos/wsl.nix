@@ -6,6 +6,25 @@
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = false;
 
+  # Enable OpenGL and NVIDIA support
+  hardware = {
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
+    nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      modesetting.enable = true;
+      powerManagement = {
+        enable = false;
+        finegrained = false;
+      };
+      open = false;
+      nvidiaSettings = true;
+    };
+  };
+
   # Disable services that don't make sense in WSL
   services.xserver = {
     enable = false;
@@ -30,15 +49,29 @@
       NIXOS_WSL = "1";
       BROWSER = "wslview";
       DISPLAY = ":0";
+      # NVIDIA CUDA environment variables
+      NVIDIA_VISIBLE_DEVICES = "all";
+      NVIDIA_DRIVER_CAPABILITIES = "compute,utility,graphics";
+      CUDA_CACHE_PATH = "$HOME/.cache/cuda";
     };
     
     pathsToLink = [ "/libexec" ];
 
     systemPackages = with pkgs; [
-      wslu  # WSL utilities including wslview
-      wsl-open  # WSL browser opener
-      xclip  # X11 clipboard tool
-      xsel   # X11 selection tool
+      # WSL utilities
+      wslu
+      wsl-open
+      xclip
+      xsel
+      
+      # NVIDIA development tools
+      cudaPackages.cuda_cudart
+      cudaPackages.cuda_cupti
+      cudaPackages.cuda_nvcc
+      cudaPackages.tensorrt
+      cudaPackages.cudnn
+      nvidia-docker
+      nvtop.full
     ];
   };
 
@@ -48,7 +81,6 @@
   # WSL-specific networking settings
   networking = {
     useHostResolvConf = false;  # Don't use Windows DNS directly
-    # Disable wait-online service as it doesn't make sense in WSL
     networkmanager.enable = true;
     hostName = "daimyo00";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
@@ -69,6 +101,18 @@
         generateHosts = true;
         generateResolvConf = lib.mkForce false;  # Use our own DNS settings
       };
+    };
+  };
+
+  # Virtualization support for ML containers
+  virtualisation = {
+    docker = {
+      enable = true;
+      enableNvidia = true;  # Enable NVIDIA Container Toolkit
+    };
+    podman = {
+      enable = true;
+      enableNvidia = true;
     };
   };
 

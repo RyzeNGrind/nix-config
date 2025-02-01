@@ -44,7 +44,8 @@
     ];
     # Configure your nixpkgs instance
     config = {
-      # Disable if you don't want unfree packages
+      allowBroken = true;  # Temporary workaround for TensorRT
+      cudaSupport = true;
       allowUnfree = true;
     };
   };
@@ -62,6 +63,11 @@
       experimental-features = "nix-command flakes repl-flake";
       # Deduplicate and optimize nix store
       auto-optimise-store = true;
+      # Connection settings
+      http-connections = 10;
+      max-jobs = 4;
+      retry = 5;
+      timeout = 300;
     };
   };
 
@@ -109,6 +115,9 @@
         variant = "";
       };
       #xkbOptions = "ctrl:swapcaps";
+      
+      # NVIDIA-specific settings
+      videoDrivers = [ "nvidia" ];
     };
 
     # Enable CUPS to print documents.
@@ -195,6 +204,23 @@
       allowReboot = true;
       channel = "https://channels.nixos.org/nixos-24.05"; 
     };
+  };
+
+  # Hardware configuration
+  hardware = {
+    # Enable NVIDIA drivers only for non-WSL systems
+    nvidia = lib.mkIf (!config.wsl.enable) {
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      modesetting.enable = true;
+      powerManagement.enable = false;
+      open = false;
+    };
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
+    pulseaudio.enable = false;  # Disable pulseaudio in favor of pipewire
   };
 }
 

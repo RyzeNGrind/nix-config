@@ -83,6 +83,9 @@
           if [ -d "/usr/lib/wsl/lib" ]; then
             export NVIDIA_DRIVER_LIBRARY_PATH="/usr/lib/wsl/lib"
             export LD_LIBRARY_PATH="/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib"
+            export NVIDIA_DRIVER_CAPABILITIES="compute,utility"
+            export NVIDIA_VISIBLE_DEVICES="all"
+            export NVIDIA_REQUIRE_CUDA="cuda>=12.0"
             
             # Create symlinks for WSL NVIDIA libraries if they don't exist
             mkdir -p ~/.local/lib
@@ -97,11 +100,6 @@
           # CUDA setup
           export CUDA_PATH="${pkgs.cudaPackages.cudatoolkit}"
           export PATH="${pkgs.cudaPackages.cuda_nvcc}/bin:${pkgs.linuxPackages.nvidia_x11}/bin:$PATH"
-          
-          # NVIDIA environment variables
-          export NVIDIA_DRIVER_CAPABILITIES="compute,utility,graphics,video"
-          export NVIDIA_VISIBLE_DEVICES="all"
-          export NVIDIA_REQUIRE_CUDA="cuda>=12.0"
           
           # CUDA development setup
           export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"

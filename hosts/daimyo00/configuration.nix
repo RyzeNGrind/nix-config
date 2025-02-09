@@ -133,27 +133,27 @@
     pre-commit
   ];
   # WSL-specific NVIDIA configuration
-  hardware.nvidia = {
-    # Let WSL module handle the package
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-    open = false;
-    nvidiaSettings = true;
+  hardware = {
+    nvidia = {
+      package = null;  # Let WSL handle the NVIDIA driver
+      modesetting.enable = false;  # Not needed in WSL
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+      nvidiaSettings = false;  # Not needed in WSL
+    };
+    
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+      extraPackages = [];  # Remove nvidia-vaapi-driver as it's not needed in WSL
+    };
+    
+    nvidia-container-toolkit = {
+      enable = true;
+    };
   };
-
-  # OpenGL configuration
-  hardware.opengl = {
-    enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
-    extraPackages = with pkgs; [
-      nvidia-vaapi-driver
-    ];
-  };
-
-  # NVIDIA Container Runtime configuration
-  hardware.nvidia-container-toolkit.enable = true;
+  #Preserve NVIDIA container runtime config
   virtualisation.docker = {
     enable = true;
     enableOnBoot = true;
@@ -172,25 +172,10 @@
   # WSL-specific NVIDIA environment setup
   environment.variables = {
     NVIDIA_DRIVER_LIBRARY_PATH = "/usr/lib/wsl/lib";
-    NVIDIA_DRIVER_CAPABILITIES = "compute,utility,graphics,video";
+    NVIDIA_DRIVER_CAPABILITIES = "compute,utility";  # Simplified capabilities for ML
     NVIDIA_VISIBLE_DEVICES = "all";
     NVIDIA_REQUIRE_CUDA = "cuda>=12.0";
-    # WSL2-specific paths
-    LD_LIBRARY_PATH = lib.mkForce (lib.concatStringsSep ":" [
-      "/usr/lib/wsl/lib"  # WSL NVIDIA libraries
-      "${pkgs.linuxPackages.nvidia_x11}/lib"
-      "${pkgs.ncurses5}/lib"
-      "${pkgs.cudaPackages.cuda_cudart}/lib"
-      "${pkgs.cudaPackages.cuda_cupti}/lib"
-      "${pkgs.cudaPackages.cuda_nvrtc}/lib"
-      "${pkgs.cudaPackages.libcublas}/lib"
-      "${pkgs.cudaPackages.cudnn}/lib"
-    ]);
-    PATH = lib.mkForce (lib.makeBinPath [
-      "${pkgs.linuxPackages.nvidia_x11}/bin"
-      "${pkgs.nvtopPackages.full}/bin"
-      "/usr/lib/wsl/lib"
-    ] + ":$PATH");
+    LD_LIBRARY_PATH = lib.mkForce "/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib";
   };
 
   users.groups.docker.members = [ config.wsl.defaultUser ];

@@ -13,7 +13,7 @@ let
   emptyDrv = pkgs.stdenv.mkDerivation {
     name = "empty-drv";
     version = "0.0.1";
-    src = ./.;
+    phases = [ "installPhase" ];
     installPhase = "mkdir -p $out";
   };
 
@@ -22,7 +22,8 @@ let
     then pkgs.callPackage ./tensorrt { inherit (pkgs) cudaPackages; }
     else emptyDrv;
 in
-rec {
+{
+  # Expose both as separate attributes
   tensorrt = tensorrtPkg;
-  default = tensorrt;
+  default = tensorrtPkg;
 }

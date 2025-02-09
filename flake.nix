@@ -33,7 +33,7 @@
     };
   in {
     # Your custom packages and modifications
-    devShells = forAllSystems (system: let
+    legacyPackages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
         config = {
@@ -130,10 +130,14 @@
           cudaSupport = true;
         };
       };
-    in import ./pkgs {
-      inherit system;
-      inherit pkgs;
+      packageSet = import ./pkgs {
+        inherit system;
+        inherit pkgs;
+      };
+    in {
+      inherit (packageSet) default tensorrt;
     });
+    
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
     overlays = import ./overlays { inherit inputs; } // {
       unstable = overlayUnstable;

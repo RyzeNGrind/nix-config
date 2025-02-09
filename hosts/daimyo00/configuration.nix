@@ -28,10 +28,25 @@
     ];
   };
 
-  nix.settings = {
-    experimental-features = "nix-command flakes auto-allocate-uids";
-    auto-optimise-store = true;
-    trusted-users = [ "root" "ryzengrind" "@wheel" ];
+  nix = {
+    settings = {
+      experimental-features = "nix-command flakes auto-allocate-uids";
+      auto-optimise-store = true;
+      trusted-users = [ "root" "ryzengrind" "@wheel" ];
+      max-jobs = "auto";
+      cores = 0;
+      keep-outputs = true;
+      keep-derivations = true;
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
+    optimise = {
+      automatic = true;
+      dates = [ "weekly" ];
+    };
   };
 
   networking.hostName = "daimyo00";

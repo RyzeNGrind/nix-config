@@ -51,6 +51,11 @@
     };
   };
 
+  programs.nix-ld = {
+    enable = true;
+    package = pkgs.nix-ld-rs; # only for NixOS 24.05
+  };
+
   networking.hostName = "daimyo00";
   networking.networkmanager.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
@@ -82,25 +87,34 @@
   # WSL-specific NVIDIA configuration
   hardware = {
     nvidia = {
-      # Disable NixOS NVIDIA driver management in WSL
-      package = lib.mkForce null;
-      modesetting.enable = lib.mkForce false;
+      # Modesetting is required for most modern NVIDIA cards
+      modesetting.enable = true;
+      # Power management features (disabled for WSL)
       powerManagement.enable = false;
       powerManagement.finegrained = false;
-      nvidiaSettings = false;
+      # Enable the Nvidia settings menu
+      nvidiaSettings = true;
+      # Use the stable driver package
+      package = config.boot.kernelPackages.nvidiaPackages.beta; # [source](https://github.com/lutris/docs/blob/2b116519c5b67254733234f36ab33a60f14f1358/InstallingDrivers.md?plain=1#L184)
+      # Open source kernel module (for Turing and newer GPUs)
+      open = false;  # Set to true only if you have a Turing or newer GPU
     };
     
-    opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
-      extraPackages = [];
+    # Updated OpenGL/Graphics configuration
+    graphics = {
+      enable = true;  # Enables OpenGL
+      enable32Bit = true;  # For 32-bit support
+      extraPackages = with pkgs; [
+        nvidia-vaapi-driver
+        # Add additional OpenGL/CUDA support packages
+        cudaPackages.cuda_nvcc  # Replace cuda_gl
+        cudaPackages.cuda_cuobjdump  # Replace cuda_cccl
+      ];
     };
     
-    nvidia-container-toolkit = {
-      enable = true;
-    };
+    nvidia-container-toolkit.enable = true;
   };
+
   # Docker configuration for NVIDIA
   virtualisation.docker = {
     enable = true;
@@ -114,6 +128,7 @@
       };
     };
   };
+
   # WSL configuration
   wsl = {
     enable = true;
@@ -147,14 +162,34 @@
   # WSL-specific NVIDIA environment setup
   environment.variables = {
     NVIDIA_DRIVER_LIBRARY_PATH = "/usr/lib/wsl/lib";
-    NVIDIA_DRIVER_CAPABILITIES = "compute,utility";
+    NVIDIA_DRIVER_CAPABILITIES = "compute,graphics,utility,video";
     NVIDIA_VISIBLE_DEVICES = "all";
     NVIDIA_REQUIRE_CUDA = "cuda>=12.0";
-    LD_LIBRARY_PATH = lib.mkForce "/usr/lib/wsl/lib";
+    # Update LD_LIBRARY_PATH to include all necessary paths
+    LD_LIBRARY_PATH = lib.mkForce (lib.concatStringsSep ":" [
+      "/usr/lib/wsl/lib"
+      "${pkgs.linuxPackages.nvidia_x11}/lib"
+      "${pkgs.cudaPackages.cuda_cudart}/lib"
+      "${pkgs.cudaPackages.cudatoolkit}/lib"
+      "${pkgs.cudaPackages.cuda_nvcc}/lib"  # Updated from cuda_gl
+      "${pkgs.cudaPackages.cuda_cuobjdump}/lib"  # Updated from cuda_cccl
+      "/run/opengl-driver/lib"
+      "$HOME/.local/lib"
+    ]);
+    # Add additional CUDA environment variables
+    CUDA_PATH = "${pkgs.cudaPackages.cudatoolkit}";
+    EXTRA_LDFLAGS = "-L/usr/lib/wsl/lib -L${pkgs.linuxPackages.nvidia_x11}/lib";
+    EXTRA_CCFLAGS = "-I/usr/include";
+    CUDA_HOME = "${pkgs.cudaPackages.cudatoolkit}";
+    XLA_FLAGS = "--xla_gpu_cuda_data_dir=${pkgs.cudaPackages.cudatoolkit}";
   };
 
-  # Remove kernel modules as they're handled by WSL
-  boot.kernelModules = lib.mkForce [];
+  # Add necessary kernel modules and blacklist nouveau
+  boot = {
+    initrd.kernelModules = [ "nvidia" ];
+    blacklistedKernelModules = [ "nouveau" ];
+    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+  };
 
   # System packages
   environment.systemPackages = with pkgs; [
@@ -169,10 +204,15 @@
     cudaPackages.libcublas
     cudaPackages.cudnn
     cudaPackages.cudatoolkit
+    cudaPackages.cuda_nvcc  # Updated from cuda_gl
+    cudaPackages.cuda_cuobjdump  # Updated from cuda_cccl
     # Monitoring tools
     nvtopPackages.full
+    clinfo  # Added for OpenGL verification
+    glxinfo  # Added for additional graphics info
     # Basic utilities
     curl
+    jq
     git
     wget
     neofetch
@@ -180,4 +220,28 @@
   ];
 
   users.groups.docker.members = [ config.wsl.defaultUser ];
+
+  # Add a systemd service to setup NVIDIA symlinks
+  systemd.services.nvidia-wsl-setup = {
+    description = "Setup NVIDIA WSL environment";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      # Create local lib directory
+      mkdir -p /home/${config.wsl.defaultUser}/.local/lib
+      
+      # Create symlinks for WSL NVIDIA libraries
+      for lib in /usr/lib/wsl/lib/libcuda*; do
+        if [ -f "$lib" ]; then
+          ln -sf "$lib" /home/${config.wsl.defaultUser}/.local/lib/
+        fi
+      done
+      
+      # Set permissions
+      chown -R ${config.wsl.defaultUser}:users /home/${config.wsl.defaultUser}/.local/lib
+    '';
+  };
 } 

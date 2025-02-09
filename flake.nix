@@ -22,8 +22,12 @@
 
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixos-wsl, ... } @ inputs: let
     inherit (self) outputs;
-    systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-    forAllSystems = nixpkgs.lib.genAttrs systems;
+    # Only build for Linux systems
+    linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
+    forLinuxSystems = nixpkgs.lib.genAttrs linuxSystems;
+    # For packages that can build on any system
+    allSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+    forAllSystems = nixpkgs.lib.genAttrs allSystems;
     # Add this new overlay to make unstable packages available
     overlayUnstable = final: prev: {
       unstable = import nixpkgs-unstable {
@@ -33,7 +37,7 @@
     };
   in {
     # Your custom packages and modifications
-    devShells = forAllSystems (system: let
+    devShells = forLinuxSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
         config = {
@@ -121,13 +125,13 @@
       }).env;
     });
 
-    # Explicit derivation structure for packages
+    # Packages that can build on any system
     packages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
         config = {
           allowUnfree = true;
-          cudaSupport = true;
+          cudaSupport = system == "x86_64-linux" || system == "aarch64-linux";
         };
       };
       
@@ -141,7 +145,7 @@
       
       # Create TensorRT package based on system support
       tensorrtPkg = 
-        if (builtins.elem system ["x86_64-linux" "aarch64-linux"]) 
+        if (builtins.elem system linuxSystems) 
         then (pkgs.callPackage ./pkgs/tensorrt { inherit (pkgs) cudaPackages; })
         else emptyDrv;
     in {

@@ -4,7 +4,7 @@
 {
   imports = [ 
     inputs.nixos-wsl.nixosModules.wsl
-    ../../modules/nixos/wsl.nix  # Common WSL configuration module
+    # ../../modules/nixos/wsl.nix  # Commenting out to avoid conflicts
     ./cachix.nix
   ];
 
@@ -12,14 +12,10 @@
     config = {
       allowBroken = true;
       allowUnfree = true;
-      # cudaSupport = true;
-      /*
+      cudaSupport = true;
       packageOverrides = pkgs: {
-        inherit (pkgs) cudaPackages_11_8 cudaPackages_12_0;
-        # Set default CUDA version for TensorRT 10.8
-        cudaPackages = pkgs.cudaPackages_11_8;  # Use stable CUDA version
+        cudaPackages = pkgs.cudaPackages_12_0;  # Use latest CUDA version
       };
-      */
       /*
       permittedInsecurePackages = [
         "tensorrt-8.6.1.6"
@@ -109,6 +105,8 @@
       { src = "${coreutils}/bin/whoami"; }
       { src = "${su}/bin/groupadd"; }
       { src = "${su}/bin/usermod"; }
+      { src = "${linuxPackages.nvidia_x11}/bin/nvidia-smi"; }
+      { src = "${nvtopPackages.full}/bin/nvtop"; }
     ];
   };
 
@@ -117,12 +115,12 @@
     git
     wget
     neofetch
-    # nvtopPackages.full
-    # cudaPackages.cuda_cudart
-    # cudaPackages.cuda_cupti
-    # cudaPackages.cuda_nvrtc
-    # cudaPackages.libcublas
-    # cudaPackages.cudnn
+    nvtopPackages.full
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_cupti
+    cudaPackages.cuda_nvrtc
+    cudaPackages.libcublas
+    cudaPackages.cudnn
     # TensorRT packages for different versions and CUDA versions
     # tensorrt.tensorrt_10_8_cuda11
     # tensorrt.tensorrt_10_8_cuda12
@@ -131,26 +129,66 @@
     pre-commit
   ];
 
+  # WSL-specific NVIDIA configuration
+  hardware.nvidia = {
+    # Let WSL module handle the package
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+    open = false;
+    nvidiaSettings = true;
+  };
+
+  # OpenGL configuration
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      nvidia-vaapi-driver
+    ];
+  };
+
+  # NVIDIA Container Runtime configuration
+  hardware.nvidia-container-toolkit.enable = true;
   virtualisation.docker = {
     enable = true;
     enableOnBoot = true;
     autoPrune.enable = true;
+    daemon.settings = {
+      features.cdi = true;  # Enable CDI for GPU support
+      runtimes = {
+        nvidia = {
+          path = "${pkgs.nvidia-container-toolkit}/bin/nvidia-container-runtime";
+          runtimeArgs = [];
+        };
+      };
+    };
   };
 
-  users.groups.docker.members = [ config.wsl.defaultUser ];
-
-  # Add environment variables for CUDA and TensorRT
-  /*
+  # WSL-specific NVIDIA environment setup
   environment.variables = {
-    CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
-    LD_LIBRARY_PATH = lib.makeLibraryPath [
+    NVIDIA_DRIVER_LIBRARY_PATH = "/usr/lib/wsl/lib";
+    NVIDIA_DRIVER_CAPABILITIES = "compute,utility,graphics,video";
+    NVIDIA_VISIBLE_DEVICES = "all";
+    NVIDIA_REQUIRE_CUDA = "cuda>=12.0";
+    # WSL2-specific paths
+    LD_LIBRARY_PATH = lib.mkForce (lib.concatStringsSep ":" [
+      "/usr/lib/wsl/lib"  # WSL NVIDIA libraries
+      "${pkgs.linuxPackages.nvidia_x11}/lib"
+      "${pkgs.ncurses5}/lib"
       "${pkgs.cudaPackages.cuda_cudart}/lib"
       "${pkgs.cudaPackages.cuda_cupti}/lib"
       "${pkgs.cudaPackages.cuda_nvrtc}/lib"
       "${pkgs.cudaPackages.libcublas}/lib"
       "${pkgs.cudaPackages.cudnn}/lib"
-      "${pkgs.cudaPackages.tensorrt}/lib"
-    ];
+    ]);
+    PATH = lib.mkForce (lib.makeBinPath [
+      "${pkgs.linuxPackages.nvidia_x11}/bin"
+      "${pkgs.nvtopPackages.full}/bin"
+      "/usr/lib/wsl/lib"
+    ] + ":$PATH");
   };
-  */
+
+  users.groups.docker.members = [ config.wsl.defaultUser ];
 } 

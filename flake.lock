@@ -125,9 +125,6 @@
         "nixos-hardware": "nixos-hardware",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_2",
-        "nixpkgs-cuda": [
-          "nixpkgs"
-        ],
         "nixpkgs-unstable": "nixpkgs-unstable"
       }
     }

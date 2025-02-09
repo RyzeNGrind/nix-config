@@ -6,10 +6,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     # You can access packages and modules from different nixpkgs revs
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-cuda = {
-      url = "github:nixos/nixpkgs/550.78"; # Known working CUDA driver version
-      follows = "nixpkgs";
-    };
 
     # Home manager
     home-manager = {
@@ -26,13 +22,7 @@
 
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixos-wsl, ... } @ inputs: let
     inherit (self) outputs;
-    systems = [
-      "aarch64-linux"
-      "i686-linux"
-      "x86_64-linux"
-      "aarch64-darwin"
-      "x86_64-darwin"
-    ];
+    systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
     forAllSystems = nixpkgs.lib.genAttrs systems;
     # Add this new overlay to make unstable packages available
     overlayUnstable = final: prev: {
@@ -42,7 +32,96 @@
       };
     };
   in {
-    # Your custom packages
+    # Your custom packages and modifications
+    devShells = forAllSystems (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfree = true;
+          cudaSupport = true;
+        };
+      };
+    in {
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          nixfmt
+          statix
+        ];
+      };
+      
+      ml = (pkgs.buildFHSEnv {
+        name = "cuda-ml-env";
+        targetPkgs = pkgs: (with pkgs; [
+          linuxPackages.nvidia_x11
+          libGLU libGL
+          xorg.libXi xorg.libXmu freeglut
+          xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib 
+          ncurses5 stdenv.cc binutils
+          ffmpeg
+          fish
+          micromamba
+          # CUDA packages
+          cudaPackages.cuda_cudart
+          cudaPackages.cuda_cupti
+          cudaPackages.cudatoolkit
+          cudaPackages.cudnn
+          cudaPackages.cuda_nvcc
+          # Python and monitoring tools
+          python311
+          python311Packages.pip
+          python311Packages.virtualenv
+          nvtopPackages.full
+          nvidia-docker
+          # Development tools
+          git
+          curl
+          wget
+        ]);
+
+        profile = ''
+          # WSL2-specific NVIDIA setup
+          if [ -d "/usr/lib/wsl/lib" ]; then
+            export NVIDIA_DRIVER_LIBRARY_PATH="/usr/lib/wsl/lib"
+            export LD_LIBRARY_PATH="/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib"
+            
+            # Create symlinks for WSL NVIDIA libraries if they don't exist
+            mkdir -p ~/.local/lib
+            for lib in /usr/lib/wsl/lib/libcuda*; do
+              if [ -f "$lib" ]; then
+                ln -sf "$lib" ~/.local/lib/
+              fi
+            done
+            export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
+          fi
+          
+          # CUDA setup
+          export CUDA_PATH="${pkgs.cudaPackages.cudatoolkit}"
+          export PATH="${pkgs.cudaPackages.cuda_nvcc}/bin:${pkgs.linuxPackages.nvidia_x11}/bin:$PATH"
+          
+          # NVIDIA environment variables
+          export NVIDIA_DRIVER_CAPABILITIES="compute,utility,graphics,video"
+          export NVIDIA_VISIBLE_DEVICES="all"
+          export NVIDIA_REQUIRE_CUDA="cuda>=12.0"
+          
+          # CUDA development setup
+          export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
+          export EXTRA_CCFLAGS="-I/usr/include"
+          export CUDA_HOME="$CUDA_PATH"
+          export XLA_FLAGS="--xla_gpu_cuda_data_dir=$CUDA_PATH"
+          
+          # Create local bin directory for NVIDIA tools
+          mkdir -p ~/.local/bin
+          for cmd in nvidia-smi nvtop; do
+            if command -v $cmd >/dev/null 2>&1; then
+              ln -sf $(command -v $cmd) ~/.local/bin/
+            fi
+          done
+          export PATH="$HOME/.local/bin:$PATH"
+        '';
+
+        runScript = "fish";
+      }).env;
+    });
     packages = forAllSystems (system: import ./pkgs {
       inherit system;
       pkgs = nixpkgs.legacyPackages.${system};

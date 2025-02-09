@@ -12,20 +12,26 @@
     config = {
       allowBroken = true;
       allowUnfree = true;
-      cudaSupport = true;
+      # cudaSupport = true;
+      /*
       packageOverrides = pkgs: {
         inherit (pkgs) cudaPackages_11_8 cudaPackages_12_0;
         # Set default CUDA version for TensorRT 10.8
         cudaPackages = pkgs.cudaPackages_11_8;  # Use stable CUDA version
       };
+      */
+      /*
       permittedInsecurePackages = [
         "tensorrt-8.6.1.6"
         "tensorrt-10.8.0.43"
       ];
+      */
     };
+    /*
     overlays = [
       (import ../../overlays/tensorrt.nix)
     ];
+    */
   };
 
   nix = {
@@ -111,17 +117,17 @@
     git
     wget
     neofetch
-    nvtopPackages.full
-    cudaPackages.cuda_cudart
-    cudaPackages.cuda_cupti
-    cudaPackages.cuda_nvrtc
-    cudaPackages.libcublas
-    cudaPackages.cudnn
+    # nvtopPackages.full
+    # cudaPackages.cuda_cudart
+    # cudaPackages.cuda_cupti
+    # cudaPackages.cuda_nvrtc
+    # cudaPackages.libcublas
+    # cudaPackages.cudnn
     # TensorRT packages for different versions and CUDA versions
-    tensorrt.tensorrt_10_8_cuda11
-    tensorrt.tensorrt_10_8_cuda12
-    tensorrt.tensorrt_8_6_cuda11
-    tensorrt.tensorrt_8_6_cuda12
+    # tensorrt.tensorrt_10_8_cuda11
+    # tensorrt.tensorrt_10_8_cuda12
+    # tensorrt.tensorrt_8_6_cuda11
+    # tensorrt.tensorrt_8_6_cuda12
     pre-commit
   ];
 
@@ -134,6 +140,7 @@
   users.groups.docker.members = [ config.wsl.defaultUser ];
 
   # Add environment variables for CUDA and TensorRT
+  /*
   environment.variables = {
     CUDA_PATH = "${pkgs.cudaPackages.cuda_cudart}";
     LD_LIBRARY_PATH = lib.makeLibraryPath [
@@ -145,4 +152,5 @@
       "${pkgs.cudaPackages.tensorrt}/lib"
     ];
   };
+  */
 } 

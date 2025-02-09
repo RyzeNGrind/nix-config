@@ -98,6 +98,52 @@
           }
         ];
       };
+
+      # No CUDA/TensorRT configuration
+      daimyo00-nocuda = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs outputs; };
+        modules = [
+          # Core modules
+          ./hosts/daimyo00/configuration.nix
+          
+          # Global configuration
+          {
+            nixpkgs.config = {
+              allowBroken = true;
+              allowUnfree = true;
+            };
+            nix.settings = {
+              substituters = [
+                "https://cache.nixos.org"
+                "https://nix-community.cachix.org"
+              ];
+              trusted-public-keys = [
+                "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+              ];
+              accept-flake-config = true;
+            };
+            # Disable CUDA and TensorRT related overlays
+            nixpkgs.overlays = builtins.filter (overlay: 
+              !(builtins.elem overlay [
+                self.overlays.tensorrt
+              ])
+            ) (builtins.attrValues outputs.overlays);
+          }
+          
+          # Home Manager module
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.ryzengrind = import ./hosts/daimyo00/home.nix;
+              extraSpecialArgs = { inherit inputs outputs; };
+            };
+          }
+        ];
+      };
     };
 
     # Standalone home-manager configuration entrypoint

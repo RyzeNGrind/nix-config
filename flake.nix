@@ -123,7 +123,7 @@
       }).env;
     });
 
-    # Flattened packages output
+    # Explicit derivation structure for packages
     packages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
@@ -133,8 +133,13 @@
         };
       };
       
-      # Create a simple empty derivation
-      emptyDrv = pkgs.runCommand "empty" {} "mkdir -p $out";
+      # Create empty derivation with explicit structure
+      emptyDrv = derivation {
+        name = "empty";
+        inherit system;
+        builder = "${pkgs.bash}/bin/bash";
+        args = [ "-c" "mkdir -p $out" ];
+      };
       
       # Create TensorRT package based on system support
       tensorrtPkg = 

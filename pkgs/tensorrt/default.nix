@@ -97,10 +97,13 @@ let
       };
     };
 
-in {
-  # Export all TensorRT variants
-  tensorrt_10_8_cuda11 = mkTensorRT "10.8.0.43" "11.8" manifests."10.8.0.43".${stdenv.hostPlatform.system}."11.8";
-  tensorrt_10_8_cuda12 = mkTensorRT "10.8.0.43" "12.8" manifests."10.8.0.43".${stdenv.hostPlatform.system}."12.8";
-  tensorrt_8_6_cuda11 = mkTensorRT "8.6.1.6" "11.8" manifests."8.6.1.6".${stdenv.hostPlatform.system}."11.8";
-  tensorrt_8_6_cuda12 = mkTensorRT "8.6.1.6" "12.0" manifests."8.6.1.6".${stdenv.hostPlatform.system}."12.0";
-} 
+  # Get the appropriate manifest for the current system
+  currentManifest = 
+    if builtins.hasAttr stdenv.hostPlatform.system manifests."10.8.0.43"
+    then manifests."10.8.0.43".${stdenv.hostPlatform.system}."12.8"
+    else null;
+
+in
+if currentManifest != null
+then mkTensorRT "10.8.0.43" "12.8" currentManifest
+else throw "TensorRT is not supported on ${stdenv.hostPlatform.system}" 

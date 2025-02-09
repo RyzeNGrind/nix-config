@@ -102,40 +102,162 @@
       # No CUDA/TensorRT configuration
       daimyo00-nocuda = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit inputs outputs; };
+        specialArgs = { inherit inputs; };
         modules = [
-          # Core modules
-          ./hosts/daimyo00/configuration.nix
-          
-          # Global configuration
-          {
-            nixpkgs.config = {
-              allowBroken = true;
-              allowUnfree = true;
+          # WSL module
+          inputs.nixos-wsl.nixosModules.wsl
+
+          # Base configuration
+          ({ pkgs, lib, ... }: {
+            # Basic system configuration
+            system.stateVersion = "24.05";
+
+            # System configuration
+            nixpkgs = {
+              config = {
+                allowUnfree = true;
+                allowBroken = true;
+                # Explicitly disable CUDA
+                cudaSupport = lib.mkForce false;
+                cudaCapabilities = lib.mkForce [];
+              };
+              # Ensure no CUDA overlays
+              overlays = [];
             };
-            nix.settings = {
-              substituters = [
-                "https://cache.nixos.org"
-                "https://nix-community.cachix.org"
-              ];
-              trusted-public-keys = [
-                "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-                "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-              ];
-              accept-flake-config = true;
+
+            # Disable all NVIDIA/CUDA related features
+            hardware = {
+              nvidia = {
+                package = lib.mkForce null;
+                modesetting.enable = lib.mkForce false;
+              };
+              nvidia-container-toolkit.enable = lib.mkForce false;
+              opengl.enable = lib.mkForce false;
             };
-            # Disable all custom overlays for testing
-            nixpkgs.overlays = [];
-          }
-          
-          # Home Manager module
+
+            # Explicitly disable WSL CUDA features
+            wsl = {
+              enable = true;
+              defaultUser = "ryzengrind";
+              docker-desktop.enable = true;
+              nativeSystemd = true;
+              startMenuLaunchers = true;
+              wslConf = {
+                automount = {
+                  enabled = true;
+                  options = "metadata,umask=22,fmask=11,uid=1000,gid=100";
+                  root = "/mnt";
+                };
+                network = {
+                  generateHosts = true;
+                  generateResolvConf = true;
+                  hostname = "daimyo00";
+                };
+                interop = {
+                  appendWindowsPath = false;
+                };
+              };
+              extraBin = with pkgs; [
+                { src = "${coreutils}/bin/cat"; }
+                { src = "${coreutils}/bin/whoami"; }
+                { src = "${su}/bin/groupadd"; }
+                { src = "${su}/bin/usermod"; }
+              ];
+            };
+
+            # Disable NVIDIA container runtime in Docker instead
+            virtualisation.docker = {
+              enable = true;
+              enableOnBoot = true;
+              autoPrune.enable = true;
+              # Disable NVIDIA runtime
+              enableNvidia = lib.mkForce false;
+              extraOptions = "--add-runtime none=runc";
+            };
+
+            # Environment variables to prevent CUDA detection
+            environment.variables = {
+              CUDA_PATH = lib.mkForce "";
+              LD_LIBRARY_PATH = lib.mkForce "";
+              NVIDIA_DRIVER_CAPABILITIES = lib.mkForce "";
+              NVIDIA_VISIBLE_DEVICES = lib.mkForce "none";
+            };
+
+            nix = {
+              settings = {
+                experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" ];
+                auto-optimise-store = true;
+                trusted-users = [ "root" "ryzengrind" "@wheel" ];
+                max-jobs = "auto";
+                cores = 0;
+                keep-outputs = true;
+                keep-derivations = true;
+                # Remove CUDA cache
+                substituters = [
+                  "https://cache.nixos.org"
+                  "https://nix-community.cachix.org"
+                ];
+                trusted-public-keys = [
+                  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+                ];
+              };
+              gc = {
+                automatic = true;
+                dates = "weekly";
+                options = "--delete-older-than 7d";
+              };
+              optimise = {
+                automatic = true;
+                dates = [ "weekly" ];
+              };
+            };
+
+            # Network configuration
+            networking = {
+              hostName = "daimyo00";
+              networkmanager.enable = true;
+            };
+            systemd.services.NetworkManager-wait-online.enable = false;
+
+            # Locale and time
+            time.timeZone = "America/Toronto";
+            i18n.defaultLocale = "en_CA.UTF-8";
+
+            # User configuration
+            users.users.ryzengrind = {
+              hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";
+              isNormalUser = true;
+              extraGroups = [ "wheel" "docker" "audio" "networkmanager" ];
+            };
+
+            # SSH configuration
+            services.openssh = {
+              enable = true;
+              settings = {
+                PermitRootLogin = "yes";
+                PasswordAuthentication = true;
+              };
+            };
+
+            # System packages (no CUDA packages)
+            environment.systemPackages = with pkgs; [
+              curl
+              git
+              wget
+              neofetch
+              pre-commit
+            ];
+          })
+
+          # Home Manager configuration
           home-manager.nixosModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
               users.ryzengrind = import ./hosts/daimyo00/home.nix;
-              extraSpecialArgs = { inherit inputs outputs; };
+              extraSpecialArgs = { inherit inputs; };
             };
           }
         ];

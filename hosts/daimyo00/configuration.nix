@@ -14,7 +14,7 @@
       allowUnfree = true;
       cudaSupport = true;
       packageOverrides = pkgs: {
-        cudaPackages = pkgs.cudaPackages_12_0;  # Use latest CUDA version
+        cudaPackages = pkgs.cudaPackages_12_0;
       };
       /*
       permittedInsecurePackages = [
@@ -79,6 +79,42 @@
     channel = "https://channels.nixos.org/nixos-24.05";
   };
 
+  # WSL-specific NVIDIA configuration
+  hardware = {
+    nvidia = {
+      # Disable NixOS NVIDIA driver management in WSL
+      package = lib.mkForce null;
+      modesetting.enable = lib.mkForce false;
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+      nvidiaSettings = false;
+    };
+    
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+      extraPackages = [];
+    };
+    
+    nvidia-container-toolkit = {
+      enable = true;
+    };
+  };
+  # Docker configuration for NVIDIA
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
+    autoPrune.enable = true;
+    daemon.settings = {
+      features.cdi = true;
+      runtimes.nvidia = {
+        path = "${pkgs.nvidia-container-toolkit}/bin/nvidia-container-runtime";
+        runtimeArgs = [];
+      };
+    };
+  };
+  # WSL configuration
   wsl = {
     enable = true;
     defaultUser = "ryzengrind";
@@ -105,78 +141,43 @@
       { src = "${coreutils}/bin/whoami"; }
       { src = "${su}/bin/groupadd"; }
       { src = "${su}/bin/usermod"; }
-      { src = "${linuxPackages.nvidia_x11}/bin/nvidia-smi"; }
-      { src = "${nvtopPackages.full}/bin/nvtop"; }
     ];
-  };
-
-  environment.systemPackages = with pkgs; [
-    # WSL-specific packages
-    wslu
-    wsl-open
-    wsl-vpnkit
-    curl
-    git
-    wget
-    neofetch
-    nvtopPackages.full
-    cudaPackages.cuda_cudart
-    cudaPackages.cuda_cupti
-    cudaPackages.cuda_nvrtc
-    cudaPackages.libcublas
-    cudaPackages.cudnn
-    # TensorRT packages for different versions and CUDA versions
-    # tensorrt.tensorrt_10_8_cuda11
-    # tensorrt.tensorrt_10_8_cuda12
-    # tensorrt.tensorrt_8_6_cuda11
-    # tensorrt.tensorrt_8_6_cuda12
-    pre-commit
-  ];
-  # WSL-specific NVIDIA configuration
-  hardware = {
-    nvidia = {
-      package = null;  # Let WSL handle the NVIDIA driver
-      modesetting.enable = false;  # Not needed in WSL
-      powerManagement.enable = false;
-      powerManagement.finegrained = false;
-      nvidiaSettings = false;  # Not needed in WSL
-    };
-    
-    opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
-      extraPackages = [];  # Remove nvidia-vaapi-driver as it's not needed in WSL
-    };
-    
-    nvidia-container-toolkit = {
-      enable = true;
-    };
-  };
-  #Preserve NVIDIA container runtime config
-  virtualisation.docker = {
-    enable = true;
-    enableOnBoot = true;
-    autoPrune.enable = true;
-    daemon.settings = {
-      features.cdi = true;  # Enable CDI for GPU support
-      runtimes = {
-        nvidia = {
-          path = "${pkgs.nvidia-container-toolkit}/bin/nvidia-container-runtime";
-          runtimeArgs = [];
-        };
-      };
-    };
   };
 
   # WSL-specific NVIDIA environment setup
   environment.variables = {
     NVIDIA_DRIVER_LIBRARY_PATH = "/usr/lib/wsl/lib";
-    NVIDIA_DRIVER_CAPABILITIES = "compute,utility";  # Simplified capabilities for ML
+    NVIDIA_DRIVER_CAPABILITIES = "compute,utility";
     NVIDIA_VISIBLE_DEVICES = "all";
     NVIDIA_REQUIRE_CUDA = "cuda>=12.0";
-    LD_LIBRARY_PATH = lib.mkForce "/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib";
+    LD_LIBRARY_PATH = lib.mkForce "/usr/lib/wsl/lib";
   };
+
+  # Remove kernel modules as they're handled by WSL
+  boot.kernelModules = lib.mkForce [];
+
+  # System packages
+  environment.systemPackages = with pkgs; [
+    # WSL-specific packages
+    wslu
+    wsl-open
+    wsl-vpnkit
+    # CUDA packages
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_cupti
+    cudaPackages.cuda_nvrtc
+    cudaPackages.libcublas
+    cudaPackages.cudnn
+    cudaPackages.cudatoolkit
+    # Monitoring tools
+    nvtopPackages.full
+    # Basic utilities
+    curl
+    git
+    wget
+    neofetch
+    pre-commit
+  ];
 
   users.groups.docker.members = [ config.wsl.defaultUser ];
 } 

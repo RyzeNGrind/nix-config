@@ -44,8 +44,12 @@
       pre-commit
       _1password-gui
       nixfmt
-      nixld
+      nix-ld
       
+      # Update 1Password package configuration
+      (pkgs.writeShellScriptBin "1password" ''
+        nohup ${pkgs._1password-gui}/bin/1password --silent > /dev/null 2>&1 &
+      '')
     ];
   };
 

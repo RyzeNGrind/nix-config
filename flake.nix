@@ -124,12 +124,8 @@
               ];
               accept-flake-config = true;
             };
-            # Disable CUDA and TensorRT related overlays
-            nixpkgs.overlays = builtins.filter (overlay: 
-              !(builtins.elem overlay [
-                self.overlays.tensorrt
-              ])
-            ) (builtins.attrValues outputs.overlays);
+            # Disable all custom overlays for testing
+            nixpkgs.overlays = [];
           }
           
           # Home Manager module
@@ -142,6 +138,60 @@
               extraSpecialArgs = { inherit inputs outputs; };
             };
           }
+        ];
+      };
+
+      # Minimal test configuration
+      daimyo00-test = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          # Bare minimum NixOS configuration
+          ({ pkgs, lib, ... }: {
+            # Basic system configuration
+            system.stateVersion = "24.05";
+            
+            nixpkgs = {
+              config = {
+                allowUnfree = true;
+                allowBroken = false;
+              };
+              # Disable all custom overlays for testing
+              overlays = [];
+            };
+            
+            # Minimal nix settings
+            nix.settings = {
+              substituters = [ "https://cache.nixos.org" ];
+              trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
+              accept-flake-config = true;
+              experimental-features = [ "nix-command" "flakes" ];
+            };
+
+            # Basic system packages
+            environment.systemPackages = with pkgs; [
+              git
+              vim
+              pre-commit
+            ];
+
+            # Basic user configuration
+            users.users.ryzengrind = {
+              isNormalUser = true;
+              extraGroups = [ "wheel" ];
+              initialPassword = "changeme";
+            };
+
+            # WSL-specific settings
+            wsl = {
+              enable = true;
+              defaultUser = "ryzengrind";
+              nativeSystemd = true;
+            };
+          })
+
+          # Include WSL module
+          nixos-wsl.nixosModules.wsl
         ];
       };
     };

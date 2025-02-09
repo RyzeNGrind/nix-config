@@ -24,20 +24,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  nixConfig = {
-    extra-substituters = [
-      "https://cuda-maintainers.cachix.org"
-      "https://nix-community.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
-    allow-broken = true;
-    accept-flake-config = true;
-  };
-
-  outputs = { self, nixpkgs, home-manager, nixos-wsl, ... } @ inputs: let
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixos-wsl, ... } @ inputs: let
     inherit (self) outputs;
     systems = [
       "aarch64-linux"
@@ -47,23 +34,24 @@
       "x86_64-darwin"
     ];
     forAllSystems = nixpkgs.lib.genAttrs systems;
-  in {
-    # Your custom packages
-    packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
-    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
-    overlays = import ./overlays { inherit inputs; };
-    nixosModules = import ./modules/nixos;
-
-    # Standalone home-manager configuration entrypoint
-    homeConfigurations = {
-      "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = { inherit inputs outputs; };
-        modules = [
-          ./hosts/daimyo00/home.nix
-        ];
+    # Add this new overlay to make unstable packages available
+    overlayUnstable = final: prev: {
+      unstable = import nixpkgs-unstable {
+        system = prev.system;
+        config.allowUnfree = true;
       };
     };
+  in {
+    # Your custom packages
+    packages = forAllSystems (system: import ./pkgs {
+      inherit system;
+      pkgs = nixpkgs.legacyPackages.${system};
+    });
+    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+    overlays = import ./overlays { inherit inputs; } // {
+      unstable = overlayUnstable;
+    };
+    nixosModules = import ./modules/nixos;
 
     # NixOS configuration entrypoint
     nixosConfigurations = {
@@ -75,11 +63,26 @@
           # Core modules
           ./hosts/daimyo00/configuration.nix
           
-          # Allow broken packages
+          # Global configuration
           {
             nixpkgs.config = {
               allowBroken = true;
               allowUnfree = true;
+            };
+            nix = {
+              settings = {
+                substituters = [
+                  "https://cache.nixos.org"
+                  "https://cuda-maintainers.cachix.org"
+                  "https://nix-community.cachix.org"
+                ];
+                trusted-public-keys = [
+                  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                  "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+                  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+                ];
+                accept-flake-config = true;
+              };
             };
           }
           
@@ -93,6 +96,17 @@
               extraSpecialArgs = { inherit inputs outputs; };
             };
           }
+        ];
+      };
+    };
+
+    # Standalone home-manager configuration entrypoint
+    homeConfigurations = {
+      "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        extraSpecialArgs = { inherit inputs outputs; };
+        modules = [
+          ./hosts/daimyo00/home.nix
         ];
       };
     };

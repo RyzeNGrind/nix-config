@@ -19,6 +19,7 @@
       gh
       direnv
       nix-direnv
+      pre-commit
       
       # System tools
       htop
@@ -55,6 +56,7 @@
         pull.rebase = true;
         push.autoSetupRemote = true;
       };
+      package = pkgs.git;
     };
 
     bash = {
@@ -85,6 +87,15 @@
         syntax on
       '';
     };
+
+/*     pre-commit = {
+      enable = true;
+      hooks = {
+        nixpkgs-fmt.enable = true;
+        prettier.enable = true;
+        black.enable = true;
+      };
+    }; */
   };
 
   # Enable fonts in home-manager

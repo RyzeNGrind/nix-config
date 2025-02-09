@@ -56,7 +56,44 @@
 
   # Add stuff for your user as you see fit:
   # programs.neovim.enable = true;
-  home.packages = with pkgs; [ firefox git protonvpn-gui tailscale zerotierone termius vlc discord ungoogled-chromium p7zip file cloudflared gnumake comma tor-browser-bundle-bin _1password-gui _1password wget synergy teamviewer fish home-manager sd-switch dconf2nix curl htop tmux screen systemd linux nixFlakes nixops_unstable nixops-dns rnix-lsp nixpkgs-fmt ];
+  home.packages = with pkgs; [
+    firefox
+    git
+    pre-commit
+    protonvpn-gui
+    tailscale
+    zerotierone
+    termius
+    vlc
+    discord
+    ungoogled-chromium
+    p7zip
+    file
+    cloudflared
+    gnumake
+    comma
+    tor-browser-bundle-bin
+    _1password-gui
+    _1password
+    wget
+    synergy
+    teamviewer
+    fish
+    home-manager
+    sd-switch
+    dconf2nix
+    curl
+    htop
+    tmux
+    screen
+    systemd
+    linux
+    nixFlakes
+    nixops_unstable
+    nixops-dns
+    rnix-lsp
+    nixpkgs-fmt
+  ];
 
   # Enable home-manager and git
   programs.home-manager.enable = true;

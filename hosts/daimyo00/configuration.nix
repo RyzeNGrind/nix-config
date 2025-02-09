@@ -13,16 +13,19 @@
       allowBroken = true;
       allowUnfree = true;
       cudaSupport = true;
-      packageOverrides = pkgs: with pkgs; {
-        inherit cudaPackages_11_8 cudaPackages_12_0 cudaPackages_12_8;
+      packageOverrides = pkgs: {
+        inherit (pkgs) cudaPackages_11_8 cudaPackages_12_0;
         # Set default CUDA version for TensorRT 10.8
-        cudaPackages = cudaPackages_12_8;  # Updated to use latest CUDA version
+        cudaPackages = pkgs.cudaPackages_11_8;  # Use stable CUDA version
       };
       permittedInsecurePackages = [
         "tensorrt-8.6.1.6"
         "tensorrt-10.8.0.43"
       ];
     };
+    overlays = [
+      (import ../../overlays/tensorrt.nix)
+    ];
   };
 
   nix.settings = {
@@ -99,7 +102,12 @@
     cudaPackages.cuda_nvrtc
     cudaPackages.libcublas
     cudaPackages.cudnn
-    cudaPackages.tensorrt
+    # TensorRT packages for different versions and CUDA versions
+    tensorrt.tensorrt_10_8_cuda11
+    tensorrt.tensorrt_10_8_cuda12
+    tensorrt.tensorrt_8_6_cuda11
+    tensorrt.tensorrt_8_6_cuda12
+    pre-commit
   ];
 
   virtualisation.docker = {

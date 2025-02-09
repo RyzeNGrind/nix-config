@@ -108,11 +108,12 @@
   virtualisation = {
     docker = {
       enable = true;
-      enableNvidia = true;  # Enable NVIDIA Container Toolkit
     };
     podman = {
       enable = true;
-      enableNvidia = true;
+    };
+    containers = {
+      cdi.dynamic.nvidia.enable = true;  # New recommended way to enable NVIDIA support
     };
   };
 

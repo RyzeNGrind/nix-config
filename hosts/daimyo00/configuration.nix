@@ -111,6 +111,10 @@
   };
 
   environment.systemPackages = with pkgs; [
+    # WSL-specific packages
+    wslu
+    wsl-open
+    wsl-vpnkit
     curl
     git
     wget
@@ -128,7 +132,6 @@
     # tensorrt.tensorrt_8_6_cuda12
     pre-commit
   ];
-
   # WSL-specific NVIDIA configuration
   hardware.nvidia = {
     # Let WSL module handle the package

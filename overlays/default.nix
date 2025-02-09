@@ -11,9 +11,9 @@
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
   # be accessible through 'pkgs.unstable'
   tensorrt = import ./tensorrt.nix;
-  unstable-packages = final: prev: {
+  unstable = final: prev: {
     unstable = import inputs.nixpkgs-unstable {
-      system = prev.system;
+      inherit (prev) system;
       config.allowUnfree = true;
     };
   };

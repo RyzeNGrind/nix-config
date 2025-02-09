@@ -217,6 +217,7 @@
     wget
     neofetch
     pre-commit
+    _1password-gui
   ];
 
   users.groups.docker.members = [ config.wsl.defaultUser ];

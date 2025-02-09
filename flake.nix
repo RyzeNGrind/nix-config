@@ -122,9 +122,17 @@
         runScript = "fish";
       }).env;
     });
-    packages = forAllSystems (system: import ./pkgs {
+    packages = forAllSystems (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfree = true;
+          cudaSupport = true;
+        };
+      };
+    in import ./pkgs {
       inherit system;
-      pkgs = nixpkgs.legacyPackages.${system};
+      inherit pkgs;
     });
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
     overlays = import ./overlays { inherit inputs; } // {

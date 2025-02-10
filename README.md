@@ -4,13 +4,13 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 
 ## Features
 
-- Profile-based configuration
+- WSL support (enabled by default)
+- Incremental module activation
 - Automated testing
 - Feature flag system
-- WSL support
-- Development environments
-- Gaming optimizations
-- Server configurations
+- Development environments (disabled by default)
+- Gaming optimizations (disabled by default)
+- Server configurations (disabled by default)
 
 ## Structure
 
@@ -23,16 +23,16 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 │   │   ├── network.nix
 │   │   └── security.nix
 │   ├── services/               # Service configurations
-│   │   ├── wsl.nix
-│   │   └── containers.nix
+│   │   ├── wsl.nix            # WSL support (enabled)
+│   │   └── containers.nix      # Container support (disabled)
 │   └── hardware/               # Hardware-specific settings
-│       ├── nvidia.nix
-│       └── amd.nix
+│       ├── nvidia.nix          # NVIDIA support (disabled)
+│       └── amd.nix            # AMD support (disabled)
 ├── profiles/                   # System profiles
 │   ├── base/                   # Base system configuration
-│   ├── dev/                    # Development environment
-│   ├── gaming/                 # Gaming optimizations
-│   └── server/                 # Server configurations
+│   ├── dev/                    # Development environment (disabled)
+│   ├── gaming/                 # Gaming optimizations (disabled)
+│   └── server/                 # Server configurations (disabled)
 └── tests/                      # System tests
 ```
 
@@ -45,14 +45,14 @@ A modular, composable, and tested NixOS configuration using profiles and feature
    cd nix-config
    ```
 
-2. Enable the profiles you need in your `configuration.nix`:
+2. Enable WSL support in your `configuration.nix`:
 
    ```nix
    {
-     profiles = {
-       base.enable = true;
-       dev.enable = true;  # For development
-       gaming.enable = true;  # For gaming
+     features.wsl = {
+       enable = true;  # Enabled by default
+       gui.enable = true;  # GUI support
+       cuda.enable = false;  # CUDA support (optional)
      };
    }
    ```
@@ -62,51 +62,45 @@ A modular, composable, and tested NixOS configuration using profiles and feature
    sudo nixos-rebuild switch --flake .#
    ```
 
-## Profiles
+## Module Activation
 
-### Base Profile
+Modules are disabled by default (except WSL) and can be enabled incrementally:
 
-- Core system settings
-- Security configurations
-- System optimization
-- Common utilities
+### Development Environment
 
-### Development Profile
+```nix
+{
+  features.dev = {
+    enable = true;  # Enable development environment
+    python.enable = true;  # Python support
+    rust.enable = true;  # Rust support
+    go.enable = true;  # Go support
+  };
+}
+```
 
-- Programming languages
-- Development tools
-- Container support
-- WSL integration
+### Gaming Support
 
-### Gaming Profile
+```nix
+{
+  features.gaming = {
+    enable = true;  # Enable gaming support
+    steam.enable = true;  # Steam support
+    wine.enable = true;  # Wine support
+  };
+}
+```
 
-- Steam support
-- Wine configuration
-- GPU optimization
-- Game streaming
-
-### Server Profile
-
-- Service configurations
-- Container orchestration
-- Monitoring setup
-- Backup solutions
-
-## Feature Flags
-
-Enable features using the feature flag system:
+### Hardware Support
 
 ```nix
 {
   features = {
-    nvidia.enable = true;
-    wsl = {
-      enable = true;
-      gui.enable = true;
+    nvidia = {
+      enable = true;  # NVIDIA support
     };
-    dev = {
-      python.enable = true;
-      rust.enable = true;
+    amd = {
+      enable = true;  # AMD support
     };
   };
 }
@@ -117,14 +111,12 @@ Enable features using the feature flag system:
 Run the test suite:
 
 ```bash
-# Run all tests
-nix build .#nixosTests.all
-
-# Test specific profile
-nix build .#nixosTests.dev
-
-# Test WSL configuration
+# Test WSL configuration (enabled by default)
 nix build .#nixosTests.wsl
+
+# Test specific module (when enabled)
+nix build .#nixosTests.dev  # Development environment
+nix build .#nixosTests.gaming  # Gaming support
 ```
 
 ## Development
@@ -151,14 +143,14 @@ nix build .#nixosTests.wsl
 
 Special support for Windows Subsystem for Linux:
 
-1. Enable WSL features:
+1. WSL features are enabled by default:
 
    ```nix
    {
      features.wsl = {
-       enable = true;
+       enable = true;  # Already enabled by default
        gui.enable = true;  # For GUI applications
-       cuda.enable = true;  # For NVIDIA support
+       cuda.enable = false;  # For NVIDIA support (optional)
      };
    }
    ```
@@ -178,10 +170,10 @@ Special support for Windows Subsystem for Linux:
 
 ## Best Practices
 
-1. Always enable the base profile
-2. Test changes locally before pushing
-3. Update documentation
-4. Follow the coding style
+1. Start with WSL configuration
+2. Enable modules incrementally
+3. Test changes locally
+4. Update documentation
 5. Write tests for new features
 
 ## Troubleshooting

@@ -245,17 +245,54 @@
         "remote.SSH.enableRemoteCommand" = true;
       };
     };
-  };
 
-  # Pre-commit configuration at home-manager level
-  pre-commit = {
-    enable = true;
-    hooks = {
-      nixpkgs-fmt.enable = true;
-      prettier.enable = true;
-      black.enable = true;
+    # Pre-commit configuration
+    pre-commit = {
+      enable = true;
+      package = pkgs.pre-commit;
+      settings = {
+        hooks = {
+          nixpkgs-fmt = {
+            enable = true;
+          };
+          prettier = {
+            enable = true;
+          };
+          black = {
+            enable = true;
+          };
+        };
+      };
     };
   };
+
+  # Create pre-commit configuration
+  home.file.".config/git/hooks/pre-commit-config.yaml".text = ''
+    repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+        - id: trailing-whitespace
+        - id: end-of-file-fixer
+        - id: check-yaml
+        - id: check-added-large-files
+
+    - repo: https://github.com/nix-community/nixpkgs-fmt
+      rev: v1.3.0
+      hooks:
+        - id: nixpkgs-fmt
+
+    - repo: https://github.com/pre-commit/mirrors-prettier
+      rev: v3.1.0
+      hooks:
+        - id: prettier
+          types_or: [javascript, jsx, ts, tsx, markdown, yaml, json]
+
+    - repo: https://github.com/psf/black
+      rev: 23.12.1
+      hooks:
+        - id: black
+  '';
 
   # Enable fonts in home-manager
   fonts.fontconfig.enable = true;

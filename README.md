@@ -1,103 +1,201 @@
 # NixOS Configuration
 
-A NixOS configuration for managing multiple machines with a focus on reproducibility and testing.
+A modular, composable, and tested NixOS configuration using profiles and feature flags.
+
+## Features
+
+- Profile-based configuration
+- Automated testing
+- Feature flag system
+- WSL support
+- Development environments
+- Gaming optimizations
+- Server configurations
 
 ## Structure
 
 ```
 .
-├── flake.nix           # Main flake configuration
-├── hosts/             # Host-specific configurations
-│   └── daimyo00/     # WSL development environment
-├── modules/           # Reusable NixOS and home-manager modules
-│   ├── nixos/        # NixOS modules
-│   │   └── profiles/ # System profiles (dev, gaming, srv)
-│   └── home-manager/ # Home-manager modules
-├── overlays/          # Nixpkgs overlays
-└── pkgs/             # Custom packages
+├── docs/
+│   └── adr/                    # Architecture Decision Records
+├── modules/
+│   ├── core/                   # Core system components
+│   │   ├── network.nix
+│   │   └── security.nix
+│   ├── services/               # Service configurations
+│   │   ├── wsl.nix
+│   │   └── containers.nix
+│   └── hardware/               # Hardware-specific settings
+│       ├── nvidia.nix
+│       └── amd.nix
+├── profiles/                   # System profiles
+│   ├── base/                   # Base system configuration
+│   ├── dev/                    # Development environment
+│   ├── gaming/                 # Gaming optimizations
+│   └── server/                 # Server configurations
+└── tests/                      # System tests
 ```
+
+## Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/nix-config.git
+   cd nix-config
+   ```
+
+2. Enable the profiles you need in your `configuration.nix`:
+   ```nix
+   {
+     profiles = {
+       base.enable = true;
+       dev.enable = true;  # For development
+       gaming.enable = true;  # For gaming
+     };
+   }
+   ```
+
+3. Apply the configuration:
+   ```bash
+   sudo nixos-rebuild switch --flake .#
+   ```
 
 ## Profiles
 
-### Development (dev.nix)
+### Base Profile
+- Core system settings
+- Security configurations
+- System optimization
+- Common utilities
 
-- IDE and development tools
-- Language servers and formatters
-- Build tools and debugging utilities
+### Development Profile
+- Programming languages
+- Development tools
+- Container support
+- WSL integration
 
-### Gaming (gaming.nix)
+### Gaming Profile
+- Steam support
+- Wine configuration
+- GPU optimization
+- Game streaming
 
-- Xen hypervisor configuration
-- Looking Glass for GPU passthrough
-- Sunshine game streaming
-- Performance optimizations
-
-### Server (srv.nix)
-
-- Cluster management
-- Monitoring stack (Prometheus + Grafana)
+### Server Profile
+- Service configurations
+- Container orchestration
+- Monitoring setup
 - Backup solutions
-- Security hardening
 
-## Usage
+## Feature Flags
 
-### WSL Development Environment
+Enable features using the feature flag system:
 
-1. Install NixOS-WSL:
+```nix
+{
+  features = {
+    nvidia.enable = true;
+    wsl = {
+      enable = true;
+      gui.enable = true;
+    };
+    dev = {
+      python.enable = true;
+      rust.enable = true;
+    };
+  };
+}
+```
 
-   ```bash
-   wsl --import NixOS .\NixOS\ nixos-wsl.tar.gz --version 2
-   ```
+## Testing
 
-2. Build and activate:
-   ```bash
-   sudo nixos-rebuild switch --flake .#daimyo00
-   home-manager switch --flake .#ryzengrind@daimyo00
-   ```
-
-### Testing
-
-The repository includes comprehensive testing through GitHub Actions:
-
-- Flake checks
-- Configuration builds
-- WSL testing
-- Home-manager validation
-- Security scanning
-
-### Deployment
-
-Configurations are automatically built and pushed to a binary cache when merged to main.
-
-## Requirements
-
-- Nix with flakes enabled
-- Home-manager
-- For WSL: Windows 10/11 with WSL2
-
-## CI/CD Secrets Required
-
-- `CACHIX_AUTH_TOKEN`: For pushing to binary cache
-- `AWS_ACCESS_KEY_ID`: For S3 binary cache (optional)
-- `AWS_SECRET_ACCESS_KEY`: For S3 binary cache (optional)
-
-## Development Workflow
-
-1. Create a new branch for changes
-2. Make modifications
-3. Test locally:
-   ```bash
-   nix flake check
-   nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
-   ```
-4. Push changes and create PR
-5. Wait for CI checks to pass
-6. Merge to main
-
-## Rollback
-
-In case of issues after deployment:
+Run the test suite:
 
 ```bash
-sudo nixos-rebuild switch --flake .#daimyo00 --rollback
+# Run all tests
+nix build .#nixosTests.all
+
+# Test specific profile
+nix build .#nixosTests.dev
+
+# Test WSL configuration
+nix build .#nixosTests.wsl
 ```
+
+## Development
+
+1. Install pre-commit hooks:
+   ```bash
+   nix develop
+   pre-commit install
+   ```
+
+2. Make changes and commit:
+   - Changes are automatically formatted
+   - Tests run on commit
+   - Documentation is verified
+
+3. Submit a pull request:
+   - CI runs all tests
+   - Code is reviewed
+   - Changes are merged
+
+## WSL Support
+
+Special support for Windows Subsystem for Linux:
+
+1. Enable WSL features:
+   ```nix
+   {
+     features.wsl = {
+       enable = true;
+       gui.enable = true;  # For GUI applications
+       cuda.enable = true;  # For NVIDIA support
+     };
+   }
+   ```
+
+2. Install in WSL:
+   ```bash
+   wsl --import NixOS ./nixos nixos.tar.gz --version 2
+   ```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## Best Practices
+
+1. Always enable the base profile
+2. Test changes locally before pushing
+3. Update documentation
+4. Follow the coding style
+5. Write tests for new features
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Build failures**
+   - Check the error message
+   - Verify dependencies
+   - Review recent changes
+
+2. **Test failures**
+   - Run tests locally
+   - Check test logs
+   - Verify test environment
+
+## License
+
+MIT - See LICENSE file for details
+
+## Acknowledgments
+
+- NixOS community
+- Contributors
+- Testing frameworks
+- Documentation tools

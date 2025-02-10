@@ -1,0 +1,5 @@
+* [32mcsnw-precommit/refactor [m bdfb919 [[34morigin/csnw-precommit/refactor[m] fix: handle cd failure in setup script
+  main                    [m 59fc6bf Enhance Nix configuration for Linux systems and WSL NVIDIA support
+  master                  [m 2802c95 [[34morigin/master[m] Added .cursorrules
+  stable/daimyo00-feat.ide[m 59fc6bf Enhance Nix configuration for Linux systems and WSL NVIDIA support
+  working-flake.daimyo00  [m 28d9a46 [[34morigin/working-flake.daimyo00[m: ahead 4] chore: update git hooks configuration

@@ -76,7 +76,7 @@ in {
       exporters.node = {
         enable = true;
         enabledCollectors = ["nix" "systemd"];
-        port = cfg.metrics.port;
+        inherit (cfg.metrics) port;
       };
     };
 

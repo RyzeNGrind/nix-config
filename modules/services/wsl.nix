@@ -54,13 +54,13 @@ in {
       automountPath = "/mnt";
       automount = lib.mkIf cfg.automount.enable {
         enable = true;
-        options = cfg.automount.options;
+        inherit (cfg.automount) options;
       };
     };
 
     # Network configuration
     networking = {
-      generateResolvConf = cfg.network.generateResolvConf;
+      inherit (cfg.network) generateResolvConf;
       hostFiles = lib.mkIf cfg.network.generateHosts [
         (pkgs.writeText "wsl-hosts" ''
           127.0.0.1 localhost

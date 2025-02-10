@@ -32,8 +32,7 @@
       useNetworkd = true;
       firewall = lib.mkIf config.core.network.firewall.enable {
         enable = true;
-        inherit (config.core.network.firewall) allowPing;
-        inherit (config.core.network.firewall) openPorts;
+        inherit (config.core.network.firewall) allowPing openPorts;
       };
 
       # Network optimization

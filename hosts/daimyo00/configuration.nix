@@ -54,6 +54,29 @@
   programs.nix-ld = {
     enable = true;
     package = pkgs.nix-ld-rs; # only for NixOS 24.05
+    libraries = with pkgs; [
+      # Basic system libraries
+      stdenv.cc.cc
+      openssl
+      zlib
+      curl
+      
+      # Development tools
+      git
+      python3
+      nodePackages.prettier
+      black
+      
+      # Additional libraries that might be needed
+      glibc
+      icu
+      zlib
+      nss
+      openssl
+      
+      # Node.js dependencies
+      nodejs_20
+    ];
   };
 
   networking.hostName = "daimyo00";

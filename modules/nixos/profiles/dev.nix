@@ -1,20 +1,34 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 let
   cfg = config.profiles.dev;
-in {
+in
+{
   options.profiles.dev = {
     enable = mkEnableOption "Development environment profile";
     ide = mkOption {
-      type = types.enum [ "vscode" "vscodium" "neovim" "cursor" ];
+      type = types.enum [
+        "vscode"
+        "vscodium"
+        "neovim"
+        "cursor"
+      ];
       default = "vscodium";
       description = "Primary IDE to use";
     };
     vscodeRemote = {
       enable = mkEnableOption "VSCode Remote support";
       method = mkOption {
-        type = types.enum [ "nix-ld" "patch" ];
+        type = types.enum [
+          "nix-ld"
+          "patch"
+        ];
         default = "nix-ld";
         description = "Method to enable VSCode Remote support (nix-ld or patch)";
       };
@@ -41,99 +55,104 @@ in {
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      # Version Control
-      git
-      git-lfs
-      gh
+    environment.systemPackages =
+      with pkgs;
+      [
+        # Version Control
+        git
+        git-lfs
+        gh
 
-      # Build tools
-      gnumake
-      cmake
-      ninja
+        # Build tools
+        gnumake
+        cmake
+        ninja
 
-      # Development tools
-      direnv
-      nix-direnv
-      wget # Required for VSCode Remote
+        # Development tools
+        direnv
+        nix-direnv
+        wget # Required for VSCode Remote
 
-      # Debugging and profiling
-      gdb
-      lldb
-      strace
-      ltrace
+        # Debugging and profiling
+        gdb
+        lldb
+        strace
+        ltrace
 
-      # IDE and editor
-      (mkIf (cfg.ide == "vscode") vscode)
-      (mkIf (cfg.ide == "vscodium") 
-        (vscode-with-extensions.override {
-          vscode = vscodium;
-          vscodeExtensions = with pkgs.vscode-extensions; [
-            # Development
-            ms-vscode.cpptools
-            ms-python.python
-            ms-vscode.cmake-tools
-            
-            # Remote Development
-            ms-vscode-remote.remote-ssh
-            
-            # Git
-            eamodio.gitlens
-            
-            # Nix
-            bbenoist.nix
-            jnoortheen.nix-ide
-            arrterian.nix-env-selector
-            
-            # Theme and UI
-            pkief.material-icon-theme
-          ];
-        })
-      )
-      (mkIf (cfg.ide == "neovim") neovim)
+        # IDE and editor
+        (mkIf (cfg.ide == "vscode") vscode)
+        (mkIf (cfg.ide == "vscodium") (
+          vscode-with-extensions.override {
+            vscode = vscodium;
+            vscodeExtensions = with pkgs.vscode-extensions; [
+              # Development
+              ms-vscode.cpptools
+              ms-python.python
+              ms-vscode.cmake-tools
 
-      # Language servers and formatters
-      nil # Nix LSP
-      nixpkgs-fmt
-      alejandra
-      statix # Nix static analysis
+              # Remote Development
+              ms-vscode-remote.remote-ssh
 
-      # Python ML stack with known working versions
-      (python3.withPackages (ps: with ps; [
-        pip
-        virtualenv
-        poetry
-        (numpy.override { blas = pkgs.mkl; })
-        pandas
-        matplotlib
-        scikit-learn
-        jupyter
-        ipython
-        black
-        pylint
-        mypy
-        pytest
-        # PyTorch with CUDA if enabled
-        (mkIf cfg.ml.pytorch.enable cfg.ml.pytorch.package)
-        (mkIf cfg.ml.pytorch.enable torchvision)
-        (mkIf cfg.ml.pytorch.enable torchaudio)
-        transformers
-        pytorch-lightning
-        tensorboard
-        wandb
-        ray
-        optuna
-      ]))
+              # Git
+              eamodio.gitlens
 
-      # CUDA development tools
-    ] ++ optionals (cfg.ml.enable && cfg.ml.cudaSupport) [
-      cudaPackages.cuda_cudart
-      cudaPackages.cuda_cupti
-      cudaPackages.cuda_nvcc
-      cudaPackages.cudnn
-      nvidia-docker
-      nvtopPackages.full
-    ];
+              # Nix
+              bbenoist.nix
+              jnoortheen.nix-ide
+              arrterian.nix-env-selector
+
+              # Theme and UI
+              pkief.material-icon-theme
+            ];
+          }
+        ))
+        (mkIf (cfg.ide == "neovim") neovim)
+
+        # Language servers and formatters
+        nil # Nix LSP
+        nixpkgs-fmt
+        alejandra
+        statix # Nix static analysis
+
+        # Python ML stack with known working versions
+        (python3.withPackages (
+          ps: with ps; [
+            pip
+            virtualenv
+            poetry
+            (numpy.override { blas = pkgs.mkl; })
+            pandas
+            matplotlib
+            scikit-learn
+            jupyter
+            ipython
+            black
+            pylint
+            mypy
+            pytest
+            # PyTorch with CUDA if enabled
+            (mkIf cfg.ml.pytorch.enable cfg.ml.pytorch.package)
+            (mkIf cfg.ml.pytorch.enable torchvision)
+            (mkIf cfg.ml.pytorch.enable torchaudio)
+            transformers
+            pytorch-lightning
+            tensorboard
+            wandb
+            ray
+            optuna
+          ]
+        ))
+
+        # CUDA development tools
+      ]
+      ++ optionals (cfg.ml.enable && cfg.ml.cudaSupport) [
+        cudaPackages.cuda_cudart
+        cudaPackages.cuda_cupti
+        cudaPackages.cuda_nvcc
+        cudaPackages.cudnn
+        nvidia-docker
+        nvtopPackages.full
+      ];
 
     # VSCode Remote support configuration
     programs.nix-ld = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "nix-ld") {
@@ -142,7 +161,9 @@ in {
     };
 
     # If using patch method, include the vscode-remote-workaround module
-    vscode-remote-workaround.enable = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") true;
+    vscode-remote-workaround.enable = mkIf (
+      cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch"
+    ) true;
 
     # Development environment configuration
     programs = {
@@ -155,13 +176,17 @@ in {
     # Nix development settings
     nix = {
       settings = {
-        experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+          "repl-flake"
+        ];
         warn-dirty = false;
         keep-outputs = true;
         keep-derivations = true;
         # Optimizations for ML development
         auto-optimise-store = true;
-        cores = 0;  # Use all cores
+        cores = 0; # Use all cores
         max-jobs = "auto";
         # Increase timeout for large package downloads
         connect-timeout = 5;
@@ -169,7 +194,10 @@ in {
         timeout = 3600;
         # Increase resource limits for ML workloads
         sandbox = true;
-        trusted-users = [ "root" "@wheel" ];
+        trusted-users = [
+          "root"
+          "@wheel"
+        ];
         # Cache settings for better performance
         substituters = [
           "https://cache.nixos.org"
@@ -205,5 +233,14 @@ in {
         enableNvidia = cfg.ml.cudaSupport;
       };
     };
+
+    # PyTorch package configuration
+    pytorch = {
+      config = {
+        allowUnfree = true;
+        inherit (config.profiles.dev.ml) cudaSupport;
+        inherit (pkgs) cudaPackages;
+      };
+    };
   };
-} 
+}

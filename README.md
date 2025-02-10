@@ -20,17 +20,20 @@ A NixOS configuration for managing multiple machines with a focus on reproducibi
 ## Profiles
 
 ### Development (dev.nix)
+
 - IDE and development tools
 - Language servers and formatters
 - Build tools and debugging utilities
 
 ### Gaming (gaming.nix)
+
 - Xen hypervisor configuration
 - Looking Glass for GPU passthrough
 - Sunshine game streaming
 - Performance optimizations
 
 ### Server (srv.nix)
+
 - Cluster management
 - Monitoring stack (Prometheus + Grafana)
 - Backup solutions
@@ -41,6 +44,7 @@ A NixOS configuration for managing multiple machines with a focus on reproducibi
 ### WSL Development Environment
 
 1. Install NixOS-WSL:
+
    ```bash
    wsl --import NixOS .\NixOS\ nixos-wsl.tar.gz --version 2
    ```
@@ -54,6 +58,7 @@ A NixOS configuration for managing multiple machines with a focus on reproducibi
 ### Testing
 
 The repository includes comprehensive testing through GitHub Actions:
+
 - Flake checks
 - Configuration builds
 - WSL testing
@@ -92,6 +97,7 @@ Configurations are automatically built and pushed to a binary cache when merged 
 ## Rollback
 
 In case of issues after deployment:
+
 ```bash
 sudo nixos-rebuild switch --flake .#daimyo00 --rollback
-``` 
+```

@@ -1,5 +1,6 @@
 # This file defines overlays
-{inputs, ...}: {
+{ inputs, ... }:
+{
   # This one brings our custom packages from the 'pkgs' directory
   additions = final: prev: import ./additions.nix final prev;
 
@@ -11,7 +12,7 @@
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
   # be accessible through 'pkgs.unstable'
   tensorrt = import ./tensorrt.nix;
-  unstable = final: prev: {
+  unstable = _final: prev: {
     unstable = import inputs.nixpkgs-unstable {
       inherit (prev) system;
       config.allowUnfree = true;

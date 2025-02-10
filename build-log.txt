@@ -1,0 +1,2069 @@
+@nix { "action": "setPhase", "phase": "unpackPhase" }
+Running phase: unpackPhase
+unpacking source archive /nix/store/cpl4qx33db3ab3b7hqdm1i5idwndvbws-vwwvmgaiapcg2lvfi22c639yf450bp59-source
+source root is vwwvmgaiapcg2lvfi22c639yf450bp59-source
+@nix { "action": "setPhase", "phase": "patchPhase" }
+Running phase: patchPhase
+@nix { "action": "setPhase", "phase": "updateAutotoolsGnuConfigScriptsPhase" }
+Running phase: updateAutotoolsGnuConfigScriptsPhase
+@nix { "action": "setPhase", "phase": "configurePhase" }
+Running phase: configurePhase
+no configure script, doing nothing
+@nix { "action": "setPhase", "phase": "buildPhase" }
+Running phase: buildPhase
+Running: $ pre-commit run --all-files
+black................................................(no files to check)[46;30mSkipped[m
+deadnix..................................................................[41mFailed[m
+[2m- hook id: deadnix[m
+[2m- exit code: 1[m
+
+[33mWarning:[0m Unused declarations were found.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0mhosts/daimyo00/home.nix:2:22[38;5;246m][0m
+ [38;5;246m2 │[0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249mf[0m[38;5;249mi[0m[38;5;249mg[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249ml[0m[38;5;249mi[0m[38;5;249mb[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249mp[0m[38;5;249mk[0m[38;5;249mg[0m[38;5;249ms[0m[38;5;249m,[0m[38;5;249m [0m[35mi[0m[35mn[0m[35mp[0m[35mu[0m[35mt[0m[35ms[0m[38;5;249m,[0m[38;5;249m [0m[35mo[0m[35mu[0m[35mt[0m[35mp[0m[35mu[0m[35mt[0m[35ms[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m:[0m
+ [38;5;240m  │[0m                        [35m│[0m       [35m╰[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m Unused lambda pattern: outputs
+ [38;5;240m  │[0m                        [35m╰[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m[35m─[0m Unused lambda pattern: inputs
+[33mWarning:[0m Unused declarations were found.
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0mflake.nix:34:7[38;5;246m][0m
+ [38;5;246m 34 │[0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[31mf[0m[31mo[0m[31mr[0m[31mL[0m[31mi[0m[31mn[0m[31mu[0m[31mx[0m[31mS[0m[31my[0m[31ms[0m[31mt[0m[31me[0m[31mm[0m[31ms[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[38;5;249mn[0m[38;5;249mi[0m[38;5;249mx[0m[38;5;249mp[0m[38;5;249mk[0m[38;5;249mg[0m[38;5;249ms[0m[38;5;249m.[0m[38;5;249ml[0m[38;5;249mi[0m[38;5;249mb[0m[38;5;249m.[0m[38;5;249mg[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mA[0m[38;5;249mt[0m[38;5;249mt[0m[38;5;249mr[0m[38;5;249ms[0m[38;5;249m [0m[38;5;249ml[0m[38;5;249mi[0m[38;5;249mn[0m[38;5;249mu[0m[38;5;249mx[0m[38;5;249mS[0m[38;5;249my[0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249mm[0m[38;5;249ms[0m[38;5;249m;[0m
+ [38;5;240m    │[0m             [31m╰[0m[31m─[0m[31m─[0m[31m─[0m[31m─[0m[31m─[0m[31m─[0m[31m─[0m[31m─[0m Unused let binding: forLinuxSystems
+ [38;5;246m 39 │[0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249mo[0m[38;5;249mv[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249ml[0m[38;5;249ma[0m[38;5;249my[0m[38;5;249mU[0m[38;5;249mn[0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249ma[0m[38;5;249mb[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[36mf[0m[36mi[0m[36mn[0m[36ma[0m[36ml[0m[38;5;249m:[0m[38;5;249m [0m[38;5;249mp[0m[38;5;249mr[0m[38;5;249me[0m[38;5;249mv[0m[38;5;249m:[0m[38;5;249m [0m[38;5;249m{[0m
+ [38;5;240m    │[0m                          [36m╰[0m[36m─[0m[36m─[0m[36m─[0m Unused lambda argument: final
+ [38;5;246m435 │[0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m([0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mp[0m[38;5;249mk[0m[38;5;249mg[0m[38;5;249ms[0m[38;5;249m,[0m[38;5;249m [0m[35ml[0m[35mi[0m[35mb[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m:[0m[38;5;249m [0m[38;5;249m{[0m
+ [38;5;240m    │[0m                      [35m╰[0m[35m─[0m[35m─[0m Unused lambda pattern: lib
+[33mWarning:[0m Unused declarations were found.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0mhosts/daimyo00/configuration.nix:2:11[38;5;246m][0m
+ [38;5;246m2 │[0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249mf[0m[38;5;249mi[0m[38;5;249mg[0m[38;5;249m,[0m[38;5;249m [0m[35ml[0m[35mi[0m[35mb[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249mp[0m[38;5;249mk[0m[38;5;249mg[0m[38;5;249ms[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249mi[0m[38;5;249mn[0m[38;5;249mp[0m[38;5;249mu[0m[38;5;249mt[0m[38;5;249ms[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m:[0m
+ [38;5;240m  │[0m           [35m╰[0m[35m─[0m[35m─[0m Unused lambda pattern: lib
+
+nixfmt-rfc-style.........................................................[41mFailed[m
+[2m- hook id: nixfmt-rfc-style[m
+[2m- files were modified by this hook[m
+prettier.................................................................[41mFailed[m
+[2m- hook id: prettier[m
+[2m- files were modified by this hook[m
+
+modules/home-manager/default.nix[2K[1G.github/workflows/nix-ci.yml[2K[1Gmodules/home-manager/wsl.nix[2K[1Gnixpkgs.nix[2K[1Ghosts/daimyo00/cachix.nix[2K[1Gmodules/nixos/default.nix[2K[1Gmodules/nixos/profiles/gaming.nix[2K[1Ghosts/daimyo00/configuration.nix[2K[1Gpkgs/cuda/env.nix[2K[1Goverlays/default.nix[2K[1Gflake.lock[2K[1Gflake.lock
+pkgs/tensorrt/generic.nix[2K[1Gsetup-wsl-nvidia.sh[2K[1G.gitignore[2K[1GREADME.md[2K[1Gtensorrt_hashes.txt[2K[1Goverlays/tensorrt.nix[2K[1G.vscode/settings.json[2K[1Gmodules/nixos/cuda.nix[2K[1Gcleanup-wsl-nvidia.sh[2K[1Gmodules/nixos/profiles/srv.nix[2K[1Ghome-manager/home.nix[2K[1Gshell.nix[2K[1Gnixos/hardware-configuration.nix[2K[1Gpkgs/tensorrt/default.nix[2K[1Ghosts/daimyo00/home.nix[2K[1Gflake.nix[2K[1Gnixos/configuration.nix[2K[1Gmodules/nixos/profiles/dev.nix[2K[1Gmodules/nixos/wsl.nix[2K[1G
+
+statix...................................................................[41mFailed[m
+[2m- hook id: statix[m
+[2m- exit code: 1[m
+
+./pkgs/tensorrt/default.nix>57:9:W:4:This assignment is better written with `inherit`
+./nixpkgs.nix>2:1:W:11:This pattern bind is redundant, use `args` instead
+./flake.nix>58:11:W:4:This assignment is better written with `inherit`
+./modules/nixos/profiles/dev.nix>48:13:W:4:This assignment is better written with `inherit`
+./modules/nixos/profiles/dev.nix>49:13:W:4:This assignment is better written with `inherit`
+./modules/home-manager/wsl.nix>1:1:W:10:This pattern is empty, use `_` instead
+./shell.nix>19:9:W:4:This assignment is better written with `inherit`
+
+[1mdiff --git a/flake.lock b/flake.lock[m
+[1mindex ec7cc86..7bba2c4 100644[m
+[1m--- a/flake.lock[m
+[1m+++ b/flake.lock[m
+[36m@@ -34,10 +34,7 @@[m
+     },[m
+     "gitignore": {[m
+       "inputs": {[m
+[31m-        "nixpkgs": [[m
+[31m-          "pre-commit-hooks",[m
+[31m-          "nixpkgs"[m
+[31m-        ][m
+[32m+[m[32m        "nixpkgs": ["pre-commit-hooks", "nixpkgs"][m
+       },[m
+       "locked": {[m
+         "lastModified": 1709087332,[m
+[36m@@ -55,9 +52,7 @@[m
+     },[m
+     "home-manager": {[m
+       "inputs": {[m
+[31m-        "nixpkgs": [[m
+[31m-          "nixpkgs"[m
+[31m-        ][m
+[32m+[m[32m        "nixpkgs": ["nixpkgs"][m
+       },[m
+       "locked": {[m
+         "lastModified": 1726989464,[m
+[36m@@ -160,9 +155,7 @@[m
+       "inputs": {[m
+         "flake-compat": "flake-compat_2",[m
+         "gitignore": "gitignore",[m
+[31m-        "nixpkgs": [[m
+[31m-          "nixpkgs"[m
+[31m-        ][m
+[32m+[m[32m        "nixpkgs": ["nixpkgs"][m
+       },[m
+       "locked": {[m
+         "lastModified": 1737465171,[m
+[1mdiff --git a/flake.nix b/flake.nix[m
+[1mindex 0d3ff61..1024111 100644[m
+[1m--- a/flake.nix[m
+[1m+++ b/flake.nix[m
+[36m@@ -26,14 +26,31 @@[m
+     nixos-hardware.url = "github:nixos/nixos-hardware";[m
+   };[m
+ [m
+[31m-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, nixos-wsl, pre-commit-hooks, ... } @ inputs:[m
+[32m+[m[32m  outputs =[m
+[32m+[m[32m    {[m
+[32m+[m[32m      self,[m
+[32m+[m[32m      nixpkgs,[m
+[32m+[m[32m      nixpkgs-unstable,[m
+[32m+[m[32m      home-manager,[m
+[32m+[m[32m      nixos-wsl,[m
+[32m+[m[32m      pre-commit-hooks,[m
+[32m+[m[32m      ...[m
+[32m+[m[32m    }@inputs:[m
+     let[m
+       inherit (self) outputs;[m
+       # Only build for Linux systems[m
+[31m-      linuxSystems = [ "x86_64-linux" "aarch64-linux" ];[m
+[32m+[m[32m      linuxSystems = [[m
+[32m+[m[32m        "x86_64-linux"[m
+[32m+[m[32m        "aarch64-linux"[m
+[32m+[m[32m      ];[m
+       forLinuxSystems = nixpkgs.lib.genAttrs linuxSystems;[m
+       # For packages that can build on any system[m
+[31m-      allSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];[m
+[32m+[m[32m      allSystems = [[m
+[32m+[m[32m        "x86_64-linux"[m
+[32m+[m[32m        "aarch64-linux"[m
+[32m+[m[32m        "x86_64-darwin"[m
+[32m+[m[32m        "aarch64-darwin"[m
+[32m+[m[32m      ];[m
+       forAllSystems = nixpkgs.lib.genAttrs allSystems;[m
+       # Add this new overlay to make unstable packages available[m
+       overlayUnstable = final: prev: {[m
+[36m@@ -45,38 +62,52 @@[m
+     in[m
+     {[m
+       # Pre-commit hooks check[m
+[31m-      checks = forAllSystems (system: let[m
+[31m-        pkgs = nixpkgs.legacyPackages.${system};[m
+[31m-      in {[m
+[31m-        pre-commit-check = pre-commit-hooks.lib.${system}.run {[m
+[31m-          src = ./.;[m
+[31m-          hooks = {[m
+[31m-            nixfmt-rfc-style = {[m
+[31m-              enable = true;[m
+[31m-              excludes = [ "^pkgs/cuda/.*$" "^pkgs/tensorrt/.*$" ];[m
+[31m-            };[m
+[31m-            statix = {[m
+[31m-              enable = true;[m
+[31m-              excludes = [ "^pkgs/cuda/.*$" "^pkgs/tensorrt/.*$" ];[m
+[31m-            };[m
+[31m-            deadnix = {[m
+[31m-              enable = true;[m
+[31m-              excludes = [ "^pkgs/cuda/.*$" "^pkgs/tensorrt/.*$" ];[m
+[31m-            };[m
+[31m-            prettier = {[m
+[31m-              enable = true;[m
+[31m-            };[m
+[31m-            black = {[m
+[31m-              enable = true;[m
+[32m+[m[32m      checks = forAllSystems ([m
+[32m+[m[32m        system:[m
+[32m+[m[32m        let[m
+[32m+[m[32m          pkgs = nixpkgs.legacyPackages.${system};[m
+[32m+[m[32m        in[m
+[32m+[m[32m        {[m
+[32m+[m[32m          pre-commit-check = pre-commit-hooks.lib.${system}.run {[m
+[32m+[m[32m            src = ./.;[m
+[32m+[m[32m            hooks = {[m
+[32m+[m[32m              nixfmt-rfc-style = {[m
+[32m+[m[32m                enable = true;[m
+[32m+[m[32m                excludes = [[m
+[32m+[m[32m                  "^pkgs/cuda/.*$"[m
+[32m+[m[32m                  "^pkgs/tensorrt/.*$"[m
+[32m+[m[32m                ];[m
+[32m+[m[32m              };[m
+[32m+[m[32m              statix = {[m
+[32m+[m[32m                enable = true;[m
+[32m+[m[32m                excludes = [[m
+[32m+[m[32m                  "^pkgs/cuda/.*$"[m
+[32m+[m[32m                  "^pkgs/tensorrt/.*$"[m
+[32m+[m[32m                ];[m
+[32m+[m[32m              };[m
+[32m+[m[32m              deadnix = {[m
+[32m+[m[32m                enable = true;[m
+[32m+[m[32m                excludes = [[m
+[32m+[m[32m                  "^pkgs/cuda/.*$"[m
+[32m+[m[32m                  "^pkgs/tensorrt/.*$"[m
+[32m+[m[32m                ];[m
+[32m+[m[32m              };[m
+[32m+[m[32m              prettier = {[m
+[32m+[m[32m                enable = true;[m
+[32m+[m[32m              };[m
+[32m+[m[32m              black = {[m
+[32m+[m[32m                enable = true;[m
+[32m+[m[32m              };[m
+             };[m
+[32m+[m[32m            tools = pkgs;[m
+[32m+[m[32m            # Remove global excludes since we're using per-hook excludes[m
+           };[m
+[31m-          tools = pkgs;[m
+[31m-          # Remove global excludes since we're using per-hook excludes[m
+[31m-        };[m
+[31m-      });[m
+[32m+[m[32m        }[m
+[32m+[m[32m      );[m
+ [m
+       # Your custom packages and modifications[m
+[31m-      devShells = forAllSystems (system:[m
+[32m+[m[32m      devShells = forAllSystems ([m
+[32m+[m[32m        system:[m
+         let[m
+           pkgs = import nixpkgs {[m
+             inherit system;[m
+[36m@@ -88,100 +119,111 @@[m
+         in[m
+         {[m
+           default = pkgs.mkShell {[m
+[31m-            buildInputs = with pkgs; [[m
+[31m-              git[m
+[31m-              pre-commit[m
+[31m-              nixfmt-rfc-style[m
+[31m-              statix[m
+[31m-              deadnix[m
+[31m-              nodePackages.prettier[m
+[31m-              python311Packages.black[m
+[31m-            ] ++ self.checks.${system}.pre-commit-check.enabledPackages;[m
+[32m+[m[32m            buildInputs =[m
+[32m+[m[32m              with pkgs;[m
+[32m+[m[32m              [[m
+[32m+[m[32m                git[m
+[32m+[m[32m                pre-commit[m
+[32m+[m[32m                nixfmt-rfc-style[m
+[32m+[m[32m                statix[m
+[32m+[m[32m                deadnix[m
+[32m+[m[32m                nodePackages.prettier[m
+[32m+[m[32m                python311Packages.black[m
+[32m+[m[32m              ][m
+[32m+[m[32m              ++ self.checks.${system}.pre-commit-check.enabledPackages;[m
+             shellHook = ''[m
+               ${self.checks.${system}.pre-commit-check.shellHook}[m
+             '';[m
+           };[m
+[31m-        } // (if builtins.elem system linuxSystems then {[m
+[31m-          ml = pkgs.mkShell {[m
+[31m-            buildInputs = with pkgs; [[m
+[31m-              linuxPackages.nvidia_x11[m
+[31m-              libGLU[m
+[31m-              libGL[m
+[31m-              xorg.libXi[m
+[31m-              xorg.libXmu[m
+[31m-              freeglut[m
+[31m-              xorg.libXext[m
+[31m-              xorg.libX11[m
+[31m-              xorg.libXv[m
+[31m-              xorg.libXrandr[m
+[31m-              zlib[m
+[31m-              ncurses5[m
+[31m-              stdenv.cc[m
+[31m-              binutils[m
+[31m-              ffmpeg[m
+[31m-              fish[m
+[31m-              micromamba[m
+[31m-              # CUDA packages[m
+[31m-              cudaPackages.cuda_cudart[m
+[31m-              cudaPackages.cuda_cupti[m
+[31m-              cudaPackages.cudatoolkit[m
+[31m-              cudaPackages.cudnn[m
+[31m-              cudaPackages.cuda_nvcc[m
+[31m-              # Python and monitoring tools[m
+[31m-              python311[m
+[31m-              python311Packages.pip[m
+[31m-              python311Packages.virtualenv[m
+[31m-              nvtopPackages.full[m
+[31m-              nvidia-docker[m
+[31m-              # Development tools[m
+[31m-              git[m
+[31m-              curl[m
+[31m-              wget[m
+[31m-            ];[m
+[31m-            shellHook = ''[m
+[31m-              # WSL2-specific NVIDIA setup[m
+[31m-              if [ -d "/usr/lib/wsl/lib" ]; then[m
+[31m-                export NVIDIA_DRIVER_LIBRARY_PATH="/usr/lib/wsl/lib"[m
+[31m-                export LD_LIBRARY_PATH="/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib"[m
+[31m-                export NVIDIA_DRIVER_CAPABILITIES="compute,utility"[m
+[31m-                export NVIDIA_VISIBLE_DEVICES="all"[m
+[31m-                export NVIDIA_REQUIRE_CUDA="cuda>=12.0"[m
+[31m-[m
+[31m-                # Create symlinks for WSL NVIDIA libraries[m
+[31m-                mkdir -p ~/.local/lib[m
+[31m-                for lib in /usr/lib/wsl/lib/libcuda*; do[m
+[31m-                  if [ -f "$lib" ]; then[m
+[31m-                    ln -sf "$lib" ~/.local/lib/[m
+[32m+[m[32m        }[m
+[32m+[m[32m        // ([m
+[32m+[m[32m          if builtins.elem system linuxSystems then[m
+[32m+[m[32m            {[m
+[32m+[m[32m              ml = pkgs.mkShell {[m
+[32m+[m[32m                buildInputs = with pkgs; [[m
+[32m+[m[32m                  linuxPackages.nvidia_x11[m
+[32m+[m[32m                  libGLU[m
+[32m+[m[32m                  libGL[m
+[32m+[m[32m                  xorg.libXi[m
+[32m+[m[32m                  xorg.libXmu[m
+[32m+[m[32m                  freeglut[m
+[32m+[m[32m                  xorg.libXext[m
+[32m+[m[32m                  xorg.libX11[m
+[32m+[m[32m                  xorg.libXv[m
+[32m+[m[32m                  xorg.libXrandr[m
+[32m+[m[32m                  zlib[m
+[32m+[m[32m                  ncurses5[m
+[32m+[m[32m                  stdenv.cc[m
+[32m+[m[32m                  binutils[m
+[32m+[m[32m                  ffmpeg[m
+[32m+[m[32m                  fish[m
+[32m+[m[32m                  micromamba[m
+[32m+[m[32m                  # CUDA packages[m
+[32m+[m[32m                  cudaPackages.cuda_cudart[m
+[32m+[m[32m                  cudaPackages.cuda_cupti[m
+[32m+[m[32m                  cudaPackages.cudatoolkit[m
+[32m+[m[32m                  cudaPackages.cudnn[m
+[32m+[m[32m                  cudaPackages.cuda_nvcc[m
+[32m+[m[32m                  # Python and monitoring tools[m
+[32m+[m[32m                  python311[m
+[32m+[m[32m                  python311Packages.pip[m
+[32m+[m[32m                  python311Packages.virtualenv[m
+[32m+[m[32m                  nvtopPackages.full[m
+[32m+[m[32m                  nvidia-docker[m
+[32m+[m[32m                  # Development tools[m
+[32m+[m[32m                  git[m
+[32m+[m[32m                  curl[m
+[32m+[m[32m                  wget[m
+[32m+[m[32m                ];[m
+[32m+[m[32m                shellHook = ''[m
+[32m+[m[32m                  # WSL2-specific NVIDIA setup[m
+[32m+[m[32m                  if [ -d "/usr/lib/wsl/lib" ]; then[m
+[32m+[m[32m                    export NVIDIA_DRIVER_LIBRARY_PATH="/usr/lib/wsl/lib"[m
+[32m+[m[32m                    export LD_LIBRARY_PATH="/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib"[m
+[32m+[m[32m                    export NVIDIA_DRIVER_CAPABILITIES="compute,utility"[m
+[32m+[m[32m                    export NVIDIA_VISIBLE_DEVICES="all"[m
+[32m+[m[32m                    export NVIDIA_REQUIRE_CUDA="cuda>=12.0"[m
+[32m+[m
+[32m+[m[32m                    # Create symlinks for WSL NVIDIA libraries[m
+[32m+[m[32m                    mkdir -p ~/.local/lib[m
+[32m+[m[32m                    for lib in /usr/lib/wsl/lib/libcuda*; do[m
+[32m+[m[32m                      if [ -f "$lib" ]; then[m
+[32m+[m[32m                        ln -sf "$lib" ~/.local/lib/[m
+[32m+[m[32m                      fi[m
+[32m+[m[32m                    done[m
+[32m+[m[32m                    export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"[m
+                   fi[m
+[31m-                done[m
+[31m-                export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"[m
+[31m-              fi[m
+[31m-[m
+[31m-              # CUDA setup[m
+[31m-              export CUDA_PATH="${pkgs.cudaPackages.cudatoolkit}"[m
+[31m-              export PATH="${pkgs.cudaPackages.cuda_nvcc}/bin:${pkgs.linuxPackages.nvidia_x11}/bin:$PATH"[m
+[31m-              export CUDA_HOME="$CUDA_PATH"[m
+[31m-              export XLA_FLAGS="--xla_gpu_cuda_data_dir=$CUDA_PATH"[m
+[31m-              export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"[m
+[31m-              export EXTRA_CCFLAGS="-I/usr/include"[m
+[31m-[m
+[31m-              # Create local bin directory for NVIDIA tools[m
+[31m-              mkdir -p ~/.local/bin[m
+[31m-              for cmd in nvidia-smi nvtop; do[m
+[31m-                if command -v $cmd >/dev/null 2>&1; then[m
+[31m-                  ln -sf $(command -v $cmd) ~/.local/bin/[m
+[31m-                fi[m
+[31m-              done[m
+[31m-              export PATH="$HOME/.local/bin:$PATH"[m
+[31m-[m
+[31m-              # Start fish shell[m
+[31m-              exec fish[m
+[31m-            '';[m
+[31m-          };[m
+[31m-        } else {}));[m
+[32m+[m
+[32m+[m[32m                  # CUDA setup[m
+[32m+[m[32m                  export CUDA_PATH="${pkgs.cudaPackages.cudatoolkit}"[m
+[32m+[m[32m                  export PATH="${pkgs.cudaPackages.cuda_nvcc}/bin:${pkgs.linuxPackages.nvidia_x11}/bin:$PATH"[m
+[32m+[m[32m                  export CUDA_HOME="$CUDA_PATH"[m
+[32m+[m[32m                  export XLA_FLAGS="--xla_gpu_cuda_data_dir=$CUDA_PATH"[m
+[32m+[m[32m                  export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"[m
+[32m+[m[32m                  export EXTRA_CCFLAGS="-I/usr/include"[m
+[32m+[m
+[32m+[m[32m                  # Create local bin directory for NVIDIA tools[m
+[32m+[m[32m                  mkdir -p ~/.local/bin[m
+[32m+[m[32m                  for cmd in nvidia-smi nvtop; do[m
+[32m+[m[32m                    if command -v $cmd >/dev/null 2>&1; then[m
+[32m+[m[32m                      ln -sf $(command -v $cmd) ~/.local/bin/[m
+[32m+[m[32m                    fi[m
+[32m+[m[32m                  done[m
+[32m+[m[32m                  export PATH="$HOME/.local/bin:$PATH"[m
+[32m+[m
+[32m+[m[32m                  # Start fish shell[m
+[32m+[m[32m                  exec fish[m
+[32m+[m[32m                '';[m
+[32m+[m[32m              };[m
+[32m+[m[32m            }[m
+[32m+[m[32m          else[m
+[32m+[m[32m            { }[m
+[32m+[m[32m        )[m
+[32m+[m[32m      );[m
+ [m
+       # Packages that can build on any system[m
+[31m-      packages = forAllSystems (system:[m
+[32m+[m[32m      packages = forAllSystems ([m
+[32m+[m[32m        system:[m
+         let[m
+           pkgs = import nixpkgs {[m
+             inherit system;[m
+[36m@@ -196,19 +238,24 @@[m
+             name = "empty";[m
+             inherit system;[m
+             builder = "${pkgs.bash}/bin/bash";[m
+[31m-            args = [ "-c" "mkdir -p $out" ];[m
+[32m+[m[32m            args = [[m
+[32m+[m[32m              "-c"[m
+[32m+[m[32m              "mkdir -p $out"[m
+[32m+[m[32m            ];[m
+           };[m
+ [m
+           # Create TensorRT package based on system support[m
+           tensorrtPkg =[m
+[31m-            if (builtins.elem system linuxSystems)[m
+[31m-            then (pkgs.callPackage ./pkgs/tensorrt { inherit (pkgs) cudaPackages; })[m
+[31m-            else emptyDrv;[m
+[32m+[m[32m            if (builtins.elem system linuxSystems) then[m
+[32m+[m[32m              (pkgs.callPackage ./pkgs/tensorrt { inherit (pkgs) cudaPackages; })[m
+[32m+[m[32m            else[m
+[32m+[m[32m              emptyDrv;[m
+         in[m
+         {[m
+           default = tensorrtPkg;[m
+           tensorrt = tensorrtPkg;[m
+[31m-        });[m
+[32m+[m[32m        }[m
+[32m+[m[32m      );[m
+ [m
+       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);[m
+       overlays = import ./overlays { inherit inputs; } // {[m
+[36m@@ -221,7 +268,9 @@[m
+         # WSL configuration[m
+         daimyo00 = nixpkgs.lib.nixosSystem {[m
+           system = "x86_64-linux";[m
+[31m-          specialArgs = { inherit inputs outputs; };[m
+[32m+[m[32m          specialArgs = {[m
+[32m+[m[32m            inherit inputs outputs;[m
+[32m+[m[32m          };[m
+           modules = [[m
+             # Core modules[m
+             ./hosts/daimyo00/configuration.nix[m
+[36m@@ -256,7 +305,9 @@[m
+                 useGlobalPkgs = true;[m
+                 useUserPackages = true;[m
+                 users.ryzengrind = import ./hosts/daimyo00/home.nix;[m
+[31m-                extraSpecialArgs = { inherit inputs outputs; };[m
+[32m+[m[32m                extraSpecialArgs = {[m
+[32m+[m[32m                  inherit inputs outputs;[m
+[32m+[m[32m                };[m
+               };[m
+             }[m
+           ];[m
+[36m@@ -265,153 +316,171 @@[m
+         # No CUDA/TensorRT configuration[m
+         daimyo00-nocuda = nixpkgs.lib.nixosSystem {[m
+           system = "x86_64-linux";[m
+[31m-          specialArgs = { inherit inputs; };[m
+[32m+[m[32m          specialArgs = {[m
+[32m+[m[32m            inherit inputs;[m
+[32m+[m[32m          };[m
+           modules = [[m
+             # WSL module[m
+             inputs.nixos-wsl.nixosModules.wsl[m
+ [m
+             # Base configuration[m
+[31m-            ({ pkgs, lib, ... }: {[m
+[31m-              # Basic system configuration[m
+[31m-              system.stateVersion = "24.05";[m
+[31m-[m
+[31m-              # System configuration[m
+[31m-              nixpkgs = {[m
+[31m-                config = {[m
+[31m-                  allowUnfree = true;[m
+[31m-                  allowBroken = true;[m
+[31m-                  # Explicitly disable CUDA[m
+[31m-                  cudaSupport = lib.mkForce false;[m
+[31m-                  cudaCapabilities = lib.mkForce [ ];[m
+[32m+[m[32m            ([m
+[32m+[m[32m              { pkgs, lib, ... }:[m
+[32m+[m[32m              {[m
+[32m+[m[32m                # Basic system configuration[m
+[32m+[m[32m                system.stateVersion = "24.05";[m
+[32m+[m
+[32m+[m[32m                # System configuration[m
+[32m+[m[32m                nixpkgs = {[m
+[32m+[m[32m                  config = {[m
+[32m+[m[32m                    allowUnfree = true;[m
+[32m+[m[32m                    allowBroken = true;[m
+[32m+[m[32m                    # Explicitly disable CUDA[m
+[32m+[m[32m                    cudaSupport = lib.mkForce false;[m
+[32m+[m[32m                    cudaCapabilities = lib.mkForce [ ];[m
+[32m+[m[32m                  };[m
+[32m+[m[32m                  # Ensure no CUDA overlays[m
+[32m+[m[32m                  overlays = [ ];[m
+                 };[m
+[31m-                # Ensure no CUDA overlays[m
+[31m-                overlays = [ ];[m
+[31m-              };[m
+ [m
+[31m-              # Disable all NVIDIA/CUDA related features[m
+[31m-              hardware = {[m
+[31m-                nvidia = {[m
+[31m-                  package = lib.mkForce null;[m
+[31m-                  modesetting.enable = lib.mkForce false;[m
+[32m+[m[32m                # Disable all NVIDIA/CUDA related features[m
+[32m+[m[32m                hardware = {[m
+[32m+[m[32m                  nvidia = {[m
+[32m+[m[32m                    package = lib.mkForce null;[m
+[32m+[m[32m                    modesetting.enable = lib.mkForce false;[m
+[32m+[m[32m                  };[m
+[32m+[m[32m                  nvidia-container-toolkit.enable = lib.mkForce false;[m
+[32m+[m[32m                  opengl.enable = lib.mkForce false;[m
+                 };[m
+[31m-                nvidia-container-toolkit.enable = lib.mkForce false;[m
+[31m-                opengl.enable = lib.mkForce false;[m
+[31m-              };[m
+ [m
+[31m-              # Explicitly disable WSL CUDA features[m
+[31m-              wsl = {[m
+[31m-                enable = true;[m
+[31m-                defaultUser = "ryzengrind";[m
+[31m-                docker-desktop.enable = true;[m
+[31m-                nativeSystemd = true;[m
+[31m-                startMenuLaunchers = true;[m
+[31m-                wslConf = {[m
+[31m-                  automount = {[m
+[31m-                    enabled = true;[m
+[31m-                    options = "metadata,umask=22,fmask=11,uid=1000,gid=100";[m
+[31m-                    root = "/mnt";[m
+[31m-                  };[m
+[31m-                  network = {[m
+[31m-                    generateHosts = true;[m
+[31m-                    generateResolvConf = true;[m
+[31m-                    hostname = "daimyo00";[m
+[31m-                  };[m
+[31m-                  interop = {[m
+[31m-                    appendWindowsPath = false;[m
+[32m+[m[32m                # Explicitly disable WSL CUDA features[m
+[32m+[m[32m                wsl = {[m
+[32m+[m[32m                  enable = true;[m
+[32m+[m[32m                  defaultUser = "ryzengrind";[m
+[32m+[m[32m                  docker-desktop.enable = true;[m
+[32m+[m[32m                  nativeSystemd = true;[m
+[32m+[m[32m                  startMenuLaunchers = true;[m
+[32m+[m[32m                  wslConf = {[m
+[32m+[m[32m                    automount = {[m
+[32m+[m[32m                      enabled = true;[m
+[32m+[m[32m                      options = "metadata,umask=22,fmask=11,uid=1000,gid=100";[m
+[32m+[m[32m                      root = "/mnt";[m
+[32m+[m[32m                    };[m
+[32m+[m[32m                    network = {[m
+[32m+[m[32m                      generateHosts = true;[m
+[32m+[m[32m                      generateResolvConf = true;[m
+[32m+[m[32m                      hostname = "daimyo00";[m
+[32m+[m[32m                    };[m
+[32m+[m[32m                    interop = {[m
+[32m+[m[32m                      appendWindowsPath = false;[m
+[32m+[m[32m                    };[m
+                   };[m
+[32m+[m[32m                  extraBin = with pkgs; [[m
+[32m+[m[32m                    { src = "${coreutils}/bin/cat"; }[m
+[32m+[m[32m                    { src = "${coreutils}/bin/whoami"; }[m
+[32m+[m[32m                    { src = "${su}/bin/groupadd"; }[m
+[32m+[m[32m                    { src = "${su}/bin/usermod"; }[m
+[32m+[m[32m                  ];[m
+                 };[m
+[31m-                extraBin = with pkgs; [[m
+[31m-                  { src = "${coreutils}/bin/cat"; }[m
+[31m-                  { src = "${coreutils}/bin/whoami"; }[m
+[31m-                  { src = "${su}/bin/groupadd"; }[m
+[31m-                  { src = "${su}/bin/usermod"; }[m
+[31m-                ];[m
+[31m-              };[m
+ [m
+[31m-              # Disable NVIDIA container runtime in Docker instead[m
+[31m-              virtualisation.docker = {[m
+[31m-                enable = true;[m
+[31m-                enableOnBoot = true;[m
+[31m-                autoPrune.enable = true;[m
+[31m-                # Disable NVIDIA runtime[m
+[31m-                enableNvidia = lib.mkForce false;[m
+[31m-                extraOptions = "--add-runtime none=runc";[m
+[31m-              };[m
+[32m+[m[32m                # Disable NVIDIA container runtime in Docker instead[m
+[32m+[m[32m                virtualisation.docker = {[m
+[32m+[m[32m                  enable = true;[m
+[32m+[m[32m                  enableOnBoot = true;[m
+[32m+[m[32m                  autoPrune.enable = true;[m
+[32m+[m[32m                  # Disable NVIDIA runtime[m
+[32m+[m[32m                  enableNvidia = lib.mkForce false;[m
+[32m+[m[32m                  extraOptions = "--add-runtime none=runc";[m
+[32m+[m[32m                };[m
+ [m
+[31m-              # Environment variables to prevent CUDA detection[m
+[31m-              environment.variables = {[m
+[31m-                CUDA_PATH = lib.mkForce "";[m
+[31m-                LD_LIBRARY_PATH = lib.mkForce "";[m
+[31m-                NVIDIA_DRIVER_CAPABILITIES = lib.mkForce "";[m
+[31m-                NVIDIA_VISIBLE_DEVICES = lib.mkForce "none";[m
+[31m-              };[m
+[32m+[m[32m                # Environment variables to prevent CUDA detection[m
+[32m+[m[32m                environment.variables = {[m
+[32m+[m[32m                  CUDA_PATH = lib.mkForce "";[m
+[32m+[m[32m                  LD_LIBRARY_PATH = lib.mkForce "";[m
+[32m+[m[32m                  NVIDIA_DRIVER_CAPABILITIES = lib.mkForce "";[m
+[32m+[m[32m                  NVIDIA_VISIBLE_DEVICES = lib.mkForce "none";[m
+[32m+[m[32m                };[m
+ [m
+[31m-              nix = {[m
+[31m-                settings = {[m
+[31m-                  experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" ];[m
+[31m-                  auto-optimise-store = true;[m
+[31m-                  trusted-users = [ "root" "ryzengrind" "@wheel" ];[m
+[31m-                  max-jobs = "auto";[m
+[31m-                  cores = 0;[m
+[31m-                  keep-outputs = true;[m
+[31m-                  keep-derivations = true;[m
+[31m-                  # Remove CUDA cache[m
+[31m-                  substituters = [[m
+[31m-                    "https://cache.nixos.org"[m
+[31m-                    "https://nix-community.cachix.org"[m
+[31m-                  ];[m
+[31m-                  trusted-public-keys = [[m
+[31m-                    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="[m
+[31m-                    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="[m
+[31m-                  ];[m
+[32m+[m[32m                nix = {[m
+[32m+[m[32m                  settings = {[m
+[32m+[m[32m                    experimental-features = [[m
+[32m+[m[32m                      "nix-command"[m
+[32m+[m[32m                      "flakes"[m
+[32m+[m[32m                      "auto-allocate-uids"[m
+[32m+[m[32m                    ];[m
+[32m+[m[32m                    auto-optimise-store = true;[m
+[32m+[m[32m                    trusted-users = [[m
+[32m+[m[32m                      "root"[m
+[32m+[m[32m                      "ryzengrind"[m
+[32m+[m[32m                      "@wheel"[m
+[32m+[m[32m                    ];[m
+[32m+[m[32m                    max-jobs = "auto";[m
+[32m+[m[32m                    cores = 0;[m
+[32m+[m[32m                    keep-outputs = true;[m
+[32m+[m[32m                    keep-derivations = true;[m
+[32m+[m[32m                    # Remove CUDA cache[m
+[32m+[m[32m                    substituters = [[m
+[32m+[m[32m                      "https://cache.nixos.org"[m
+[32m+[m[32m                      "https://nix-community.cachix.org"[m
+[32m+[m[32m                    ];[m
+[32m+[m[32m                    trusted-public-keys = [[m
+[32m+[m[32m                      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="[m
+[32m+[m[32m                      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="[m
+[32m+[m[32m                    ];[m
+[32m+[m[32m                  };[m
+[32m+[m[32m                  gc = {[m
+[32m+[m[32m                    automatic = true;[m
+[32m+[m[32m                    dates = "weekly";[m
+[32m+[m[32m                    options = "--delete-older-than 7d";[m
+[32m+[m[32m                  };[m
+[32m+[m[32m                  optimise = {[m
+[32m+[m[32m                    automatic = true;[m
+[32m+[m[32m                    dates = [ "weekly" ];[m
+[32m+[m[32m                  };[m
+                 };[m
+[31m-                gc = {[m
+[31m-                  automatic = true;[m
+[31m-                  dates = "weekly";[m
+[31m-                  options = "--delete-older-than 7d";[m
+[32m+[m
+[32m+[m[32m                # Network configuration[m
+[32m+[m[32m                networking = {[m
+[32m+[m[32m                  hostName = "daimyo00";[m
+[32m+[m[32m                  networkmanager.enable = true;[m
+                 };[m
+[31m-                optimise = {[m
+[31m-                  automatic = true;[m
+[31m-                  dates = [ "weekly" ];[m
+[32m+[m[32m                systemd.services.NetworkManager-wait-online.enable = false;[m
+[32m+[m
+[32m+[m[32m                # Locale and time[m
+[32m+[m[32m                time.timeZone = "America/Toronto";[m
+[32m+[m[32m                i18n.defaultLocale = "en_CA.UTF-8";[m
+[32m+[m
+[32m+[m[32m                # User configuration[m
+[32m+[m[32m                users.users.ryzengrind = {[m
+[32m+[m[32m                  hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";[m
+[32m+[m[32m                  isNormalUser = true;[m
+[32m+[m[32m                  extraGroups = [[m
+[32m+[m[32m                    "wheel"[m
+[32m+[m[32m                    "docker"[m
+[32m+[m[32m                    "audio"[m
+[32m+[m[32m                    "networkmanager"[m
+[32m+[m[32m                  ];[m
+                 };[m
+[31m-              };[m
+[31m-[m
+[31m-              # Network configuration[m
+[31m-              networking = {[m
+[31m-                hostName = "daimyo00";[m
+[31m-                networkmanager.enable = true;[m
+[31m-              };[m
+[31m-              systemd.services.NetworkManager-wait-online.enable = false;[m
+[31m-[m
+[31m-              # Locale and time[m
+[31m-              time.timeZone = "America/Toronto";[m
+[31m-              i18n.defaultLocale = "en_CA.UTF-8";[m
+[31m-[m
+[31m-              # User configuration[m
+[31m-              users.users.ryzengrind = {[m
+[31m-                hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";[m
+[31m-                isNormalUser = true;[m
+[31m-                extraGroups = [ "wheel" "docker" "audio" "networkmanager" ];[m
+[31m-              };[m
+ [m
+[31m-              # SSH configuration[m
+[31m-              services.openssh = {[m
+[31m-                enable = true;[m
+[31m-                settings = {[m
+[31m-                  PermitRootLogin = "yes";[m
+[31m-                  PasswordAuthentication = true;[m
+[32m+[m[32m                # SSH configuration[m
+[32m+[m[32m                services.openssh = {[m
+[32m+[m[32m                  enable = true;[m
+[32m+[m[32m                  settings = {[m
+[32m+[m[32m                    PermitRootLogin = "yes";[m
+[32m+[m[32m                    PasswordAuthentication = true;[m
+[32m+[m[32m                  };[m
+                 };[m
+[31m-              };[m
+ [m
+[31m-              # System packages (no CUDA packages)[m
+[31m-              environment.systemPackages = with pkgs; [[m
+[31m-                curl[m
+[31m-                git[m
+[31m-                wget[m
+[31m-                neofetch[m
+[31m-                pre-commit[m
+[31m-              ];[m
+[31m-            })[m
+[32m+[m[32m                # System packages (no CUDA packages)[m
+[32m+[m[32m                environment.systemPackages = with pkgs; [[m
+[32m+[m[32m                  curl[m
+[32m+[m[32m                  git[m
+[32m+[m[32m                  wget[m
+[32m+[m[32m                  neofetch[m
+[32m+[m[32m                  pre-commit[m
+[32m+[m[32m                ];[m
+[32m+[m[32m              }[m
+[32m+[m[32m            )[m
+ [m
+             # Home Manager configuration[m
+             home-manager.nixosModules.home-manager[m
+[36m@@ -420,7 +489,9 @@[m
+                 useGlobalPkgs = true;[m
+                 useUserPackages = true;[m
+                 users.ryzengrind = import ./hosts/daimyo00/home.nix;[m
+[31m-                extraSpecialArgs = { inherit inputs; };[m
+[32m+[m[32m                extraSpecialArgs = {[m
+[32m+[m[32m                  inherit inputs;[m
+[32m+[m[32m                };[m
+               };[m
+             }[m
+           ];[m
+[36m@@ -429,51 +500,59 @@[m
+         # Minimal test configuration[m
+         daimyo00-test = nixpkgs.lib.nixosSystem {[m
+           system = "x86_64-linux";[m
+[31m-          specialArgs = { inherit inputs; };[m
+[32m+[m[32m          specialArgs = {[m
+[32m+[m[32m            inherit inputs;[m
+[32m+[m[32m          };[m
+           modules = [[m
+             # Bare minimum NixOS configuration[m
+[31m-            ({ pkgs, lib, ... }: {[m
+[31m-              # Basic system configuration[m
+[31m-              system.stateVersion = "24.05";[m
+[31m-[m
+[31m-              nixpkgs = {[m
+[31m-                config = {[m
+[31m-                  allowUnfree = true;[m
+[31m-                  allowBroken = false;[m
+[32m+[m[32m            ([m
+[32m+[m[32m              { pkgs, lib, ... }:[m
+[32m+[m[32m              {[m
+[32m+[m[32m                # Basic system configuration[m
+[32m+[m[32m                system.stateVersion = "24.05";[m
+[32m+[m
+[32m+[m[32m                nixpkgs = {[m
+[32m+[m[32m                  config = {[m
+[32m+[m[32m                    allowUnfree = true;[m
+[32m+[m[32m                    allowBroken = false;[m
+[32m+[m[32m                  };[m
+[32m+[m[32m                  # Disable all custom overlays for testing[m
+[32m+[m[32m                  overlays = [ ];[m
+                 };[m
+[31m-                # Disable all custom overlays for testing[m
+[31m-                overlays = [ ];[m
+[31m-              };[m
+ [m
+[31m-              # Minimal nix settings[m
+[31m-              nix.settings = {[m
+[31m-                substituters = [ "https://cache.nixos.org" ];[m
+[31m-                trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];[m
+[31m-                accept-flake-config = true;[m
+[31m-                experimental-features = [ "nix-command" "flakes" ];[m
+[31m-              };[m
+[32m+[m[32m                # Minimal nix settings[m
+[32m+[m[32m                nix.settings = {[m
+[32m+[m[32m                  substituters = [ "https://cache.nixos.org" ];[m
+[32m+[m[32m                  trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];[m
+[32m+[m[32m                  accept-flake-config = true;[m
+[32m+[m[32m                  experimental-features = [[m
+[32m+[m[32m                    "nix-command"[m
+[32m+[m[32m                    "flakes"[m
+[32m+[m[32m                  ];[m
+[32m+[m[32m                };[m
+ [m
+[31m-              # Basic system packages[m
+[31m-              environment.systemPackages = with pkgs; [[m
+[31m-                git[m
+[31m-                vim[m
+[31m-                pre-commit[m
+[31m-              ];[m
+[32m+[m[32m                # Basic system packages[m
+[32m+[m[32m                environment.systemPackages = with pkgs; [[m
+[32m+[m[32m                  git[m
+[32m+[m[32m                  vim[m
+[32m+[m[32m                  pre-commit[m
+[32m+[m[32m                ];[m
+ [m
+[31m-              # Basic user configuration[m
+[31m-              users.users.ryzengrind = {[m
+[31m-                isNormalUser = true;[m
+[31m-                extraGroups = [ "wheel" ];[m
+[31m-                initialPassword = "changeme";[m
+[31m-              };[m
+[32m+[m[32m                # Basic user configuration[m
+[32m+[m[32m                users.users.ryzengrind = {[m
+[32m+[m[32m                  isNormalUser = true;[m
+[32m+[m[32m                  extraGroups = [ "wheel" ];[m
+[32m+[m[32m                  initialPassword = "changeme";[m
+[32m+[m[32m                };[m
+ [m
+[31m-              # WSL-specific settings[m
+[31m-              wsl = {[m
+[31m-                enable = true;[m
+[31m-                defaultUser = "ryzengrind";[m
+[31m-                nativeSystemd = true;[m
+[31m-              };[m
+[31m-            })[m
+[32m+[m[32m                # WSL-specific settings[m
+[32m+[m[32m                wsl = {[m
+[32m+[m[32m                  enable = true;[m
+[32m+[m[32m                  defaultUser = "ryzengrind";[m
+[32m+[m[32m                  nativeSystemd = true;[m
+[32m+[m[32m                };[m
+[32m+[m[32m              }[m
+[32m+[m[32m            )[m
+ [m
+             # Include WSL module[m
+             nixos-wsl.nixosModules.wsl[m
+[36m@@ -485,10 +564,10 @@[m
+       homeConfigurations = {[m
+         "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {[m
+           pkgs = nixpkgs.legacyPackages.x86_64-linux;[m
+[31m-          extraSpecialArgs = { inherit inputs outputs; };[m
+[31m-          modules = [[m
+[31m-            ./hosts/daimyo00/home.nix[m
+[31m-          ];[m
+[32m+[m[32m          extraSpecialArgs = {[m
+[32m+[m[32m            inherit inputs outputs;[m
+[32m+[m[32m          };[m
+[32m+[m[32m          modules = [ ./hosts/daimyo00/home.nix ];[m
+         };[m
+       };[m
+     };[m
+[1mdiff --git a/home-manager/home.nix b/home-manager/home.nix[m
+[1mindex 12bd54f..0d87bd7 100644[m
+[1m--- a/home-manager/home.nix[m
+[1m+++ b/home-manager/home.nix[m
+[36m@@ -5,7 +5,8 @@[m
+   config,[m
+   pkgs,[m
+   ...[m
+[31m-}: {[m
+[32m+[m[32m}:[m
+[32m+[m[32m{[m
+   # You can import other home-manager modules here[m
+   imports = [[m
+     # If you want to use modules your own flake exports (from modules/home-manager):[m
+[36m@@ -96,7 +97,7 @@[m
+   # Enable home-manager and git[m
+   programs.home-manager.enable = true;[m
+   programs.git.enable = true;[m
+[31m-  [m
+[32m+[m
+   # Nicely reload system units when changing configs[m
+   systemd.user.startServices = "sd-switch";[m
+ [m
+[1mdiff --git a/hosts/daimyo00/cachix.nix b/hosts/daimyo00/cachix.nix[m
+[1mindex ba4a266..19c3995 100644[m
+[1m--- a/hosts/daimyo00/cachix.nix[m
+[1m+++ b/hosts/daimyo00/cachix.nix[m
+[36m@@ -13,4 +13,4 @@[m
+       ];[m
+     };[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/hosts/daimyo00/configuration.nix b/hosts/daimyo00/configuration.nix[m
+[1mindex 0f2f590..d64ed9a 100644[m
+[1m--- a/hosts/daimyo00/configuration.nix[m
+[1m+++ b/hosts/daimyo00/configuration.nix[m
+[36m@@ -1,5 +1,11 @@[m
+ # WSL-specific configuration for daimyo00[m
+[31m-{ config, lib, pkgs, inputs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  inputs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ {[m
+   imports = [[m
+[36m@@ -13,9 +19,7 @@[m
+       allowBroken = true;[m
+       allowUnfree = true;[m
+       cudaSupport = true;[m
+[31m-      packageOverrides = pkgs: {[m
+[31m-        cudaPackages = pkgs.cudaPackages_12_0;[m
+[31m-      };[m
+[32m+[m[32m      packageOverrides = pkgs: { cudaPackages = pkgs.cudaPackages_12_0; };[m
+     };[m
+   };[m
+ [m
+[36m@@ -74,7 +78,11 @@[m
+     settings = {[m
+       experimental-features = "nix-command flakes auto-allocate-uids";[m
+       auto-optimise-store = true;[m
+[31m-      trusted-users = [ "root" "ryzengrind" "@wheel" ];[m
+[32m+[m[32m      trusted-users = [[m
+[32m+[m[32m        "root"[m
+[32m+[m[32m        "ryzengrind"[m
+[32m+[m[32m        "@wheel"[m
+[32m+[m[32m      ];[m
+       max-jobs = "auto";[m
+       cores = 0;[m
+       keep-outputs = true;[m
+[36m@@ -102,7 +110,12 @@[m
+   users.users.ryzengrind = {[m
+     hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";[m
+     isNormalUser = true;[m
+[31m-    extraGroups = [ "wheel" "docker" "audio" "networkmanager" ];[m
+[32m+[m[32m    extraGroups = [[m
+[32m+[m[32m      "wheel"[m
+[32m+[m[32m      "docker"[m
+[32m+[m[32m      "audio"[m
+[32m+[m[32m      "networkmanager"[m
+[32m+[m[32m    ];[m
+   };[m
+ [m
+   services.openssh = {[m
+[1mdiff --git a/hosts/daimyo00/home.nix b/hosts/daimyo00/home.nix[m
+[1mindex 69ca3ce..a9007d3 100644[m
+[1m--- a/hosts/daimyo00/home.nix[m
+[1m+++ b/hosts/daimyo00/home.nix[m
+[36m@@ -1,5 +1,12 @@[m
+ # Host-specific home configuration for daimyo00[m
+[31m-{ config, lib, pkgs, inputs, outputs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  inputs,[m
+[32m+[m[32m  outputs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ {[m
+   imports = [[m
+[36m@@ -139,16 +146,18 @@[m
+         fi[m
+ [m
+         # Export PATH with required tools[m
+[31m-        export PATH="${pkgs.lib.makeBinPath [[m
+[31m-          pkgs.git[m
+[31m-          pkgs.pre-commit[m
+[31m-          pkgs.nixfmt-rfc-style[m
+[31m-          pkgs.statix[m
+[31m-          pkgs.deadnix[m
+[31m-          pkgs.nodePackages.prettier[m
+[31m-          pkgs.python311Packages.black[m
+[31m-          pkgs.nix-direnv[m
+[31m-        ]}:$PATH"[m
+[32m+[m[32m        export PATH="${[m
+[32m+[m[32m          pkgs.lib.makeBinPath [[m
+[32m+[m[32m            pkgs.git[m
+[32m+[m[32m            pkgs.pre-commit[m
+[32m+[m[32m            pkgs.nixfmt-rfc-style[m
+[32m+[m[32m            pkgs.statix[m
+[32m+[m[32m            pkgs.deadnix[m
+[32m+[m[32m            pkgs.nodePackages.prettier[m
+[32m+[m[32m            pkgs.python311Packages.black[m
+[32m+[m[32m            pkgs.nix-direnv[m
+[32m+[m[32m          ][m
+[32m+[m[32m        }:$PATH"[m
+ [m
+         # Run pre-commit[m
+         exec ${pkgs.pre-commit}/bin/pre-commit run --all-files[m
+[36m@@ -246,7 +255,10 @@[m
+         "editor.fontFamily" = "'FiraCode Nerd Font', 'Droid Sans Mono', 'monospace'";[m
+         "editor.fontSize" = 14;[m
+         "editor.formatOnSave" = true;[m
+[31m-        "editor.rulers" = [ 80 120 ];[m
+[32m+[m[32m        "editor.rulers" = [[m
+[32m+[m[32m          80[m
+[32m+[m[32m          120[m
+[32m+[m[32m        ];[m
+         "editor.renderWhitespace" = "boundary";[m
+         "editor.suggestSelection" = "first";[m
+         "editor.bracketPairColorization.enabled" = true;[m
+[1mdiff --git a/modules/home-manager/wsl.nix b/modules/home-manager/wsl.nix[m
+[1mindex 1e7d412..7709e7c 100644[m
+[1m--- a/modules/home-manager/wsl.nix[m
+[1m+++ b/modules/home-manager/wsl.nix[m
+[36m@@ -69,4 +69,4 @@[m
+     mime.enable = true;[m
+     mimeApps.enable = true;[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/modules/nixos/cuda.nix b/modules/nixos/cuda.nix[m
+[1mindex c44adfe..ce509e5 100644[m
+[1m--- a/modules/nixos/cuda.nix[m
+[1m+++ b/modules/nixos/cuda.nix[m
+[36m@@ -1,5 +1,10 @@[m
+ # modules/nixos/cuda.nix[m
+[31m-{ config, lib, pkgs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ with lib;[m
+ let[m
+[36m@@ -52,7 +57,7 @@[m [min[m
+       };[m
+       script = ''[m
+         mkdir -p /home/${config.wsl.defaultUser}/.local/{lib,bin}[m
+[31m-        [m
+[32m+[m
+         # Create symlinks for WSL NVIDIA libraries[m
+         for lib in /usr/lib/wsl/lib/libcuda*; do[m
+           if [ -f "$lib" ]; then[m
+[36m@@ -71,4 +76,4 @@[m [min[m
+       '';[m
+     };[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/modules/nixos/profiles/dev.nix b/modules/nixos/profiles/dev.nix[m
+[1mindex 6b649ba..f9caae7 100644[m
+[1m--- a/modules/nixos/profiles/dev.nix[m
+[1m+++ b/modules/nixos/profiles/dev.nix[m
+[36m@@ -1,20 +1,34 @@[m
+[31m-{ config, lib, pkgs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ with lib;[m
+ let[m
+   cfg = config.profiles.dev;[m
+[31m-in {[m
+[32m+[m[32min[m
+[32m+[m[32m{[m
+   options.profiles.dev = {[m
+     enable = mkEnableOption "Development environment profile";[m
+     ide = mkOption {[m
+[31m-      type = types.enum [ "vscode" "vscodium" "neovim" "cursor" ];[m
+[32m+[m[32m      type = types.enum [[m
+[32m+[m[32m        "vscode"[m
+[32m+[m[32m        "vscodium"[m
+[32m+[m[32m        "neovim"[m
+[32m+[m[32m        "cursor"[m
+[32m+[m[32m      ];[m
+       default = "vscodium";[m
+       description = "Primary IDE to use";[m
+     };[m
+     vscodeRemote = {[m
+       enable = mkEnableOption "VSCode Remote support";[m
+       method = mkOption {[m
+[31m-        type = types.enum [ "nix-ld" "patch" ];[m
+[32m+[m[32m        type = types.enum [[m
+[32m+[m[32m          "nix-ld"[m
+[32m+[m[32m          "patch"[m
+[32m+[m[32m        ];[m
+         default = "nix-ld";[m
+         description = "Method to enable VSCode Remote support (nix-ld or patch)";[m
+       };[m
+[36m@@ -41,99 +55,104 @@[m [min {[m
+   };[m
+ [m
+   config = mkIf cfg.enable {[m
+[31m-    environment.systemPackages = with pkgs; [[m
+[31m-      # Version Control[m
+[31m-      git[m
+[31m-      git-lfs[m
+[31m-      gh[m
+[31m-[m
+[31m-      # Build tools[m
+[31m-      gnumake[m
+[31m-      cmake[m
+[31m-      ninja[m
+[31m-[m
+[31m-      # Development tools[m
+[31m-      direnv[m
+[31m-      nix-direnv[m
+[31m-      wget # Required for VSCode Remote[m
+[31m-[m
+[31m-      # Debugging and profiling[m
+[31m-      gdb[m
+[31m-      lldb[m
+[31m-      strace[m
+[31m-      ltrace[m
+[31m-[m
+[31m-      # IDE and editor[m
+[31m-      (mkIf (cfg.ide == "vscode") vscode)[m
+[31m-      (mkIf (cfg.ide == "vscodium") [m
+[31m-        (vscode-with-extensions.override {[m
+[31m-          vscode = vscodium;[m
+[31m-          vscodeExtensions = with pkgs.vscode-extensions; [[m
+[31m-            # Development[m
+[31m-            ms-vscode.cpptools[m
+[31m-            ms-python.python[m
+[31m-            ms-vscode.cmake-tools[m
+[31m-            [m
+[31m-            # Remote Development[m
+[31m-            ms-vscode-remote.remote-ssh[m
+[31m-            [m
+[31m-            # Git[m
+[31m-            eamodio.gitlens[m
+[31m-            [m
+[31m-            # Nix[m
+[31m-            bbenoist.nix[m
+[31m-            jnoortheen.nix-ide[m
+[31m-            arrterian.nix-env-selector[m
+[31m-            [m
+[31m-            # Theme and UI[m
+[31m-            pkief.material-icon-theme[m
+[31m-          ];[m
+[31m-        })[m
+[31m-      )[m
+[31m-      (mkIf (cfg.ide == "neovim") neovim)[m
+[31m-[m
+[31m-      # Language servers and formatters[m
+[31m-      nil # Nix LSP[m
+[31m-      nixpkgs-fmt[m
+[31m-      alejandra[m
+[31m-      statix # Nix static analysis[m
+[31m-[m
+[31m-      # Python ML stack with known working versions[m
+[31m-      (python3.withPackages (ps: with ps; [[m
+[31m-        pip[m
+[31m-        virtualenv[m
+[31m-        poetry[m
+[31m-        (numpy.override { blas = pkgs.mkl; })[m
+[31m-        pandas[m
+[31m-        matplotlib[m
+[31m-        scikit-learn[m
+[31m-        jupyter[m
+[31m-        ipython[m
+[31m-        black[m
+[31m-        pylint[m
+[31m-        mypy[m
+[31m-        pytest[m
+[31m-        # PyTorch with CUDA if enabled[m
+[31m-        (mkIf cfg.ml.pytorch.enable cfg.ml.pytorch.package)[m
+[31m-        (mkIf cfg.ml.pytorch.enable torchvision)[m
+[31m-        (mkIf cfg.ml.pytorch.enable torchaudio)[m
+[31m-        transformers[m
+[31m-        pytorch-lightning[m
+[31m-        tensorboard[m
+[31m-        wandb[m
+[31m-        ray[m
+[31m-        optuna[m
+[31m-      ]))[m
+[31m-[m
+[31m-      # CUDA development tools[m
+[31m-    ] ++ optionals (cfg.ml.enable && cfg.ml.cudaSupport) [[m
+[31m-      cudaPackages.cuda_cudart[m
+[31m-      cudaPackages.cuda_cupti[m
+[31m-      cudaPackages.cuda_nvcc[m
+[31m-      cudaPackages.cudnn[m
+[31m-      nvidia-docker[m
+[31m-      nvtopPackages.full[m
+[31m-    ];[m
+[32m+[m[32m    environment.systemPackages =[m
+[32m+[m[32m      with pkgs;[m
+[32m+[m[32m      [[m
+[32m+[m[32m        # Version Control[m
+[32m+[m[32m        git[m
+[32m+[m[32m        git-lfs[m
+[32m+[m[32m        gh[m
+[32m+[m
+[32m+[m[32m        # Build tools[m
+[32m+[m[32m        gnumake[m
+[32m+[m[32m        cmake[m
+[32m+[m[32m        ninja[m
+[32m+[m
+[32m+[m[32m        # Development tools[m
+[32m+[m[32m        direnv[m
+[32m+[m[32m        nix-direnv[m
+[32m+[m[32m        wget # Required for VSCode Remote[m
+[32m+[m
+[32m+[m[32m        # Debugging and profiling[m
+[32m+[m[32m        gdb[m
+[32m+[m[32m        lldb[m
+[32m+[m[32m        strace[m
+[32m+[m[32m        ltrace[m
+[32m+[m
+[32m+[m[32m        # IDE and editor[m
+[32m+[m[32m        (mkIf (cfg.ide == "vscode") vscode)[m
+[32m+[m[32m        (mkIf (cfg.ide == "vscodium") ([m
+[32m+[m[32m          vscode-with-extensions.override {[m
+[32m+[m[32m            vscode = vscodium;[m
+[32m+[m[32m            vscodeExtensions = with pkgs.vscode-extensions; [[m
+[32m+[m[32m              # Development[m
+[32m+[m[32m              ms-vscode.cpptools[m
+[32m+[m[32m              ms-python.python[m
+[32m+[m[32m              ms-vscode.cmake-tools[m
+[32m+[m
+[32m+[m[32m              # Remote Development[m
+[32m+[m[32m              ms-vscode-remote.remote-ssh[m
+[32m+[m
+[32m+[m[32m              # Git[m
+[32m+[m[32m              eamodio.gitlens[m
+[32m+[m
+[32m+[m[32m              # Nix[m
+[32m+[m[32m              bbenoist.nix[m
+[32m+[m[32m              jnoortheen.nix-ide[m
+[32m+[m[32m              arrterian.nix-env-selector[m
+[32m+[m
+[32m+[m[32m              # Theme and UI[m
+[32m+[m[32m              pkief.material-icon-theme[m
+[32m+[m[32m            ];[m
+[32m+[m[32m          }[m
+[32m+[m[32m        ))[m
+[32m+[m[32m        (mkIf (cfg.ide == "neovim") neovim)[m
+[32m+[m
+[32m+[m[32m        # Language servers and formatters[m
+[32m+[m[32m        nil # Nix LSP[m
+[32m+[m[32m        nixpkgs-fmt[m
+[32m+[m[32m        alejandra[m
+[32m+[m[32m        statix # Nix static analysis[m
+[32m+[m
+[32m+[m[32m        # Python ML stack with known working versions[m
+[32m+[m[32m        (python3.withPackages ([m
+[32m+[m[32m          ps: with ps; [[m
+[32m+[m[32m            pip[m
+[32m+[m[32m            virtualenv[m
+[32m+[m[32m            poetry[m
+[32m+[m[32m            (numpy.override { blas = pkgs.mkl; })[m
+[32m+[m[32m            pandas[m
+[32m+[m[32m            matplotlib[m
+[32m+[m[32m            scikit-learn[m
+[32m+[m[32m            jupyter[m
+[32m+[m[32m            ipython[m
+[32m+[m[32m            black[m
+[32m+[m[32m            pylint[m
+[32m+[m[32m            mypy[m
+[32m+[m[32m            pytest[m
+[32m+[m[32m            # PyTorch with CUDA if enabled[m
+[32m+[m[32m            (mkIf cfg.ml.pytorch.enable cfg.ml.pytorch.package)[m
+[32m+[m[32m            (mkIf cfg.ml.pytorch.enable torchvision)[m
+[32m+[m[32m            (mkIf cfg.ml.pytorch.enable torchaudio)[m
+[32m+[m[32m            transformers[m
+[32m+[m[32m            pytorch-lightning[m
+[32m+[m[32m            tensorboard[m
+[32m+[m[32m            wandb[m
+[32m+[m[32m            ray[m
+[32m+[m[32m            optuna[m
+[32m+[m[32m          ][m
+[32m+[m[32m        ))[m
+[32m+[m
+[32m+[m[32m        # CUDA development tools[m
+[32m+[m[32m      ][m
+[32m+[m[32m      ++ optionals (cfg.ml.enable && cfg.ml.cudaSupport) [[m
+[32m+[m[32m        cudaPackages.cuda_cudart[m
+[32m+[m[32m        cudaPackages.cuda_cupti[m
+[32m+[m[32m        cudaPackages.cuda_nvcc[m
+[32m+[m[32m        cudaPackages.cudnn[m
+[32m+[m[32m        nvidia-docker[m
+[32m+[m[32m        nvtopPackages.full[m
+[32m+[m[32m      ];[m
+ [m
+     # VSCode Remote support configuration[m
+     programs.nix-ld = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "nix-ld") {[m
+[36m@@ -142,7 +161,9 @@[m [min {[m
+     };[m
+ [m
+     # If using patch method, include the vscode-remote-workaround module[m
+[31m-    vscode-remote-workaround.enable = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") true;[m
+[32m+[m[32m    vscode-remote-workaround.enable = mkIf ([m
+[32m+[m[32m      cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch"[m
+[32m+[m[32m    ) true;[m
+ [m
+     # Development environment configuration[m
+     programs = {[m
+[36m@@ -155,13 +176,17 @@[m [min {[m
+     # Nix development settings[m
+     nix = {[m
+       settings = {[m
+[31m-        experimental-features = [ "nix-command" "flakes" "repl-flake" ];[m
+[32m+[m[32m        experimental-features = [[m
+[32m+[m[32m          "nix-command"[m
+[32m+[m[32m          "flakes"[m
+[32m+[m[32m          "repl-flake"[m
+[32m+[m[32m        ];[m
+         warn-dirty = false;[m
+         keep-outputs = true;[m
+         keep-derivations = true;[m
+         # Optimizations for ML development[m
+         auto-optimise-store = true;[m
+[31m-        cores = 0;  # Use all cores[m
+[32m+[m[32m        cores = 0; # Use all cores[m
+         max-jobs = "auto";[m
+         # Increase timeout for large package downloads[m
+         connect-timeout = 5;[m
+[36m@@ -169,7 +194,10 @@[m [min {[m
+         timeout = 3600;[m
+         # Increase resource limits for ML workloads[m
+         sandbox = true;[m
+[31m-        trusted-users = [ "root" "@wheel" ];[m
+[32m+[m[32m        trusted-users = [[m
+[32m+[m[32m          "root"[m
+[32m+[m[32m          "@wheel"[m
+[32m+[m[32m        ];[m
+         # Cache settings for better performance[m
+         substituters = [[m
+           "https://cache.nixos.org"[m
+[36m@@ -206,4 +234,4 @@[m [min {[m
+       };[m
+     };[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/modules/nixos/profiles/gaming.nix b/modules/nixos/profiles/gaming.nix[m
+[1mindex 9d785f5..f6396a0 100644[m
+[1m--- a/modules/nixos/profiles/gaming.nix[m
+[1m+++ b/modules/nixos/profiles/gaming.nix[m
+[36m@@ -1,4 +1,9 @@[m
+[31m-{ config, lib, pkgs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ {[m
+   options.profiles.gaming = {[m
+[36m@@ -17,30 +22,33 @@[m
+           "dom0_vcpus_pin" = true;[m
+         };[m
+       };[m
+[31m-      [m
+[32m+[m
+       # QEMU/KVM for testing[m
+       libvirtd.enable = true;[m
+       spiceUSBRedirection.enable = true;[m
+     };[m
+ [m
+     # Gaming-specific packages[m
+[31m-    environment.systemPackages = with pkgs; [[m
+[31m-      # Hypervisor management[m
+[31m-      virt-manager[m
+[31m-      looking-glass-client[m
+[31m-      barrier # Mouse/keyboard sharing[m
+[32m+[m[32m    environment.systemPackages =[m
+[32m+[m[32m      with pkgs;[m
+[32m+[m[32m      [[m
+[32m+[m[32m        # Hypervisor management[m
+[32m+[m[32m        virt-manager[m
+[32m+[m[32m        looking-glass-client[m
+[32m+[m[32m        barrier # Mouse/keyboard sharing[m
+ [m
+[31m-      # Gaming utilities[m
+[31m-      mangohud[m
+[31m-      gamemode[m
+[31m-      lutris[m
+[31m-      winetricks[m
+[31m-      [m
+[31m-      # Streaming (if enabled)[m
+[31m-    ] ++ lib.optionals config.profiles.gaming.streaming.enable [[m
+[31m-      sunshine # Streaming host[m
+[31m-      moonlight-qt # Streaming client[m
+[31m-    ];[m
+[32m+[m[32m        # Gaming utilities[m
+[32m+[m[32m        mangohud[m
+[32m+[m[32m        gamemode[m
+[32m+[m[32m        lutris[m
+[32m+[m[32m        winetricks[m
+[32m+[m
+[32m+[m[32m        # Streaming (if enabled)[m
+[32m+[m[32m      ][m
+[32m+[m[32m      ++ lib.optionals config.profiles.gaming.streaming.enable [[m
+[32m+[m[32m        sunshine # Streaming host[m
+[32m+[m[32m        moonlight-qt # Streaming client[m
+[32m+[m[32m      ];[m
+ [m
+     # Hardware acceleration[m
+     hardware = {[m
+[36m@@ -74,7 +82,12 @@[m
+         "iommu=pt"[m
+         "vfio-pci.ids=10de:1c03,10de:10f1" # Example GPU IDs[m
+       ];[m
+[31m-      kernelModules = [ "vfio" "vfio_iommu_type1" "vfio_pci" "vfio_virqfd" ];[m
+[32m+[m[32m      kernelModules = [[m
+[32m+[m[32m        "vfio"[m
+[32m+[m[32m        "vfio_iommu_type1"[m
+[32m+[m[32m        "vfio_pci"[m
+[32m+[m[32m        "vfio_virqfd"[m
+[32m+[m[32m      ];[m
+     };[m
+ [m
+     # Security settings for gaming[m
+[36m@@ -90,4 +103,4 @@[m
+       };[m
+     };[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/modules/nixos/profiles/srv.nix b/modules/nixos/profiles/srv.nix[m
+[1mindex ab3a8d0..2361f83 100644[m
+[1m--- a/modules/nixos/profiles/srv.nix[m
+[1m+++ b/modules/nixos/profiles/srv.nix[m
+[36m@@ -1,20 +1,29 @@[m
+[31m-{ config, lib, pkgs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ {[m
+   options.profiles.srv = {[m
+     enable = lib.mkEnableOption "Server environment profile";[m
+[31m-    [m
+[32m+[m
+     role = lib.mkOption {[m
+[31m-      type = lib.types.enum [ "controller" "worker" "edge" ];[m
+[32m+[m[32m      type = lib.types.enum [[m
+[32m+[m[32m        "controller"[m
+[32m+[m[32m        "worker"[m
+[32m+[m[32m        "edge"[m
+[32m+[m[32m      ];[m
+       description = "Server role in the cluster";[m
+     };[m
+ [m
+     monitoring.enable = lib.mkEnableOption "Monitoring stack";[m
+     backup.enable = lib.mkEnableOption "Backup services";[m
+[31m-    [m
+[32m+[m
+     services = lib.mkOption {[m
+       type = lib.types.listOf lib.types.str;[m
+[31m-      default = [];[m
+[32m+[m[32m      default = [ ];[m
+       description = "List of services to enable";[m
+     };[m
+   };[m
+[36m@@ -61,7 +70,10 @@[m
+       # Automatic backup service[m
+       borgbackup.jobs = lib.mkIf config.profiles.srv.backup.enable {[m
+         system = {[m
+[31m-          paths = [ "/etc" "/var/lib" ];[m
+[32m+[m[32m          paths = [[m
+[32m+[m[32m            "/etc"[m
+[32m+[m[32m            "/var/lib"[m
+[32m+[m[32m          ];[m
+           exclude = [ "/var/lib/docker" ];[m
+           repo = "/mnt/backup/system";[m
+           encryption = {[m
+[36m@@ -82,16 +94,16 @@[m
+       iftop[m
+       ncdu[m
+       tmux[m
+[31m-      [m
+[32m+[m
+       # Container tools[m
+       docker-compose[m
+       kubectl[m
+       k9s[m
+[31m-      [m
+[32m+[m
+       # Monitoring tools[m
+       prometheus[m
+       grafana[m
+[31m-      [m
+[32m+[m
+       # Backup tools[m
+       borgbackup[m
+       restic[m
+[36m@@ -121,7 +133,7 @@[m
+ [m
+     # Role-specific configurations[m
+     services.kubernetes = lib.mkIf (config.profiles.srv.role == "controller") {[m
+[31m-      roles = ["master"];[m
+[32m+[m[32m      roles = [ "master" ];[m
+       masterAddress = "controller.local";[m
+     };[m
+ [m
+[36m@@ -143,8 +155,8 @@[m
+     # Networking[m
+     networking = {[m
+       firewall.enable = true;[m
+[31m-      firewall.allowedTCPPorts = [ 22 ];  # SSH only by default[m
+[31m-      useDHCP = false;  # Prefer static configuration for servers[m
+[32m+[m[32m      firewall.allowedTCPPorts = [ 22 ]; # SSH only by default[m
+[32m+[m[32m      useDHCP = false; # Prefer static configuration for servers[m
+     };[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/modules/nixos/wsl.nix b/modules/nixos/wsl.nix[m
+[1mindex b4aea65..dccfa86 100644[m
+[1m--- a/modules/nixos/wsl.nix[m
+[1m+++ b/modules/nixos/wsl.nix[m
+[36m@@ -1,5 +1,10 @@[m
+ # WSL-specific NixOS configuration[m
+[31m-{ config, lib, pkgs, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  pkgs,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ {[m
+   # Common WSL-specific system configurations[m
+[36m@@ -54,7 +59,7 @@[m
+       NVIDIA_DRIVER_CAPABILITIES = "compute,utility,graphics";[m
+       CUDA_CACHE_PATH = "$HOME/.cache/cuda";[m
+     };[m
+[31m-    [m
+[32m+[m
+     pathsToLink = [ "/libexec" ];[m
+ [m
+     systemPackages = with pkgs; [[m
+[36m@@ -63,7 +68,7 @@[m
+       wsl-open[m
+       xclip[m
+       xsel[m
+[31m-      [m
+[32m+[m
+       # NVIDIA development tools[m
+       cudaPackages.cuda_cudart[m
+       cudaPackages.cuda_cupti[m
+[36m@@ -76,14 +81,17 @@[m
+   };[m
+ [m
+   # WSL-specific security settings[m
+[31m-  security.sudo.wheelNeedsPassword = false;  # Easier sudo access in WSL[m
+[32m+[m[32m  security.sudo.wheelNeedsPassword = false; # Easier sudo access in WSL[m
+ [m
+   # WSL-specific networking settings[m
+   networking = {[m
+[31m-    useHostResolvConf = false;  # Don't use Windows DNS directly[m
+[32m+[m[32m    useHostResolvConf = false; # Don't use Windows DNS directly[m
+     networkmanager.enable = true;[m
+     hostName = "daimyo00";[m
+[31m-    nameservers = [ "1.1.1.1" "8.8.8.8" ];[m
+[32m+[m[32m    nameservers = [[m
+[32m+[m[32m      "1.1.1.1"[m
+[32m+[m[32m      "8.8.8.8"[m
+[32m+[m[32m    ];[m
+   };[m
+ [m
+   # WSL-specific settings[m
+[36m@@ -99,7 +107,7 @@[m
+       };[m
+       network = {[m
+         generateHosts = true;[m
+[31m-        generateResolvConf = lib.mkForce false;  # Use our own DNS settings[m
+[32m+[m[32m        generateResolvConf = lib.mkForce false; # Use our own DNS settings[m
+       };[m
+     };[m
+   };[m
+[36m@@ -113,7 +121,7 @@[m
+       enable = true;[m
+     };[m
+     containers = {[m
+[31m-      cdi.dynamic.nvidia.enable = true;  # New recommended way to enable NVIDIA support[m
+[32m+[m[32m      cdi.dynamic.nvidia.enable = true; # New recommended way to enable NVIDIA support[m
+     };[m
+   };[m
+ [m
+[36m@@ -128,4 +136,4 @@[m
+       packages = [ pkgs.dconf ];[m
+     };[m
+   };[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/nixos/configuration.nix b/nixos/configuration.nix[m
+[1mindex 6b1ebe7..cf10e3c 100644[m
+[1m--- a/nixos/configuration.nix[m
+[1m+++ b/nixos/configuration.nix[m
+[36m@@ -6,7 +6,8 @@[m
+   lib,[m
+   config,[m
+   ...[m
+[31m-}: {[m
+[32m+[m[32m}:[m
+[32m+[m[32m{[m
+   # You can import other NixOS modules here[m
+   imports = [[m
+     # If you want to use modules your own flake exports (from modules/nixos):[m
+[36m@@ -43,11 +44,11 @@[m
+     ];[m
+     # Configure your nixpkgs instance[m
+     config = {[m
+[31m-      allowBroken = true;  # Temporary workaround for TensorRT[m
+[32m+[m[32m      allowBroken = true; # Temporary workaround for TensorRT[m
+       cudaSupport = true;[m
+       allowUnfree = true;[m
+       packageOverrides = pkgs: {[m
+[31m-        cudaPackages = pkgs.cudaPackages_12_1;  # Use a stable CUDA version[m
+[32m+[m[32m        cudaPackages = pkgs.cudaPackages_12_1; # Use a stable CUDA version[m
+       };[m
+     };[m
+   };[m
+[36m@@ -55,11 +56,13 @@[m
+   nix = {[m
+     # This will add each flake input as a registry[m
+     # To make nix3 commands consistent with your flake[m
+[31m-    registry = (lib.mapAttrs (_: flake: {inherit flake;})) ((lib.filterAttrs (_: lib.isType "flake")) inputs);[m
+[32m+[m[32m    registry = (lib.mapAttrs (_: flake: { inherit flake; })) ([m
+[32m+[m[32m      (lib.filterAttrs (_: lib.isType "flake")) inputs[m
+[32m+[m[32m    );[m
+ [m
+     # This will additionally add your inputs to the system's legacy channels[m
+     # Making legacy nix commands consistent as well, awesome![m
+[31m-    nixPath = ["/etc/nix/path"];[m
+[32m+[m[32m    nixPath = [ "/etc/nix/path" ];[m
+ [m
+     settings = {[m
+       experimental-features = "nix-command flakes repl-flake";[m
+[36m@@ -71,7 +74,11 @@[m
+       retry = 5;[m
+       timeout = 300;[m
+       # Add trusted users and substituters[m
+[31m-      trusted-users = [ "root" "ryzengrind" "@wheel" ];[m
+[32m+[m[32m      trusted-users = [[m
+[32m+[m[32m        "root"[m
+[32m+[m[32m        "ryzengrind"[m
+[32m+[m[32m        "@wheel"[m
+[32m+[m[32m      ];[m
+       substituters = [[m
+         "https://cache.nixos.org"[m
+         "https://cuda-maintainers.cachix.org"[m
+[36m@@ -109,7 +116,7 @@[m
+ [m
+   # Select internationalisation properties.[m
+   i18n.defaultLocale = "en_CA.UTF-8";[m
+[31m-  [m
+[32m+[m
+   # Configure keymap in X11[m
+   services = {[m
+     xserver = {[m
+[36m@@ -129,14 +136,14 @@[m
+         variant = "";[m
+       };[m
+       #xkbOptions = "ctrl:swapcaps";[m
+[31m-      [m
+[32m+[m
+       # NVIDIA-specific settings[m
+       videoDrivers = [ "nvidia" ];[m
+     };[m
+ [m
+     # Enable CUPS to print documents.[m
+     printing.enable = true;[m
+[31m-    flatpak.enable = true;  [m
+[32m+[m[32m    flatpak.enable = true;[m
+     zerotierone = {[m
+       enable = true;[m
+       joinNetworks = [ "fada62b0158621fe" ]; # ZT NETWORK ID[m
+[36m@@ -190,16 +197,47 @@[m
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9ky9rfRDFJSZQc+3cEpzBgvaKAF5cqAPSVBRxXRTkG RyzeNGrind@Shogun"[m
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPL6GOQ1zpvnxJK0Mz+vUHgEd0f/sDB0q3pa38yHHEsC ronin@Ubuntu18S3"[m
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJJKxPRz8mlLOXoXnJdP211rBkflVCWth3KXgcz/qfw3 ronin@workerdroplet"[m
+[31m-        [m
+[32m+[m
+       ];[m
+       # TODO: Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)[m
+       extraGroups = [[m
+[31m-        "root" "wheel" "docker" "kmem" "tty" "messagebus" "disk" "audio"[m
+[31m-        "floppy" "uucp" "lp" "cdrom" "tape" "video" "dialout" "utmp" "adm"[m
+[31m-        "networkmanager" "systemd-journal" "keys" "users" "systemd-journal-gateway"[m
+[31m-        "gdm" "systemd-network" "systemd-resolve" "systemd-timesync" "input"[m
+[31m-        "nm-openvpn" "kvm" "render" "sgx" "shadow" "flatpak" "systemd-oom"[m
+[31m-        "systemd-coredump" "rtkit" "polkituser"[m
+[32m+[m[32m        "root"[m
+[32m+[m[32m        "wheel"[m
+[32m+[m[32m        "docker"[m
+[32m+[m[32m        "kmem"[m
+[32m+[m[32m        "tty"[m
+[32m+[m[32m        "messagebus"[m
+[32m+[m[32m        "disk"[m
+[32m+[m[32m        "audio"[m
+[32m+[m[32m        "floppy"[m
+[32m+[m[32m        "uucp"[m
+[32m+[m[32m        "lp"[m
+[32m+[m[32m        "cdrom"[m
+[32m+[m[32m        "tape"[m
+[32m+[m[32m        "video"[m
+[32m+[m[32m        "dialout"[m
+[32m+[m[32m        "utmp"[m
+[32m+[m[32m        "adm"[m
+[32m+[m[32m        "networkmanager"[m
+[32m+[m[32m        "systemd-journal"[m
+[32m+[m[32m        "keys"[m
+[32m+[m[32m        "users"[m
+[32m+[m[32m        "systemd-journal-gateway"[m
+[32m+[m[32m        "gdm"[m
+[32m+[m[32m        "systemd-network"[m
+[32m+[m[32m        "systemd-resolve"[m
+[32m+[m[32m        "systemd-timesync"[m
+[32m+[m[32m        "input"[m
+[32m+[m[32m        "nm-openvpn"[m
+[32m+[m[32m        "kvm"[m
+[32m+[m[32m        "render"[m
+[32m+[m[32m        "sgx"[m
+[32m+[m[32m        "shadow"[m
+[32m+[m[32m        "flatpak"[m
+[32m+[m[32m        "systemd-oom"[m
+[32m+[m[32m        "systemd-coredump"[m
+[32m+[m[32m        "rtkit"[m
+[32m+[m[32m        "polkituser"[m
+       ];[m
+     };[m
+   };[m
+[36m@@ -216,7 +254,7 @@[m
+     autoUpgrade = {[m
+       enable = true;[m
+       allowReboot = true;[m
+[31m-      channel = "https://channels.nixos.org/nixos-24.05"; [m
+[32m+[m[32m      channel = "https://channels.nixos.org/nixos-24.05";[m
+     };[m
+   };[m
+ [m
+[36m@@ -238,7 +276,6 @@[m
+       driSupport = true;[m
+       driSupport32Bit = true;[m
+     };[m
+[31m-    pulseaudio.enable = false;  # Disable pulseaudio in favor of pipewire[m
+[32m+[m[32m    pulseaudio.enable = false; # Disable pulseaudio in favor of pipewire[m
+   };[m
+ }[m
+[31m-[m
+[1mdiff --git a/nixos/hardware-configuration.nix b/nixos/hardware-configuration.nix[m
+[1mindex 8abb993..aadf1b1 100644[m
+[1m--- a/nixos/hardware-configuration.nix[m
+[1m+++ b/nixos/hardware-configuration.nix[m
+[36m@@ -1,14 +1,28 @@[m
+ # Do not modify this file!  It was generated by 'nixos-generate-config'[m
+ # and may be overwritten by future invocations.  Please make changes[m
+ # to /etc/nixos/configuration.nix instead.[m
+[31m-{ config, lib, modulesPath, ... }:[m
+[32m+[m[32m{[m
+[32m+[m[32m  config,[m
+[32m+[m[32m  lib,[m
+[32m+[m[32m  modulesPath,[m
+[32m+[m[32m  ...[m
+[32m+[m[32m}:[m
+ [m
+ {[m
+   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];[m
+ [m
+   boot = {[m
+     initrd = {[m
+[31m-      availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "uas" "sd_mod" "rtsx_pci_sdmmc" ];[m
+[32m+[m[32m      availableKernelModules = [[m
+[32m+[m[32m        "xhci_pci"[m
+[32m+[m[32m        "ahci"[m
+[32m+[m[32m        "nvme"[m
+[32m+[m[32m        "usbhid"[m
+[32m+[m[32m        "usb_storage"[m
+[32m+[m[32m        "uas"[m
+[32m+[m[32m        "sd_mod"[m
+[32m+[m[32m        "rtsx_pci_sdmmc"[m
+[32m+[m[32m      ];[m
+       kernelModules = [ ];[m
+     };[m
+     kernelModules = [ "kvm-intel" ];[m
+[36m@@ -27,9 +41,7 @@[m
+     };[m
+   };[m
+ [m
+[31m-  swapDevices = [[m
+[31m-    { device = "/dev/disk/by-uuid/2eaee39a-d339-49a0-87f0-d831d26bc960"; }[m
+[31m-  ];[m
+[32m+[m[32m  swapDevices = [ { device = "/dev/disk/by-uuid/2eaee39a-d339-49a0-87f0-d831d26bc960"; } ];[m
+ [m
+   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking[m
+   # (the default) this is the recommended approach. When using systemd-networkd it's[m
+[1mdiff --git a/nixpkgs.nix b/nixpkgs.nix[m
+[1mindex 276d540..4bafcad 100644[m
+[1m--- a/nixpkgs.nix[m
+[1m+++ b/nixpkgs.nix[m
+[36m@@ -1,17 +1,20 @@[m
+[31m-# This file controls the pinned version of nixpkgs[m
+[31m-args@{ ... }:[m
+[31m-[m
+[31m-# Import the flake's nixpkgs[m
+[31m-let[m
+[31m-  lock = builtins.fromJSON (builtins.readFile ./flake.lock);[m
+[31m-  nixpkgs = fetchTarball {[m
+[31m-    url = "https://github.com/nixos/nixpkgs/archive/${lock.nodes.nixpkgs.locked.rev}.tar.gz";[m
+[31m-    sha256 = lock.nodes.nixpkgs.locked.narHash;[m
+[31m-  };[m
+[31m-in[m
+[31m-import nixpkgs (args // {[m
+[31m-  config = {[m
+[31m-    allowUnfree = true;[m
+[31m-    cudaSupport = true;[m
+[31m-  };[m
+[31m-}) [m
+\ No newline at end of file[m
+[32m+[m[32m# This file controls the pinned version of nixpkgs[m
+[32m+[m[32margs@{ ... }:[m
+[32m+[m
+[32m+[m[32m# Import the flake's nixpkgs[m
+[32m+[m[32mlet[m
+[32m+[m[32m  lock = builtins.fromJSON (builtins.readFile ./flake.lock);[m
+[32m+[m[32m  nixpkgs = fetchTarball {[m
+[32m+[m[32m    url = "https://github.com/nixos/nixpkgs/archive/${lock.nodes.nixpkgs.locked.rev}.tar.gz";[m
+[32m+[m[32m    sha256 = lock.nodes.nixpkgs.locked.narHash;[m
+[32m+[m[32m  };[m
+[32m+[m[32min[m
+[32m+[m[32mimport nixpkgs ([m
+[32m+[m[32m  args[m
+[32m+[m[32m  // {[m
+[32m+[m[32m    config = {[m
+[32m+[m[32m      allowUnfree = true;[m
+[32m+[m[32m      cudaSupport = true;[m
+[32m+[m[32m    };[m
+[32m+[m[32m  }[m
+[32m+[m[32m)[m
+[1mdiff --git a/overlays/default.nix b/overlays/default.nix[m
+[1mindex a15e65a..1ea739b 100644[m
+[1m--- a/overlays/default.nix[m
+[1m+++ b/overlays/default.nix[m
+[36m@@ -1,5 +1,6 @@[m
+ # This file defines overlays[m
+[31m-{inputs, ...}: {[m
+[32m+[m[32m{ inputs, ... }:[m
+[32m+[m[32m{[m
+   # This one brings our custom packages from the 'pkgs' directory[m
+   additions = final: prev: import ./additions.nix final prev;[m
+ [m
+[1mdiff --git a/overlays/tensorrt.nix b/overlays/tensorrt.nix[m
+[1mindex 2e65a79..b013ab6 100644[m
+[1m--- a/overlays/tensorrt.nix[m
+[1m+++ b/overlays/tensorrt.nix[m
+[36m@@ -8,7 +8,7 @@[m [m_final: prev: {[m
+       arch = "x86_64-gnu";[m
+       sha256 = "661749f5951a9ce490dd36ca34422f4be7c72d0f935d9f9276b50be1488447e9";[m
+     };[m
+[31m-    [m
+[32m+[m
+     tensorrt_10_8_cuda12 = prev.callPackage ../pkgs/tensorrt/generic.nix {[m
+       version = "10.8.0.43";[m
+       cudaVersion = "12.8";[m
+[36m@@ -22,14 +22,14 @@[m [m_final: prev: {[m
+       arch = "aarch64-gnu";[m
+       sha256 = "b01e5dd2c7c643252119d03d92eea97023418e92f45a3be0d0896e962923e43a";[m
+     };[m
+[31m-    [m
+[32m+[m
+     tensorrt_8_6_cuda11 = prev.callPackage ../pkgs/tensorrt/generic.nix {[m
+       version = "8.6.1.6";[m
+       cudaVersion = "11.8";[m
+       arch = "x86_64-gnu";[m
+       sha256 = "e17e363bc1b738925ec9ad7e92c4cd52408acfa908811154803609d825ba2a35";[m
+     };[m
+[31m-    [m
+[32m+[m
+     tensorrt_8_6_cuda12 = prev.callPackage ../pkgs/tensorrt/generic.nix {[m
+       version = "8.6.1.6";[m
+       cudaVersion = "12.0";[m
+[36m@@ -44,4 +44,4 @@[m [m_final: prev: {[m
+       sha256 = "ee81c6aa98cb7157a0479b9034c6dcf22f4e220a5b032eaf62aab8d048719dd2";[m
+     };[m
+   };[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/shell.nix b/shell.nix[m
+[1mindex feca307..5a3a4e2 100644[m
+[1m--- a/shell.nix[m
+[1m+++ b/shell.nix[m
+[36m@@ -1,64 +1,72 @@[m
+[31m-# Development shell configuration[m
+[31m-{ pkgs ? import <nixpkgs> { } }:[m
+[31m-[m
+[31m-let[m
+[31m-  cudaPackages = pkgs.cudaPackages_12_8;  # Use latest CUDA version[m
+[31m-  pythonEnv = pkgs.python3.withPackages (ps: with ps; [[m
+[31m-    pip[m
+[31m-    virtualenv[m
+[31m-    (numpy.override { blas = pkgs.mkl; })[m
+[31m-    pandas[m
+[31m-    matplotlib[m
+[31m-    scikit-learn[m
+[31m-    (pytorch-bin.override {  # Use binary package instead of building[m
+[31m-      cudaSupport = true;[m
+[31m-      cudatoolkit = cudaPackages.cudatoolkit;[m
+[31m-    })[m
+[31m-    torchvision-bin[m
+[31m-    torchaudio-bin[m
+[31m-    transformers[m
+[31m-    pytorch-lightning[m
+[31m-    tensorboard[m
+[31m-    wandb[m
+[31m-    jupyter[m
+[31m-    ipython[m
+[31m-  ]);[m
+[31m-in[m
+[31m-pkgs.mkShell {[m
+[31m-  name = "ml-dev-shell";[m
+[31m-  buildInputs = with pkgs; [[m
+[31m-    pythonEnv[m
+[31m-    cudaPackages.cuda_cudart[m
+[31m-    cudaPackages.cuda_cupti[m
+[31m-    cudaPackages.cuda_nvrtc[m
+[31m-    cudaPackages.libcublas[m
+[31m-    cudaPackages.cudnn[m
+[31m-    cudaPackages.tensorrt[m
+[31m-    nvidia-docker[m
+[31m-    git[m
+[31m-    gh[m
+[31m-  ];[m
+[31m-[m
+[31m-  shellHook = ''[m
+[31m-    export CUDA_PATH="${cudaPackages.cuda_cudart}"[m
+[31m-    export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [[m
+[31m-      "${cudaPackages.cuda_cudart}/lib"[m
+[31m-      "${cudaPackages.cuda_cupti}/lib"[m
+[31m-      "${cudaPackages.cuda_nvrtc}/lib"[m
+[31m-      "${cudaPackages.libcublas}/lib"[m
+[31m-      "${cudaPackages.cudnn}/lib"[m
+[31m-      "${cudaPackages.tensorrt}/lib"[m
+[31m-    ]}"[m
+[31m-    export CUDA_HOME=${cudaPackages.cudatoolkit}[m
+[31m-    export CUDA_ROOT=${cudaPackages.cudatoolkit}[m
+[31m-    export CUDNN_PATH=${cudaPackages.cudnn}[m
+[31m-    export EXTRA_LDFLAGS="-L/lib -L${cudaPackages.cudatoolkit}/lib"[m
+[31m-    export EXTRA_CCFLAGS="-I/usr/include"[m
+[31m-    export PATH=${cudaPackages.cudatoolkit}/bin:$PATH[m
+[31m-    export PYTHONPATH="$PWD:$PYTHONPATH"[m
+[31m-    export XLA_FLAGS="--xla_gpu_cuda_data_dir=${cudaPackages.cudatoolkit}"[m
+[31m-    echo "PyTorch + CUDA development environment loaded"[m
+[31m-    echo "CUDA Version: $(nvcc --version | grep release | awk '{print $5}' | cut -c2-)"[m
+[31m-    python -c "import torch; print(f'PyTorch CUDA available: {torch.cuda.is_available()}')"[m
+[31m-  '';[m
+[31m-} [m
+\ No newline at end of file[m
+[32m+[m[32m# Development shell configuration[m
+[32m+[m[32m{[m
+[32m+[m[32m  pkgs ? import <nixpkgs> { },[m
+[32m+[m[32m}:[m
+[32m+[m
+[32m+[m[32mlet[m
+[32m+[m[32m  cudaPackages = pkgs.cudaPackages_12_8; # Use latest CUDA version[m
+[32m+[m[32m  pythonEnv = pkgs.python3.withPackages ([m
+[32m+[m[32m    ps: with ps; [[m
+[32m+[m[32m      pip[m
+[32m+[m[32m      virtualenv[m
+[32m+[m[32m      (numpy.override { blas = pkgs.mkl; })[m
+[32m+[m[32m      pandas[m
+[32m+[m[32m      matplotlib[m
+[32m+[m[32m      scikit-learn[m
+[32m+[m[32m      (pytorch-bin.override {[m
+[32m+[m[32m        # Use binary package instead of building[m
+[32m+[m[32m        cudaSupport = true;[m
+[32m+[m[32m        cudatoolkit = cudaPackages.cudatoolkit;[m
+[32m+[m[32m      })[m
+[32m+[m[32m      torchvision-bin[m
+[32m+[m[32m      torchaudio-bin[m
+[32m+[m[32m      transformers[m
+[32m+[m[32m      pytorch-lightning[m
+[32m+[m[32m      tensorboard[m
+[32m+[m[32m      wandb[m
+[32m+[m[32m      jupyter[m
+[32m+[m[32m      ipython[m
+[32m+[m[32m    ][m
+[32m+[m[32m  );[m
+[32m+[m[32min[m
+[32m+[m[32mpkgs.mkShell {[m
+[32m+[m[32m  name = "ml-dev-shell";[m
+[32m+[m[32m  buildInputs = with pkgs; [[m
+[32m+[m[32m    pythonEnv[m
+[32m+[m[32m    cudaPackages.cuda_cudart[m
+[32m+[m[32m    cudaPackages.cuda_cupti[m
+[32m+[m[32m    cudaPackages.cuda_nvrtc[m
+[32m+[m[32m    cudaPackages.libcublas[m
+[32m+[m[32m    cudaPackages.cudnn[m
+[32m+[m[32m    cudaPackages.tensorrt[m
+[32m+[m[32m    nvidia-docker[m
+[32m+[m[32m    git[m
+[32m+[m[32m    gh[m
+[32m+[m[32m  ];[m
+[32m+[m
+[32m+[m[32m  shellHook = ''[m
+[32m+[m[41m    [m
+[32m+[m[32m        export CUDA_PATH="${cudaPackages.cuda_cudart}"[m[41m[m
+[32m+[m[32m        export LD_LIBRARY_PATH="${[m
+[32m+[m[32m          pkgs.lib.makeLibraryPath [[m
+[32m+[m[32m            "${cudaPackages.cuda_cudart}/lib"[m
+[32m+[m[32m            "${cudaPackages.cuda_cupti}/lib"[m
+[32m+[m[32m            "${cudaPackages.cuda_nvrtc}/lib"[m
+[32m+[m[32m            "${cudaPackages.libcublas}/lib"[m
+[32m+[m[32m            "${cudaPackages.cudnn}/lib"[m
+[32m+[m[32m            "${cudaPackages.tensorrt}/lib"[m
+[32m+[m[32m          ][m
+[32m+[m[32m        }"[m[41m[m
+[32m+[m[32m        export CUDA_HOME=${cudaPackages.cudatoolkit}[m[41m[m
+[32m+[m[32m        export CUDA_ROOT=${cudaPackages.cudatoolkit}[m[41m[m
+[32m+[m[32m        export CUDNN_PATH=${cudaPackages.cudnn}[m[41m[m
+[32m+[m[32m        export EXTRA_LDFLAGS="-L/lib -L${cudaPackages.cudatoolkit}/lib"[m[41m[m
+[32m+[m[32m        export EXTRA_CCFLAGS="-I/usr/include"[m[41m[m
+[32m+[m[32m        export PATH=${cudaPackages.cudatoolkit}/bin:$PATH[m[41m[m
+[32m+[m[32m        export PYTHONPATH="$PWD:$PYTHONPATH"[m[41m[m
+[32m+[m[32m        export XLA_FLAGS="--xla_gpu_cuda_data_dir=${cudaPackages.cudatoolkit}"[m[41m[m
+[32m+[m[32m        echo "PyTorch + CUDA development environment loaded"[m[41m[m
+[32m+[m[32m        echo "CUDA Version: $(nvcc --version | grep release | awk '{print $5}' | cut -c2-)"[m[41m[m
+[32m+[m[32m        python -c "import torch; print(f'PyTorch CUDA available: {torch.cuda.is_available()}')"[m[41m[m
+[32m+[m[32m  '';[m
+[32m+[m[32m}[m

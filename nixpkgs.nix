@@ -1,5 +1,5 @@
 # This file controls the pinned version of nixpkgs
-args@{ system, ... }:
+args: args
 
 # Import the flake's nixpkgs
 let
@@ -9,9 +9,12 @@ let
     sha256 = lock.nodes.nixpkgs.locked.narHash;
   };
 in
-import nixpkgs (args // {
-  config = {
-    allowUnfree = true;
-    cudaSupport = true;
-  };
-}) 
+import nixpkgs (
+  args
+  // {
+    config = {
+      allowUnfree = true;
+      cudaSupport = true;
+    };
+  }
+)

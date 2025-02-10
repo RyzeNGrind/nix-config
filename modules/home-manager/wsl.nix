@@ -1,3 +1,4 @@
+# WSL-specific home-manager configuration
 { config, lib, pkgs, ... }:
 
 {
@@ -69,4 +70,4 @@
     mime.enable = true;
     mimeApps.enable = true;
   };
-} 
+}

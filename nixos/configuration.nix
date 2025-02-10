@@ -5,9 +5,9 @@
   outputs,
   lib,
   config,
-  pkgs,
   ...
-}: {
+}:
+{
   # You can import other NixOS modules here
   imports = [
     # If you want to use modules your own flake exports (from modules/nixos):
@@ -44,11 +44,11 @@
     ];
     # Configure your nixpkgs instance
     config = {
-      allowBroken = true;  # Temporary workaround for TensorRT
+      allowBroken = true; # Temporary workaround for TensorRT
       cudaSupport = true;
       allowUnfree = true;
       packageOverrides = pkgs: {
-        cudaPackages = pkgs.cudaPackages_12_1;  # Use a stable CUDA version
+        cudaPackages = pkgs.cudaPackages_12_1; # Use a stable CUDA version
       };
     };
   };
@@ -56,11 +56,13 @@
   nix = {
     # This will add each flake input as a registry
     # To make nix3 commands consistent with your flake
-    registry = (lib.mapAttrs (_: flake: {inherit flake;})) ((lib.filterAttrs (_: lib.isType "flake")) inputs);
+    registry = (lib.mapAttrs (_: flake: { inherit flake; })) (
+      (lib.filterAttrs (_: lib.isType "flake")) inputs
+    );
 
     # This will additionally add your inputs to the system's legacy channels
     # Making legacy nix commands consistent as well, awesome!
-    nixPath = ["/etc/nix/path"];
+    nixPath = [ "/etc/nix/path" ];
 
     settings = {
       experimental-features = "nix-command flakes repl-flake";
@@ -72,7 +74,11 @@
       retry = 5;
       timeout = 300;
       # Add trusted users and substituters
-      trusted-users = [ "root" "ryzengrind" "@wheel" ];
+      trusted-users = [
+        "root"
+        "ryzengrind"
+        "@wheel"
+      ];
       substituters = [
         "https://cache.nixos.org"
         "https://cuda-maintainers.cachix.org"
@@ -110,7 +116,7 @@
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_CA.UTF-8";
-  
+
   # Configure keymap in X11
   services = {
     xserver = {
@@ -130,14 +136,14 @@
         variant = "";
       };
       #xkbOptions = "ctrl:swapcaps";
-      
+
       # NVIDIA-specific settings
       videoDrivers = [ "nvidia" ];
     };
 
     # Enable CUPS to print documents.
     printing.enable = true;
-    flatpak.enable = true;  
+    flatpak.enable = true;
     zerotierone = {
       enable = true;
       joinNetworks = [ "fada62b0158621fe" ]; # ZT NETWORK ID
@@ -191,16 +197,47 @@
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9ky9rfRDFJSZQc+3cEpzBgvaKAF5cqAPSVBRxXRTkG RyzeNGrind@Shogun"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPL6GOQ1zpvnxJK0Mz+vUHgEd0f/sDB0q3pa38yHHEsC ronin@Ubuntu18S3"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJJKxPRz8mlLOXoXnJdP211rBkflVCWth3KXgcz/qfw3 ronin@workerdroplet"
-        
+
       ];
       # TODO: Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)
       extraGroups = [
-        "root" "wheel" "docker" "kmem" "tty" "messagebus" "disk" "audio"
-        "floppy" "uucp" "lp" "cdrom" "tape" "video" "dialout" "utmp" "adm"
-        "networkmanager" "systemd-journal" "keys" "users" "systemd-journal-gateway"
-        "gdm" "systemd-network" "systemd-resolve" "systemd-timesync" "input"
-        "nm-openvpn" "kvm" "render" "sgx" "shadow" "flatpak" "systemd-oom"
-        "systemd-coredump" "rtkit" "polkituser"
+        "root"
+        "wheel"
+        "docker"
+        "kmem"
+        "tty"
+        "messagebus"
+        "disk"
+        "audio"
+        "floppy"
+        "uucp"
+        "lp"
+        "cdrom"
+        "tape"
+        "video"
+        "dialout"
+        "utmp"
+        "adm"
+        "networkmanager"
+        "systemd-journal"
+        "keys"
+        "users"
+        "systemd-journal-gateway"
+        "gdm"
+        "systemd-network"
+        "systemd-resolve"
+        "systemd-timesync"
+        "input"
+        "nm-openvpn"
+        "kvm"
+        "render"
+        "sgx"
+        "shadow"
+        "flatpak"
+        "systemd-oom"
+        "systemd-coredump"
+        "rtkit"
+        "polkituser"
       ];
     };
   };
@@ -217,7 +254,7 @@
     autoUpgrade = {
       enable = true;
       allowReboot = true;
-      channel = "https://channels.nixos.org/nixos-24.05"; 
+      channel = "https://channels.nixos.org/nixos-24.05";
     };
   };
 
@@ -239,7 +276,6 @@
       driSupport = true;
       driSupport32Bit = true;
     };
-    pulseaudio.enable = false;  # Disable pulseaudio in favor of pipewire
+    pulseaudio.enable = false; # Disable pulseaudio in favor of pipewire
   };
 }
-

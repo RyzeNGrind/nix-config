@@ -1,9 +1,19 @@
 # Host-specific home configuration for daimyo00
-{ config, lib, pkgs, inputs, outputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  outputs,
+  ...
+}:
 
+let
+  scripts = pkgs.callPackage ../../pkgs/scripts { };
+in
 {
   imports = [
-    ../../modules/home-manager/wsl.nix  # Import our WSL module
+    ../../modules/home-manager/wsl.nix # Import our WSL module
   ];
 
   # Basic home-manager settings
@@ -11,7 +21,7 @@
     username = "ryzengrind";
     homeDirectory = "/home/ryzengrind";
     stateVersion = "24.05";
-    
+
     # Host-specific packages
     packages = with pkgs; [
       # Development tools
@@ -20,18 +30,23 @@
       direnv
       nix-direnv
       pre-commit
-      
+      gcc
+      rustc
+      cargo
+      pkg-config
+      gnumake
+
       # System tools
       htop
       btop
       iotop
-      
+
       # Network tools
       curl
       wget
       dig
       whois
-      
+
       # Terminal utilities
       tmux
       fzf
@@ -42,85 +57,28 @@
 
       # IDE utilities
       pre-commit
-      _1password-gui
-      nixfmt-classic
+      nixfmt-rfc-style
+      statix
+      deadnix
       nix-ld
-      
+
       # VSCodium cursor server setup
-      (writeTextFile {
-        name = "vscodium-cursor-server";
-        destination = "/bin/vscodium-cursor-server";
-        executable = true;
-        text = ''
-          #!/usr/bin/env bash
-          
-          # uncomment the following line to enable debugging
-          #export VSCODE_WSL_DEBUG_INFO=true
-          
-          INIT_FILE="$HOME/.vscodium-server/initialized"
-          
-          fix_download() {
-              case "$QUALITY" in
-                  stable)
-                      local repo_name='vscodium'
-                      local app_name='codium';;
-                  insider)
-                      local repo_name='vscodium-insiders'
-                      local app_name='codium-insiders';;
-                  *)
-                      echo "unknown quality: $QUALITY" 1>&2
-                      return 1;;
-              esac
-              local ps='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
-              local cmd="(Get-Command $app_name).Path | Split-Path | Split-Path"
-              local install_dir=$(wslpath -u "$($ps -nop -c "$cmd | Write-Host -NoNewLine")")
-              local product_json="$install_dir/resources/app/product.json"
-              local release=$(jq -r .release "$product_json")
-              local version=$(jq -r .vscodeVersion "$product_json" | sed "s#\(-$QUALITY\)\?\$#.$release&#")
-              case $version in null.*)
-                  version=$(jq -r .version "$product_json" | sed "s#\(-$QUALITY\)\?\$#.$release&#");;
-              esac
-              local arch=$(uname -m)
-              case $arch in
-                  x86_64)
-                      local platform='x64';;
-                  armv7l | armv8l)
-                      local platform='armhf';;
-                  arm64 | aarch64)
-                      local platform='arm64';;
-                  *)
-                      echo "unknown machine: $arch" 1>&2
-                      return 1;;
-              esac
-              local url="https://github.com/VSCodium/$repo_name/releases/download/$version/vscodium-reh-linux-$platform-$version.tar.gz"
-              export VSCODE_SERVER_TAR=$(curl -fLOJ "$url" --output-dir /tmp -w '/tmp/%{filename_effective}')
-              export REMOVE_SERVER_TAR_FILE=true
-          }
-          
-          [ "$VSCODE_WSL_DEBUG_INFO" = true ] && set -x
-          
-          # Check if this is first time initialization
-          if [ ! -f "$INIT_FILE" ]; then
-              if [ ! -d "$HOME/$DATAFOLDER/bin/$COMMIT" ]; then
-                  if [ ! -d "$HOME/$DATAFOLDER/bin_commit" ]; then
-                      set -e
-                      fix_download
-                      set +e
-                      # Create initialization flag file
-                      touch "$INIT_FILE"
-                      echo "cursor-server has been setup for remote SSH and WSL."
-                  fi
-              fi
-          fi
-          unset fix_download
-        '';
-      })
-      
+      scripts.vscodiumCursorServer
+
       # Update 1Password package configuration
-      (pkgs.writeShellScriptBin "1password" ''
+      (writeShellScriptBin "1p" ''
         nohup ${pkgs._1password-gui}/bin/1password --silent > /dev/null 2>&1 &
       '')
     ];
+
+    # Create the pre-commit hook file
+    file.".config/git/hooks/pre-commit" = {
+      executable = true;
+      text = builtins.readFile (scripts.preCommitHook + "/bin/pre-commit-hook");
+    };
+
+    # Create the hooks directory
+    file.".config/git/hooks/.keep".text = "";
   };
 
   # Enable home-manager
@@ -136,6 +94,7 @@
         init.defaultBranch = "main";
         pull.rebase = true;
         push.autoSetupRemote = true;
+        core.hooksPath = "${config.xdg.configHome}/git/hooks";
       };
       package = pkgs.git;
     };
@@ -149,6 +108,7 @@
         "..." = "cd ../..";
         rebuild = "sudo nixos-rebuild switch --flake .#daimyo00";
         update = "nix flake update";
+        "1password" = "1p"; # Add alias for 1password
       };
     };
 
@@ -171,66 +131,68 @@
 
     vscode = {
       enable = true;
-      package = pkgs.vscodium;  # Switch to VSCodium
+      package = pkgs.vscodium; # Switch to VSCodium
       enableUpdateCheck = false;
       enableExtensionUpdateCheck = false;
-      
+
       extensions = with pkgs.vscode-extensions; [
         # Nix support
         bbenoist.nix
         jnoortheen.nix-ide
         brettm12345.nixfmt-vscode
-        
+
         # Git integration
         eamodio.gitlens
         mhutchie.git-graph
-        
+
         # Remote development
         ms-vscode-remote.remote-ssh
-        ms-vscode-remote.remote-wsl
-        
+
         # General development
         ms-azuretools.vscode-docker
         redhat.vscode-yaml
         yzhang.markdown-all-in-one
-        
+
         # Theme and UI
         pkief.material-icon-theme
-        
+
         # Editor enhancements
         editorconfig.editorconfig
         esbenp.prettier-vscode
-        
+
         # AI assistance
         github.copilot
       ];
-      
+
       userSettings = {
         "editor.fontFamily" = "'FiraCode Nerd Font', 'Droid Sans Mono', 'monospace'";
         "editor.fontSize" = 14;
         "editor.formatOnSave" = true;
-        "editor.rulers" = [ 80 120 ];
+        "editor.rulers" = [
+          80
+          120
+        ];
         "editor.renderWhitespace" = "boundary";
         "editor.suggestSelection" = "first";
         "editor.bracketPairColorization.enabled" = true;
-        
+
         "workbench.colorTheme" = "Default Dark Modern";
         "workbench.iconTheme" = "material-icon-theme";
         "workbench.startupEditor" = "none";
-        
+
         "files.autoSave" = "onFocusChange";
         "files.trimTrailingWhitespace" = true;
         "files.insertFinalNewline" = true;
-        
+
         "terminal.integrated.fontFamily" = "'FiraCode Nerd Font'";
         "terminal.integrated.fontSize" = 14;
-        
+
         "git.enableSmartCommit" = true;
         "git.autofetch" = true;
-        
+
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "nil";
-        
+
         "[nix]" = {
           "editor.tabSize" = 2;
           "editor.formatOnSave" = true;
@@ -245,55 +207,8 @@
         "remote.SSH.enableRemoteCommand" = true;
       };
     };
-
-    # Pre-commit configuration
-    pre-commit = {
-      enable = true;
-      package = pkgs.pre-commit;
-      settings = {
-        hooks = {
-          nixpkgs-fmt = {
-            enable = true;
-          };
-          prettier = {
-            enable = true;
-          };
-          black = {
-            enable = true;
-          };
-        };
-      };
-    };
   };
-
-  # Create pre-commit configuration
-  home.file.".config/git/hooks/pre-commit-config.yaml".text = ''
-    repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.5.0
-      hooks:
-        - id: trailing-whitespace
-        - id: end-of-file-fixer
-        - id: check-yaml
-        - id: check-added-large-files
-
-    - repo: https://github.com/nix-community/nixpkgs-fmt
-      rev: v1.3.0
-      hooks:
-        - id: nixpkgs-fmt
-
-    - repo: https://github.com/pre-commit/mirrors-prettier
-      rev: v3.1.0
-      hooks:
-        - id: prettier
-          types_or: [javascript, jsx, ts, tsx, markdown, yaml, json]
-
-    - repo: https://github.com/psf/black
-      rev: 23.12.1
-      hooks:
-        - id: black
-  '';
 
   # Enable fonts in home-manager
   fonts.fontconfig.enable = true;
-} 
+}

@@ -3,3 +3,4 @@ TensorRT-*.tar.gz
 TensorRT-*.zip
 
 result
+.pre-commit-config.yaml

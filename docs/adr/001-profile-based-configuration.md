@@ -9,6 +9,7 @@ Accepted
 ## Context
 
 The NixOS configuration needed to be restructured to support multiple use cases (development, gaming, server) while maintaining:
+
 - Clear separation of concerns
 - Easy composition of features
 - Testability
@@ -20,36 +21,41 @@ The NixOS configuration needed to be restructured to support multiple use cases 
 We will implement a profile-based configuration architecture with the following characteristics:
 
 1. Base Profile
+
    - Core system settings
    - Security configurations
    - System optimization
    - Common utilities
 
 2. Specialized Profiles
+
    - Development environment
    - Gaming setup
    - Server configuration
    - Each profile is self-contained and composable
 
 3. Feature Flags System
+
    - Conditional module loading
    - Version tagging based on enabled features
    - Feature state tracking in flake.lock
 
 4. Testing Framework
+
    - Unit tests for each profile
    - Integration tests for profile combinations
    - Automated testing via GitHub Actions
    - VM-based testing for system configurations
 
 5. Module Organization
+
    ```
    /profiles
      /base         # Base profile all others inherit from
      /gaming       # Gaming-specific configurations
      /dev          # Development environment
      /server       # Server configurations
-   
+
    /modules
      /core         # Core system components
        network.nix
@@ -68,16 +74,19 @@ We will implement a profile-based configuration architecture with the following 
 ### Positive
 
 1. **Modularity**
+
    - Easy to add/remove features
    - Clear dependencies
    - Isolated testing
 
 2. **Maintainability**
+
    - Self-documenting structure
    - Standardized testing
    - Version-controlled feature flags
 
 3. **Flexibility**
+
    - Compose profiles as needed
    - Feature toggles for different environments
    - Hardware-specific optimizations
@@ -91,11 +100,13 @@ We will implement a profile-based configuration architecture with the following 
 ### Negative
 
 1. **Complexity**
+
    - More files to manage
    - Need for documentation
    - Learning curve for new contributors
 
 2. **Build Time**
+
    - More tests to run
    - Larger CI/CD pipeline
    - Multiple profile combinations to test
@@ -107,12 +118,14 @@ We will implement a profile-based configuration architecture with the following 
 ## Mitigation Strategies
 
 1. **Documentation**
+
    - Comprehensive README files
    - Architecture Decision Records
    - Example configurations
    - Clear naming conventions
 
 2. **Testing Optimization**
+
    - Parallel test execution
    - Test caching
    - Selective testing based on changes
@@ -127,6 +140,7 @@ We will implement a profile-based configuration architecture with the following 
 ## References
 
 1. NixOS Module System
+
    - [NixOS Manual: Writing NixOS Modules](https://nixos.org/manual/nixos/stable/index.html#sec-writing-modules)
    - [NixOS Wiki: NixOS Tests](https://nixos.wiki/wiki/NixOS_Tests)
 

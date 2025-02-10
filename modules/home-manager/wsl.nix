@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: {
+_: {
   # WSL-specific home configuration
   home.sessionVariables = {
     WSLENV = "NIXOS_WSL";

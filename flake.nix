@@ -38,20 +38,32 @@
     inherit (self) outputs;
     # Only build for Linux systems
     linuxSystems = ["x86_64-linux" "aarch64-linux"];
-    forLinuxSystems = nixpkgs.lib.genAttrs linuxSystems;
     # For packages that can build on any system
     allSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     forAllSystems = nixpkgs.lib.genAttrs allSystems;
     # Add this new overlay to make unstable packages available
-    overlayUnstable = final: prev: {
+    overlayUnstable = _: prev: {
       unstable = import nixpkgs-unstable {
         inherit (prev) system;
         config.allowUnfree = true;
       };
     };
   in {
+    # Add checks for pre-commit hooks
+    checks = forAllSystems (system: {
+      pre-commit-check = pre-commit-hooks.lib.${system}.run {
+        src = ./.;
+        hooks = {
+          alejandra.enable = true;
+          deadnix.enable = true;
+          statix.enable = true;
+          prettier.enable = true;
+        };
+      };
+    });
+
     # Your custom packages and modifications
-    devShells = forLinuxSystems (system: let
+    devShells = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
         config = {
@@ -62,98 +74,19 @@
     in {
       default = pkgs.mkShell {
         inherit (self.checks.${system}.pre-commit-check) shellHook;
-        buildInputs = with pkgs; [
-          alejandra
-          statix
-          nodePackages.prettier
-          pre-commit
-        ];
+        buildInputs = with pkgs;
+          [
+            alejandra
+            deadnix
+            statix
+            nodePackages.prettier
+            pre-commit
+          ]
+          ++ self.checks.${system}.pre-commit-check.enabledPackages;
       };
-
-      ml =
-        (pkgs.buildFHSEnv {
-          name = "cuda-ml-env";
-          targetPkgs = pkgs: (with pkgs; [
-            linuxPackages.nvidia_x11
-            libGLU
-            libGL
-            xorg.libXi
-            xorg.libXmu
-            freeglut
-            xorg.libXext
-            xorg.libX11
-            xorg.libXv
-            xorg.libXrandr
-            zlib
-            ncurses5
-            stdenv.cc
-            binutils
-            ffmpeg
-            fish
-            micromamba
-            # CUDA packages
-            cudaPackages.cuda_cudart
-            cudaPackages.cuda_cupti
-            cudaPackages.cudatoolkit
-            cudaPackages.cudnn
-            cudaPackages.cuda_nvcc
-            # Python and monitoring tools
-            python311
-            python311Packages.pip
-            python311Packages.virtualenv
-            nvtopPackages.full
-            nvidia-docker
-            # Development tools
-            git
-            curl
-            wget
-          ]);
-
-          profile = ''
-            # WSL2-specific NVIDIA setup
-            if [ -d "/usr/lib/wsl/lib" ]; then
-              export NVIDIA_DRIVER_LIBRARY_PATH="/usr/lib/wsl/lib"
-              export LD_LIBRARY_PATH="/usr/lib/wsl/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.ncurses5}/lib"
-              export NVIDIA_DRIVER_CAPABILITIES="compute,utility"
-              export NVIDIA_VISIBLE_DEVICES="all"
-              export NVIDIA_REQUIRE_CUDA="cuda>=12.0"
-
-              # Create symlinks for WSL NVIDIA libraries if they don't exist
-              mkdir -p ~/.local/lib
-              for lib in /usr/lib/wsl/lib/libcuda*; do
-                if [ -f "$lib" ]; then
-                  ln -sf "$lib" ~/.local/lib/
-                fi
-              done
-              export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
-            fi
-
-            # CUDA setup
-            export CUDA_PATH="${pkgs.cudaPackages.cudatoolkit}"
-            export PATH="${pkgs.cudaPackages.cuda_nvcc}/bin:${pkgs.linuxPackages.nvidia_x11}/bin:$PATH"
-
-            # CUDA development setup
-            export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
-            export EXTRA_CCFLAGS="-I/usr/include"
-            export CUDA_HOME="$CUDA_PATH"
-            export XLA_FLAGS="--xla_gpu_cuda_data_dir=$CUDA_PATH"
-
-            # Create local bin directory for NVIDIA tools
-            mkdir -p ~/.local/bin
-            for cmd in nvidia-smi nvtop; do
-              if command -v $cmd >/dev/null 2>&1; then
-                ln -sf $(command -v $cmd) ~/.local/bin/
-              fi
-            done
-            export PATH="$HOME/.local/bin:$PATH"
-          '';
-
-          runScript = "fish";
-        })
-        .env;
     });
 
-    # Packages that can build on any system
+    # Rest of your flake outputs...
     packages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
@@ -258,8 +191,8 @@
                 allowUnfree = true;
                 allowBroken = true;
                 # Explicitly disable CUDA
-                cudaSupport = lib.mkForce false;
-                cudaCapabilities = lib.mkForce [];
+                cudaSupport = false;
+                cudaCapabilities = [];
               };
               # Ensure no CUDA overlays
               overlays = [];
@@ -268,10 +201,10 @@
             # Disable all NVIDIA/CUDA related features
             hardware = {
               nvidia = {
-                package = lib.mkForce null;
-                modesetting.enable = lib.mkForce false;
+                package = null;
+                modesetting.enable = false;
               };
-              nvidia-container-toolkit.enable = lib.mkForce false;
+              nvidia-container-toolkit.enable = false;
               opengl.enable = lib.mkForce false;
             };
 
@@ -311,16 +244,16 @@
               enableOnBoot = true;
               autoPrune.enable = true;
               # Disable NVIDIA runtime
-              enableNvidia = lib.mkForce false;
+              enableNvidia = false;
               extraOptions = "--add-runtime none=runc";
             };
 
             # Environment variables to prevent CUDA detection
             environment.variables = {
-              CUDA_PATH = lib.mkForce "";
-              LD_LIBRARY_PATH = lib.mkForce "";
-              NVIDIA_DRIVER_CAPABILITIES = lib.mkForce "";
-              NVIDIA_VISIBLE_DEVICES = lib.mkForce "none";
+              CUDA_PATH = "";
+              LD_LIBRARY_PATH = "";
+              NVIDIA_DRIVER_CAPABILITIES = "";
+              NVIDIA_VISIBLE_DEVICES = "none";
             };
 
             nix = {
@@ -409,11 +342,7 @@
         specialArgs = {inherit inputs;};
         modules = [
           # Bare minimum NixOS configuration
-          ({
-            pkgs,
-            lib,
-            ...
-          }: {
+          ({pkgs, ...}: {
             # Basic system configuration
             system.stateVersion = "24.05";
 
@@ -472,20 +401,5 @@
         ];
       };
     };
-
-    # Add checks for pre-commit hooks
-    checks = forLinuxSystems (system: {
-      pre-commit-check = pre-commit-hooks.lib.${system}.run {
-        src = ./.;
-        hooks = {
-          alejandra.enable = true;
-          prettier = {
-            enable = true;
-            types_or = ["javascript" "jsx" "ts" "tsx" "markdown" "yaml" "json"];
-          };
-          black.enable = true;
-        };
-      };
-    });
   };
 }

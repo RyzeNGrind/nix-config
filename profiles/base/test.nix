@@ -1,12 +1,6 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: {
-  name = "base-profile-test";
-
-  nodes.machine = {...}: {
+{pkgs ? import <nixpkgs> {}, ...}: {
+  name = "base-profile";
+  nodes.machine = _: {
     imports = [./default.nix];
 
     # Enable base profile with all features
@@ -25,10 +19,20 @@
       # Enable nested virtualization for AppArmor testing
       nested.enable = true;
     };
+
+    environment.systemPackages = with pkgs; [
+      curl
+      git
+      vim
+      wget
+      htop
+      gnupg
+    ];
   };
 
   testScript = ''
     machine.wait_for_unit("multi-user.target")
+    machine.succeed("test -f /etc/nixos/configuration.nix")
 
     # Test core system settings
     with subtest("Core system settings"):

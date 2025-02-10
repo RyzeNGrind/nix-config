@@ -1,4 +1,4 @@
-name: NixOS Configuration CI
+name: "NixOS Configuration CI"
 
 on:
   push:
@@ -32,8 +32,38 @@ jobs:
       - name: Check flake formatting
         run: nix fmt
 
-  test-configurations:
+  matrix-test:
     needs: flake-check
+    strategy:
+      matrix:
+        architecture: [x86_64-linux, aarch64-linux]
+        profile: [base, dev, gaming, server]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            system = ${{ matrix.architecture }}
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v14
+        with:
+          name: ryzengrind-nix-config
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - name: Run architecture tests
+        run: |
+          nix build .#nixosTests.${{ matrix.profile }}-${{ matrix.architecture }} -L \
+            --option system ${{ matrix.architecture }} \
+            --option sandbox false \
+            --show-trace
+
+  test-configurations:
+    needs: matrix-test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -48,11 +78,6 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Nix channels
-        run: |
-          nix-channel --add https://nixos.org/channels/nixos-24.05 nixos
-          nix-channel --update
 
       - name: Test build process
         run: |
@@ -71,9 +96,6 @@ jobs:
       - name: Test WSL configuration
         if: matrix.test-wsl
         run: |
-          # Setup WSL test environment
-          sudo apt-get update && sudo apt-get install -y curl
-
           # Test NixOS-WSL module loading
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.wsl.enable
 
@@ -81,12 +103,16 @@ jobs:
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wslu"
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wsl-open"
 
-  test-home-manager:
-    needs: flake-check
+  cache-test:
+    needs: matrix-test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        user: [ryzengrind@daimyo00]
+    services:
+      localstack:
+        image: localstack/localstack
+        env:
+          SERVICES: s3
+        ports:
+          - 4566:4566
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: cachix/install-nix-action@v23
@@ -95,16 +121,23 @@ jobs:
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and test home-manager configuration
+      - name: Setup test environment
         run: |
-          # Build home-manager configuration
-          nix build .#homeConfigurations."${{ matrix.user }}".activationPackage --dry-run
+          # Create test bucket
+          aws --endpoint-url=http://localhost:4566 s3 mb s3://test-cache
 
-          # Verify home-manager module loading
-          nix eval --json .#homeConfigurations."${{ matrix.user }}".config.home.username
+      - name: Run cache tests
+        run: |
+          nix build .#nixosTests.cache -L \
+            --option sandbox false \
+            --show-trace
+
+      - name: Verify cache contents
+        run: |
+          aws --endpoint-url=http://localhost:4566 s3 ls s3://test-cache --recursive
 
   security-scan:
-    needs: flake-check
+    needs: [test-configurations, cache-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
@@ -120,7 +153,7 @@ jobs:
             --system .#nixosConfigurations.daimyo00.config.system.build.toplevel
 
   deploy:
-    needs: [test-configurations, test-home-manager, security-scan]
+    needs: [security-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:

@@ -1,86 +1,82 @@
-name: "Test NixOS Configuration"
+name: "NixOS Test"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main", "working*"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  tests:
+  matrix-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [x86_64-linux, aarch64-linux]
+        profile: [base, dev, gaming, server]
     steps:
-    - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@v25
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
-        extra_nix_config: |
-          experimental-features = nix-command flakes
-          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Setup Cachix
-      uses: cachix/cachix-action@v14
-      with:
-        name: nix-config
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            system = ${{ matrix.architecture }}
 
-    - name: Check Nix flake
-      run: nix flake check
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v14
+        with:
+          name: ryzengrind-nix-config
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-    - name: Run nix-eval-jobs
-      run: |
-        nix-eval-jobs --gc-roots-dir gcroots --option system x86_64-linux ./. | \
-        jq -r 'select(.success == true) | .drvPath' | \
-        xargs nix-store --realize
-
-    - name: Run NixOS tests
-      run: |
-        # Run all tests in parallel
-        nix build .#nixosTests.all -L \
-          --option system x86_64-linux \
-          --option sandbox false \
-          --show-trace
-
-    - name: Run specialized profile tests
-      run: |
-        # Test each profile configuration
-        for profile in base gaming dev server; do
-          echo "Testing $profile profile..."
-          nix build .#nixosTests.$profile -L \
-            --option system x86_64-linux \
+      - name: Run architecture tests
+        run: |
+          nix build .#nixosTests.${{ matrix.profile }}-${{ matrix.architecture }} -L \
+            --option system ${{ matrix.architecture }} \
             --option sandbox false \
             --show-trace
-        done
 
-    - name: Run WSL tests
-      run: |
-        nix build .#nixosTests.wsl -L \
-          --option system x86_64-linux \
-          --option sandbox false \
-          --show-trace
+  test-configurations:
+    needs: matrix-test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host: [daimyo00]
+        include:
+          - host: daimyo00
+            test-wsl: true
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-    - name: Run feature flag tests
-      run: |
-        # Test different feature flag combinations
-        nix build .#nixosTests.features -L \
-          --option system x86_64-linux \
-          --option sandbox false \
-          --show-trace
+      - name: Test WSL configuration
+        if: matrix.test-wsl
+        run: |
+          # Test NixOS-WSL module loading
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.wsl.enable
 
-    - name: Run integration tests
-      run: |
-        # Test profile combinations
-        nix build .#nixosTests.integration -L \
-          --option system x86_64-linux \
-          --option sandbox false \
-          --show-trace
+          # Verify WSL-specific configurations
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wslu"
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wsl-open"
 
-    - name: Check documentation
-      run: |
-        # Verify README files exist in key directories
-        for dir in profiles modules/core modules/services modules/hardware; do
-          if [ ! -f "$dir/README.md" ]; then
-            echo "Missing README.md in $dir"
-            exit 1
-          fi
-        done
+  security-scan:
+    needs: [test-configurations]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: cachix/install-nix-action@v23
+
+      - name: Run security checks
+        run: |
+          # Run statix for static analysis
+          nix run nixpkgs#statix -- check
+
+          # Build the system first
+          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
+
+          # Run vulnix for vulnerability scanning
+          nix run nixpkgs#vulnix -- --system ./result

@@ -39,12 +39,14 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 ## Quick Start
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/nix-config.git
    cd nix-config
    ```
 
 2. Enable the profiles you need in your `configuration.nix`:
+
    ```nix
    {
      profiles = {
@@ -63,24 +65,28 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 ## Profiles
 
 ### Base Profile
+
 - Core system settings
 - Security configurations
 - System optimization
 - Common utilities
 
 ### Development Profile
+
 - Programming languages
 - Development tools
 - Container support
 - WSL integration
 
 ### Gaming Profile
+
 - Steam support
 - Wine configuration
 - GPU optimization
 - Game streaming
 
 ### Server Profile
+
 - Service configurations
 - Container orchestration
 - Monitoring setup
@@ -124,12 +130,14 @@ nix build .#nixosTests.wsl
 ## Development
 
 1. Install pre-commit hooks:
+
    ```bash
    nix develop
    pre-commit install
    ```
 
 2. Make changes and commit:
+
    - Changes are automatically formatted
    - Tests run on commit
    - Documentation is verified
@@ -144,6 +152,7 @@ nix build .#nixosTests.wsl
 Special support for Windows Subsystem for Linux:
 
 1. Enable WSL features:
+
    ```nix
    {
      features.wsl = {
@@ -180,6 +189,7 @@ Special support for Windows Subsystem for Linux:
 Common issues and solutions:
 
 1. **Build failures**
+
    - Check the error message
    - Verify dependencies
    - Review recent changes

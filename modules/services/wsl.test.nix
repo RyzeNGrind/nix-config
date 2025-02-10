@@ -1,11 +1,6 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: {
+_: {
   name = "wsl-module-test";
-  nodes.machine = {...}: {
+  nodes.machine = _: {
     imports = [./wsl.nix];
 
     # Enable WSL with all features for testing
@@ -50,6 +45,7 @@
     with subtest("GUI configuration"):
         machine.succeed("test -e /run/user/1000")
         machine.succeed("test -n \"$DISPLAY\"")
+        machine.succeed("test -n \"$WAYLAND_DISPLAY\"")
         machine.succeed("which xhost")
 
     # Test CUDA environment
@@ -60,8 +56,8 @@
 
     # Test automount
     with subtest("Automount configuration"):
-        machine.succeed("test -d /mnt")
-        machine.succeed("mount | grep -q '^.*on /mnt'")
+        machine.succeed("test -d /mnt/c")
+        machine.succeed("mount | grep -q '/mnt/c'")
 
     # Test network configuration
     with subtest("Network configuration"):

@@ -1,5 +1,5 @@
 # This file controls the pinned version of nixpkgs
-args @ {system, ...}:
+args @ {config ? {}, ...}:
 # Import the flake's nixpkgs
 let
   lock = builtins.fromJSON (builtins.readFile ./flake.lock);

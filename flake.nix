@@ -54,10 +54,34 @@
       pre-commit-check = pre-commit-hooks.lib.${system}.run {
         src = ./.;
         hooks = {
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
-          prettier.enable = true;
+          alejandra = {
+            enable = true;
+            name = "alejandra";
+            entry = "${nixpkgs.legacyPackages.${system}.alejandra}/bin/alejandra";
+            files = "\\.nix$";
+            language = "system";
+          };
+          deadnix = {
+            enable = true;
+            name = "deadnix";
+            entry = "${nixpkgs.legacyPackages.${system}.deadnix}/bin/deadnix";
+            files = "\\.nix$";
+            language = "system";
+          };
+          statix = {
+            enable = true;
+            name = "statix";
+            entry = "${nixpkgs.legacyPackages.${system}.statix}/bin/statix check";
+            files = "\\.nix$";
+            language = "system";
+          };
+          prettier = {
+            enable = true;
+            name = "prettier";
+            entry = "${nixpkgs.legacyPackages.${system}.nodePackages.prettier}/bin/prettier --write";
+            files = "\\.(md|yml|yaml|json)$";
+            language = "system";
+          };
         };
       };
     });
@@ -73,7 +97,6 @@
       };
     in {
       default = pkgs.mkShell {
-        inherit (self.checks.${system}.pre-commit-check) shellHook;
         buildInputs = with pkgs;
           [
             alejandra
@@ -83,6 +106,32 @@
             pre-commit
           ]
           ++ self.checks.${system}.pre-commit-check.enabledPackages;
+
+        shellHook = ''
+          ${self.checks.${system}.pre-commit-check.shellHook}
+
+          echo "🛠️  Available tools:"
+          echo "  🔧 alejandra - Nix code formatter"
+          echo "    alejandra <file>     Format a single file"
+          echo "    alejandra .          Format all files in directory"
+          echo ""
+          echo "  🔍 deadnix - Find dead code in .nix files"
+          echo "    deadnix <file>       Analyze a single file"
+          echo "    deadnix -e           Edit files in-place"
+          echo ""
+          echo "  ✨ statix - Lints and suggestions for Nix code"
+          echo "    statix check         Check for issues"
+          echo "    statix fix           Auto-fix common issues"
+          echo ""
+          echo "  💅 prettier - Code formatter"
+          echo "    prettier <file>      Format a single file"
+          echo "    prettier --write .   Format all supported files"
+          echo ""
+          echo "  🔄 pre-commit - Git hooks manager"
+          echo "    pre-commit run       Run hooks on staged files"
+          echo "    pre-commit run -a    Run hooks on all files"
+          echo ""
+        '';
       };
     });
 

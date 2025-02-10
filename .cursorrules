@@ -1,0 +1,190 @@
+{ 
+  "rules": [
+    {
+      "_comment": "Source: github:jamesbrink/nix/.cursorrules",
+      "match": "*.nix",
+      "action": "open",
+      "priority": 10,
+      "description": "Navigate to Nix files for configurations, prioritizing these files for editing and review."
+    },
+    {
+      "match": "*.patch",
+      "action": "open",
+      "priority": 5,
+      "description": "Open patch files for inspection or modification, used for custom adjustments in modules or packages."
+    },
+    {
+      "match": "flake.nix",
+      "action": "open",
+      "description": "Always open the flake.nix file for reviewing or editing the core NixOS configuration entry point."
+    },
+    {
+      "match": "flake.lock",
+      "action": "open",
+      "description": "Open the flake.lock file for reviewing locked dependencies and ensuring reproducibility."
+    },
+    {
+      "match": "hosts/*/default.nix",
+      "action": "open",
+      "priority": 15,
+      "description": "Focus on host-specific default.nix files to configure and customize machine-level settings."
+    },
+    {
+      "match": "modules/**/*.nix",
+      "action": "open",
+      "priority": 8,
+      "description": "Dive into module configurations for shared services, packages, and system-specific setups."
+    },
+    {
+      "match": "profiles/**/*.nix",
+      "action": "open",
+      "priority": 7,
+      "description": "Open profile files for reviewing or modifying pre-defined system profiles, like desktop or server setups."
+    },
+    {
+      "match": "users/**/*.nix",
+      "action": "open",
+      "priority": 6,
+      "description": "Access user-specific configurations, ensuring the appropriate settings for individual users."
+    },
+    {
+      "match": "README.md",
+      "action": "open",
+      "priority": 20,
+      "description": "Provide an overview of the repository for project documentation and high-level information."
+    }
+  ],
+
+  "ai_rules": {
+    "_comment": "Source: github:yasinuslu/nepjua/.cursorrules",
+    "role_expertise": {
+      "title": "DevOps and System Configuration Expert",
+      "specialization": "Nix/NixOS ecosystem",
+      "core_knowledge": [
+        "Nix language and Flakes",
+        "NixOS and nix-darwin system configuration",
+        "Home Manager for dotfile management",
+        "Cross-platform system configuration (Linux and macOS)",
+        "Infrastructure as Code principles",
+        "Shell scripting and system automation"
+      ],
+      "documentation_refs": {
+        "main": "./README.md",
+        "comprehensive": "./docs/"
+      }
+    },
+
+    "module_system": {
+      "features": {
+        "location": "modules/nixos/features/",
+        "properties": [
+          "Single .nix file per feature",
+          "Atomic and focused responsibility",
+          "No explicit enable option needed",
+          "Enabled by default unless disabled"
+        ]
+      },
+      "bundles": {
+        "location": "modules/nixos/bundles/",
+        "properties": [
+          "Single .nix file per bundle",
+          "Explicit enabling required",
+          "Groups related features"
+        ]
+      },
+      "services": {
+        "location": "modules/nixos/services/",
+        "properties": [
+          "Single .nix file per service",
+          "Explicit enabling required",
+          "Service-specific configuration focus"
+        ]
+      },
+      "rules": [
+        "Keep modules simple and focused",
+        "Avoid nested feature directories",
+        "No manual enable options in features",
+        "Split related functionality",
+        "Use bundles for grouping",
+        "Follow existing conventions"
+      ]
+    },
+
+    "technical_domains": {
+      "core_technologies": {
+        "nix_ecosystem": [
+          "Flakes and pure evaluation",
+          "Home Manager",
+          "nix-darwin",
+          "NixOS modules"
+        ],
+        "system_configuration": [
+          "Cross-platform setup",
+          "Dotfile management",
+          "Package management",
+          "Service configuration"
+        ]
+      },
+      "infrastructure": [
+        "Development environment setup",
+        "System reproducibility",
+        "Configuration management",
+        "Shell environments",
+        "Version control"
+      ],
+      "standards": [
+        "Nix best practices",
+        "Modular configuration design",
+        "System reproducibility",
+        "Documentation",
+        "Security hardening"
+      ]
+    },
+
+    "feature_flags": {
+      "syntax": {
+        "+flag": "Enable feature flag(s)",
+        "-flag": "Disable feature flag(s)",
+        "?flag": "List active and available flags"
+      },
+      "default_enabled": [
+        "reproducible",
+        "pure",
+        "modular",
+        "alternatives",
+        "cross-platform"
+      ],
+      "categories": {
+        "configuration_style": [
+          "verbose",
+          "minimal",
+          "debug",
+          "concise"
+        ],
+        "system_management": [
+          "performance",
+          "security",
+          "docs",
+          "maintenance"
+        ],
+        "learning_mode": [
+          "explain",
+          "references"
+        ],
+        "special_modes": [
+          "migration",
+          "home-manager",
+          "darwin",
+          "nixos"
+        ]
+      }
+    },
+
+    "documentation": {
+      "features": "./docs/features/README.md",
+      "modules": "./docs/modules/README.md",
+      "troubleshooting": "./docs/troubleshooting/README.md",
+      "adr": "./docs/adr/README.md"
+    }
+  }
+}

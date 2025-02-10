@@ -1,9 +1,7 @@
 # Host-specific home configuration for daimyo00
-{ config, lib, pkgs, inputs, outputs, ... }:
-
-{
+{pkgs, ...}: {
   imports = [
-    ../../modules/home-manager/wsl.nix  # Import our WSL module
+    ../../modules/home-manager/wsl.nix # Import our WSL module
   ];
 
   # Basic home-manager settings
@@ -11,7 +9,7 @@
     username = "ryzengrind";
     homeDirectory = "/home/ryzengrind";
     stateVersion = "24.05";
-    
+
     # Host-specific packages
     packages = with pkgs; [
       # Development tools
@@ -20,18 +18,30 @@
       direnv
       nix-direnv
       pre-commit
-      
+      nodePackages.prettier
+      black # Add black for Python formatting
+      alejandra # Use alejandra for Nix formatting
+      statix # Add statix for Nix static analysis
+      deadnix # Add deadnix for finding dead code
+      shellcheck # Add shellcheck for shell script analysis
+
+      # Build tools
+      gcc
+      gnumake
+      cargo
+      rustc
+
       # System tools
       htop
       btop
       iotop
-      
+
       # Network tools
       curl
       wget
       dig
       whois
-      
+
       # Terminal utilities
       tmux
       fzf
@@ -87,17 +97,8 @@
         syntax on
       '';
     };
-
-/*     pre-commit = {
-      enable = true;
-      hooks = {
-        nixpkgs-fmt.enable = true;
-        prettier.enable = true;
-        black.enable = true;
-      };
-    }; */
   };
 
   # Enable fonts in home-manager
   fonts.fontconfig.enable = true;
-} 
+}

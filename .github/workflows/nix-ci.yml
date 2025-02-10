@@ -2,9 +2,9 @@ name: NixOS Configuration CI
 
 on:
   push:
-    branches: [ "main", "working*" ]
+    branches: ["main", "working*"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   flake-check:
@@ -19,7 +19,7 @@ jobs:
       - uses: cachix/cachix-action@v12
         with:
           name: ryzengrind-nix-config
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           skipPush: false
           extraPullNames: nix-community, ryzengrind, daimyo, bopbopbleedem
 
@@ -48,7 +48,7 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Setup Nix channels
         run: |
           nix-channel --add https://nixos.org/channels/nixos-24.05 nixos
@@ -58,13 +58,13 @@ jobs:
         run: |
           # Update flake inputs
           nix flake update
-          
+
           # Check flake configuration
           nix flake check --show-trace
-          
+
           # Test build steps sequentially
           nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --dry-run
-          
+
           # Test activation script
           nix eval .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel.drvPath
 
@@ -73,10 +73,10 @@ jobs:
         run: |
           # Setup WSL test environment
           sudo apt-get update && sudo apt-get install -y curl
-          
+
           # Test NixOS-WSL module loading
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.wsl.enable
-          
+
           # Verify WSL-specific configurations
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wslu"
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wsl-open"
@@ -94,12 +94,12 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build and test home-manager configuration
         run: |
           # Build home-manager configuration
           nix build .#homeConfigurations."${{ matrix.user }}".activationPackage --dry-run
-          
+
           # Verify home-manager module loading
           nix eval --json .#homeConfigurations."${{ matrix.user }}".config.home.username
 
@@ -109,12 +109,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: cachix/install-nix-action@v23
-      
+
       - name: Run security checks
         run: |
           # Run statix for static analysis
           nix run nixpkgs#statix -- check
-          
+
           # Run vulnix for vulnerability scanning
           nix run nixpkgs#vulnix -- \
             --system .#nixosConfigurations.daimyo00.config.system.build.toplevel
@@ -126,12 +126,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: cachix/install-nix-action@v23
-      
+
       - name: Deploy configurations
         run: |
           # Final build check before deployment
           nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel --dry-run
-          
+
           # Deploy to Cachix
           nix path-info --json \
             .#nixosConfigurations.daimyo00.config.system.build.toplevel | \
@@ -139,4 +139,4 @@ jobs:
             xargs nix copy --to "s3://ryzengrind-nix-cache?region=us-east-1"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

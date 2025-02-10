@@ -35,11 +35,11 @@ chown root:root /usr/lib/wsl/lib/*
 
 # Create symlinks for commonly used libraries
 echo "Creating symlinks..."
-cd /usr/lib/wsl/lib
+cd /usr/lib/wsl/lib || exit 1
 for lib in libcuda.so libcuda.so.1 libnvidia-ml.so.1 libnvcuvid.so.1; do
   if [ -f "$lib" ]; then
     ln -sf "$lib" "${lib%.*}"
   fi
 done
 
-echo "Done! Please restart WSL for changes to take effect." 
+echo "Done! Please restart WSL for changes to take effect."

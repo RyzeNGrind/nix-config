@@ -1,12 +1,11 @@
 # TensorRT package based on NVIDIA's distribution model
-{ lib
-, stdenv
-, fetchurl
-, autoPatchelfHook
-, cudaPackages
-}:
-
-let
+{
+  lib,
+  stdenv,
+  fetchurl,
+  autoPatchelfHook,
+  cudaPackages,
+}: let
   # TensorRT version manifests
   manifests = {
     "10.8.0.43" = {
@@ -54,11 +53,10 @@ let
       inherit version;
 
       src = fetchurl {
-        url = manifest.url;
-        inherit (manifest) sha256;
+        inherit (manifest) url sha256;
       };
 
-      nativeBuildInputs = [ autoPatchelfHook ];
+      nativeBuildInputs = [autoPatchelfHook];
 
       buildInputs = with cudaPackages; [
         cuda_cudart
@@ -92,18 +90,17 @@ let
         description = "NVIDIA TensorRT ${version} for CUDA ${cudaVersion}";
         homepage = "https://developer.nvidia.com/tensorrt";
         license = licenses.unfree;
-        platforms = [ stdenv.hostPlatform.system ];
-        maintainers = with maintainers; [ ryzengrind ];
+        platforms = [stdenv.hostPlatform.system];
+        maintainers = with maintainers; [ryzengrind];
       };
     };
 
   # Get the appropriate manifest for the current system
-  currentManifest = 
+  currentManifest =
     if builtins.hasAttr stdenv.hostPlatform.system manifests."10.8.0.43"
     then manifests."10.8.0.43".${stdenv.hostPlatform.system}."12.8"
     else null;
-
 in
-if currentManifest != null
-then mkTensorRT "10.8.0.43" "12.8" currentManifest
-else throw "TensorRT is not supported on ${stdenv.hostPlatform.system}" 
+  if currentManifest != null
+  then mkTensorRT "10.8.0.43" "12.8" currentManifest
+  else throw "TensorRT is not supported on ${stdenv.hostPlatform.system}"

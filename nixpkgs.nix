@@ -1,6 +1,5 @@
 # This file controls the pinned version of nixpkgs
-args@{ system, ... }:
-
+args @ {system, ...}:
 # Import the flake's nixpkgs
 let
   lock = builtins.fromJSON (builtins.readFile ./flake.lock);
@@ -9,9 +8,10 @@ let
     sha256 = lock.nodes.nixpkgs.locked.narHash;
   };
 in
-import nixpkgs (args // {
-  config = {
-    allowUnfree = true;
-    cudaSupport = true;
-  };
-}) 
+  import nixpkgs (args
+    // {
+      config = {
+        allowUnfree = true;
+        cudaSupport = true;
+      };
+    })

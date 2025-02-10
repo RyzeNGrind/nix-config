@@ -1,8 +1,12 @@
 # WSL-specific configuration for daimyo00
-{ config, lib, pkgs, inputs, ... }:
-
 {
-  imports = [ 
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}: {
+  imports = [
     inputs.nixos-wsl.nixosModules.wsl
     # ../../modules/nixos/wsl.nix  # Commenting out to avoid conflicts
     ./cachix.nix
@@ -34,7 +38,7 @@
     settings = {
       experimental-features = "nix-command flakes auto-allocate-uids";
       auto-optimise-store = true;
-      trusted-users = [ "root" "ryzengrind" "@wheel" ];
+      trusted-users = ["root" "ryzengrind" "@wheel"];
       max-jobs = "auto";
       cores = 0;
       keep-outputs = true;
@@ -47,7 +51,7 @@
     };
     optimise = {
       automatic = true;
-      dates = [ "weekly" ];
+      dates = ["weekly"];
     };
   };
 
@@ -66,7 +70,7 @@
   users.users.ryzengrind = {
     hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";
     isNormalUser = true;
-    extraGroups = [ "wheel" "docker" "audio" "networkmanager" ];
+    extraGroups = ["wheel" "docker" "audio" "networkmanager"];
   };
 
   services.openssh = {
@@ -97,21 +101,21 @@
       # Use the stable driver package
       package = config.boot.kernelPackages.nvidiaPackages.beta; # [source](https://github.com/lutris/docs/blob/2b116519c5b67254733234f36ab33a60f14f1358/InstallingDrivers.md?plain=1#L184)
       # Open source kernel module (for Turing and newer GPUs)
-      open = false;  # Set to true only if you have a Turing or newer GPU
+      open = false; # Set to true only if you have a Turing or newer GPU
     };
-    
+
     # Updated OpenGL/Graphics configuration
     graphics = {
-      enable = true;  # Enables OpenGL
-      enable32Bit = true;  # For 32-bit support
+      enable = true; # Enables OpenGL
+      enable32Bit = true; # For 32-bit support
       extraPackages = with pkgs; [
         nvidia-vaapi-driver
         # Add additional OpenGL/CUDA support packages
-        cudaPackages.cuda_nvcc  # Replace cuda_gl
-        cudaPackages.cuda_cuobjdump  # Replace cuda_cccl
+        cudaPackages.cuda_nvcc # Replace cuda_gl
+        cudaPackages.cuda_cuobjdump # Replace cuda_cccl
       ];
     };
-    
+
     nvidia-container-toolkit.enable = true;
   };
 
@@ -152,10 +156,10 @@
       };
     };
     extraBin = with pkgs; [
-      { src = "${coreutils}/bin/cat"; }
-      { src = "${coreutils}/bin/whoami"; }
-      { src = "${su}/bin/groupadd"; }
-      { src = "${su}/bin/usermod"; }
+      {src = "${coreutils}/bin/cat";}
+      {src = "${coreutils}/bin/whoami";}
+      {src = "${su}/bin/groupadd";}
+      {src = "${su}/bin/usermod";}
     ];
   };
 
@@ -171,8 +175,8 @@
       "${pkgs.linuxPackages.nvidia_x11}/lib"
       "${pkgs.cudaPackages.cuda_cudart}/lib"
       "${pkgs.cudaPackages.cudatoolkit}/lib"
-      "${pkgs.cudaPackages.cuda_nvcc}/lib"  # Updated from cuda_gl
-      "${pkgs.cudaPackages.cuda_cuobjdump}/lib"  # Updated from cuda_cccl
+      "${pkgs.cudaPackages.cuda_nvcc}/lib" # Updated from cuda_gl
+      "${pkgs.cudaPackages.cuda_cuobjdump}/lib" # Updated from cuda_cccl
       "/run/opengl-driver/lib"
       "$HOME/.local/lib"
     ]);
@@ -186,9 +190,9 @@
 
   # Add necessary kernel modules and blacklist nouveau
   boot = {
-    initrd.kernelModules = [ "nvidia" ];
-    blacklistedKernelModules = [ "nouveau" ];
-    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+    initrd.kernelModules = ["nvidia"];
+    blacklistedKernelModules = ["nouveau"];
+    extraModulePackages = [config.boot.kernelPackages.nvidia_x11];
   };
 
   # System packages
@@ -204,12 +208,12 @@
     cudaPackages.libcublas
     cudaPackages.cudnn
     cudaPackages.cudatoolkit
-    cudaPackages.cuda_nvcc  # Updated from cuda_gl
-    cudaPackages.cuda_cuobjdump  # Updated from cuda_cccl
+    cudaPackages.cuda_nvcc # Updated from cuda_gl
+    cudaPackages.cuda_cuobjdump # Updated from cuda_cccl
     # Monitoring tools
     nvtopPackages.full
-    clinfo  # Added for OpenGL verification
-    glxinfo  # Added for additional graphics info
+    clinfo # Added for OpenGL verification
+    glxinfo # Added for additional graphics info
     # Basic utilities
     curl
     jq
@@ -219,12 +223,12 @@
     pre-commit
   ];
 
-  users.groups.docker.members = [ config.wsl.defaultUser ];
+  users.groups.docker.members = [config.wsl.defaultUser];
 
   # Add a systemd service to setup NVIDIA symlinks
   systemd.services.nvidia-wsl-setup = {
     description = "Setup NVIDIA WSL environment";
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -232,16 +236,16 @@
     script = ''
       # Create local lib directory
       mkdir -p /home/${config.wsl.defaultUser}/.local/lib
-      
+
       # Create symlinks for WSL NVIDIA libraries
       for lib in /usr/lib/wsl/lib/libcuda*; do
         if [ -f "$lib" ]; then
           ln -sf "$lib" /home/${config.wsl.defaultUser}/.local/lib/
         fi
       done
-      
+
       # Set permissions
       chown -R ${config.wsl.defaultUser}:users /home/${config.wsl.defaultUser}/.local/lib
     '';
   };
-} 
+}

@@ -1,78 +1,78 @@
 {
-    "fileNestingUpdater.autoUpdate": true,
-    "fileNestingUpdater.autoUpdateInterval": 720,
-    "fileNestingUpdater.promptOnAutoUpdate": true,
-    "fileNestingUpdater.upstreamRepo": "antfu/vscode-file-nesting-config",
-    "fileNestingUpdater.upstreamBranch": "main",
-    "window.commandCenter": 1,
-    "cursor.cpp.disabledLanguages": [],
-    "terminal.external.windowsExec": "C:\\Windows\\System32\\wsl.exe",
-    "terminal.integrated.copyOnSelection": true,
-    "terminal.integrated.defaultProfile.windows": "NixOS (WSL)",
-    "terminal.integrated.defaultProfile.linux": "NixOS",
-    "terminal.integrated.enableImages": true,
-    "terminal.integrated.useWslProfiles": false,
-    "terminal.integrated.ignoreProcessNames": [
-        "starship",
-        "oh-my-posh",
-        "bash",
-        "zsh",
-        "fish"
-    ],
-    "terminal.integrated.smoothScrolling": true,
-    "terminal.integrated.env.windows": {
-        "VSCODE_PROFILE": "1",
-        "WSLENV": "VSCODE_PROFILE/u"
+  "fileNestingUpdater.autoUpdate": true,
+  "fileNestingUpdater.autoUpdateInterval": 720,
+  "fileNestingUpdater.promptOnAutoUpdate": true,
+  "fileNestingUpdater.upstreamRepo": "antfu/vscode-file-nesting-config",
+  "fileNestingUpdater.upstreamBranch": "main",
+  "window.commandCenter": 1,
+  "cursor.cpp.disabledLanguages": [],
+  "terminal.external.windowsExec": "C:\\Windows\\System32\\wsl.exe",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.defaultProfile.windows": "NixOS (WSL)",
+  "terminal.integrated.defaultProfile.linux": "NixOS",
+  "terminal.integrated.enableImages": true,
+  "terminal.integrated.useWslProfiles": false,
+  "terminal.integrated.ignoreProcessNames": [
+    "starship",
+    "oh-my-posh",
+    "bash",
+    "zsh",
+    "fish"
+  ],
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.env.windows": {
+    "VSCODE_PROFILE": "1",
+    "WSLENV": "VSCODE_PROFILE/u"
+  },
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "args": ["-ExecutionPolicy", "Bypass"]
     },
-    "terminal.integrated.profiles.windows": {
-        "PowerShell": {
-            "source": "PowerShell",
-            "icon": "terminal-powershell",
-            "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-            "args": ["-ExecutionPolicy", "Bypass"]
-        },
-        "Command Prompt": {
-            "path": [
-                "${env:windir}\\Sysnative\\cmd.exe",
-                "${env:windir}\\System32\\cmd.exe"
-            ],
-            "args": [],
-            "icon": "terminal-cmd"
-        },
-        "Git Bash": {
-            "source": "Git Bash"
-        }
+    "Command Prompt": {
+      "path": [
+        "${env:windir}\\Sysnative\\cmd.exe",
+        "${env:windir}\\System32\\cmd.exe"
+      ],
+      "args": [],
+      "icon": "terminal-cmd"
     },
-    "terminal.integrated.profiles.linux": {
-        "NixOS": {
-            "path": "bash",
-            "icon": "terminal-linux"
-        }
-    },
-    "terminal.integrated.shellIntegration.enabled": true,
-    "terminal.integrated.automationShell.windows": "C:\\Windows\\System32\\wsl.exe -d NixOS",
-    "terminal.integrated.automationProfile.windows": {
-        "path": "C:\\Windows\\System32\\wsl.exe",
-        "args": ["-d", "NixOS"]
-    },
-    "terminal.integrated.automationProfile.linux": {
-        "path": "bash"
-    },
-    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe",
-    "git.autofetch": true,
-    "git.confirmSync": false,
-    "editor.tabCompletion": "on",
-    "diffEditor.codeLens": true,
-    "[nix]": {
-        "editor.defaultFormatter": "B4dM4n.nixpkgs-fmt"
-    },
-    "gitlens.ai.experimental.provider": "openai",
-    "gitlens.ai.experimental.openai.model": "gpt-3.5-turbo-1106",
-    "gitlens.ai.model": "xai:grok-beta",
-    "workbench.settings.applyToAllProfiles": [],
-    "cursor.chat.alwaysSearchWeb": true,
-    "cursor.chat.smoothStreaming": true,
-    "cursor.terminal.usePreviewBox": true,
-    "files.autoSave": "afterDelay",
-    "powershell.promptToUpdatePowerShell": false
+    "Git Bash": {
+      "source": "Git Bash"
+    }
+  },
+  "terminal.integrated.profiles.linux": {
+    "NixOS": {
+      "path": "bash",
+      "icon": "terminal-linux"
+    }
+  },
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.automationShell.windows": "C:\\Windows\\System32\\wsl.exe -d NixOS",
+  "terminal.integrated.automationProfile.windows": {
+    "path": "C:\\Windows\\System32\\wsl.exe",
+    "args": ["-d", "NixOS"]
+  },
+  "terminal.integrated.automationProfile.linux": {
+    "path": "bash"
+  },
+  "git.path": "C:\\Program Files\\Git\\cmd\\git.exe",
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "editor.tabCompletion": "on",
+  "diffEditor.codeLens": true,
+  "[nix]": {
+    "editor.defaultFormatter": "B4dM4n.nixpkgs-fmt"
+  },
+  "gitlens.ai.experimental.provider": "openai",
+  "gitlens.ai.experimental.openai.model": "gpt-3.5-turbo-1106",
+  "gitlens.ai.model": "xai:grok-beta",
+  "workbench.settings.applyToAllProfiles": [],
+  "cursor.chat.alwaysSearchWeb": true,
+  "cursor.chat.smoothStreaming": true,
+  "cursor.terminal.usePreviewBox": true,
+  "files.autoSave": "afterDelay",
+  "powershell.promptToUpdatePowerShell": false
 }

@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   # WSL-specific home configuration
   home.sessionVariables = {
     WSLENV = "NIXOS_WSL";
@@ -25,12 +28,12 @@
             alias pbcopy="xclip -selection clipboard"
             alias pbpaste="xclip -selection clipboard -o"
           fi
-          
+
           # Windows integration aliases
           alias explorer="explorer.exe"
           alias cmd="cmd.exe"
           alias powershell="powershell.exe"
-          
+
           # Path conversion helpers
           wslpath() {
             if [ $# -eq 0 ]; then
@@ -69,4 +72,4 @@
     mime.enable = true;
     mimeApps.enable = true;
   };
-} 
+}

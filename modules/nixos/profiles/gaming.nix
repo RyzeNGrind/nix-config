@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   options.profiles.gaming = {
     enable = lib.mkEnableOption "Gaming environment profile";
     streaming.enable = lib.mkEnableOption "Game streaming support";
@@ -17,30 +20,32 @@
           "dom0_vcpus_pin" = true;
         };
       };
-      
+
       # QEMU/KVM for testing
       libvirtd.enable = true;
       spiceUSBRedirection.enable = true;
     };
 
     # Gaming-specific packages
-    environment.systemPackages = with pkgs; [
-      # Hypervisor management
-      virt-manager
-      looking-glass-client
-      barrier # Mouse/keyboard sharing
+    environment.systemPackages = with pkgs;
+      [
+        # Hypervisor management
+        virt-manager
+        looking-glass-client
+        barrier # Mouse/keyboard sharing
 
-      # Gaming utilities
-      mangohud
-      gamemode
-      lutris
-      winetricks
-      
-      # Streaming (if enabled)
-    ] ++ lib.optionals config.profiles.gaming.streaming.enable [
-      sunshine # Streaming host
-      moonlight-qt # Streaming client
-    ];
+        # Gaming utilities
+        mangohud
+        gamemode
+        lutris
+        winetricks
+
+        # Streaming (if enabled)
+      ]
+      ++ lib.optionals config.profiles.gaming.streaming.enable [
+        sunshine # Streaming host
+        moonlight-qt # Streaming client
+      ];
 
     # Hardware acceleration
     hardware = {
@@ -74,7 +79,7 @@
         "iommu=pt"
         "vfio-pci.ids=10de:1c03,10de:10f1" # Example GPU IDs
       ];
-      kernelModules = [ "vfio" "vfio_iommu_type1" "vfio_pci" "vfio_virqfd" ];
+      kernelModules = ["vfio" "vfio_iommu_type1" "vfio_pci" "vfio_virqfd"];
     };
 
     # Security settings for gaming
@@ -90,4 +95,4 @@
       };
     };
   };
-} 
+}

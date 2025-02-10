@@ -1,7 +1,10 @@
 # WSL-specific NixOS configuration
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   # Common WSL-specific system configurations
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = false;
@@ -54,8 +57,8 @@
       NVIDIA_DRIVER_CAPABILITIES = "compute,utility,graphics";
       CUDA_CACHE_PATH = "$HOME/.cache/cuda";
     };
-    
-    pathsToLink = [ "/libexec" ];
+
+    pathsToLink = ["/libexec"];
 
     systemPackages = with pkgs; [
       # WSL utilities
@@ -63,7 +66,7 @@
       wsl-open
       xclip
       xsel
-      
+
       # NVIDIA development tools
       cudaPackages.cuda_cudart
       cudaPackages.cuda_cupti
@@ -76,14 +79,14 @@
   };
 
   # WSL-specific security settings
-  security.sudo.wheelNeedsPassword = false;  # Easier sudo access in WSL
+  security.sudo.wheelNeedsPassword = false; # Easier sudo access in WSL
 
   # WSL-specific networking settings
   networking = {
-    useHostResolvConf = false;  # Don't use Windows DNS directly
+    useHostResolvConf = false; # Don't use Windows DNS directly
     networkmanager.enable = true;
     hostName = "daimyo00";
-    nameservers = [ "1.1.1.1" "8.8.8.8" ];
+    nameservers = ["1.1.1.1" "8.8.8.8"];
   };
 
   # WSL-specific settings
@@ -99,7 +102,7 @@
       };
       network = {
         generateHosts = true;
-        generateResolvConf = lib.mkForce false;  # Use our own DNS settings
+        generateResolvConf = lib.mkForce false; # Use our own DNS settings
       };
     };
   };
@@ -113,7 +116,7 @@
       enable = true;
     };
     containers = {
-      cdi.dynamic.nvidia.enable = true;  # New recommended way to enable NVIDIA support
+      cdi.dynamic.nvidia.enable = true; # New recommended way to enable NVIDIA support
     };
   };
 
@@ -125,7 +128,7 @@
     # DBus for various system services
     dbus = {
       enable = true;
-      packages = [ pkgs.dconf ];
+      packages = [pkgs.dconf];
     };
   };
-} 
+}

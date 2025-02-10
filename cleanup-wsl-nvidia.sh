@@ -11,13 +11,13 @@ echo "Cleaning up NVIDIA libraries in WSL..."
 # Check if NVIDIA libraries exist
 if [ -d "/usr/lib/wsl/lib" ]; then
   echo "Checking NVIDIA libraries in /usr/lib/wsl/lib..."
-  
+
   # Define core libraries to keep
   echo "Preserving only core CUDA libraries..."
   preserved_libs=(
     "libcudadebugger.so.1"
     "libcuda.so"
-    "libcuda.so.1" 
+    "libcuda.so.1"
     "libcuda.so.1.1"
   )
 
@@ -26,7 +26,7 @@ if [ -d "/usr/lib/wsl/lib" ]; then
   for file in /usr/lib/wsl/lib/*; do
     filename=$(basename "$file")
     should_preserve=false
-    
+
     # Check if file should be preserved
     for lib in "${preserved_libs[@]}"; do
       if [ "$filename" = "$lib" ]; then
@@ -34,7 +34,7 @@ if [ -d "/usr/lib/wsl/lib" ]; then
         break
       fi
     done
-    
+
     if [ "$should_preserve" = false ]; then
       echo "Removing $filename"
       rm -f "$file"
@@ -56,4 +56,4 @@ echo "Cleanup complete! Please follow these steps:
 4. Reboot Windows
 5. Install latest NVIDIA drivers from nvidia.com
 6. Reboot Windows again
-7. Start WSL and run nvidia-smi to verify" 
+7. Start WSL and run nvidia-smi to verify"

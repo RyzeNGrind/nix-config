@@ -39,6 +39,13 @@
       fd
       jq
       yq
+
+      # IDE utilities
+      pre-commit
+      _1password-gui
+      nixfmt
+      nixld
+      
     ];
   };
 

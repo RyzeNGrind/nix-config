@@ -1,16 +1,17 @@
 # NixOS Configuration
 
-A modular, composable, and tested NixOS configuration using profiles and feature flags.
+A modular, composable, and tested NixOS configuration using specialisations and feature flags.
 
 ## Features
 
-- WSL support (enabled by default)
-- Incremental module activation
+- Single base configuration with specialisations
+- WSL support with and without CUDA
+- Baremetal configuration support
 - Automated testing
 - Feature flag system
-- Development environments (disabled by default)
-- Gaming optimizations (disabled by default)
-- Server configurations (disabled by default)
+- Development environments
+- Gaming optimizations
+- Server configurations
 
 ## Structure
 
@@ -18,21 +19,17 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 .
 ├── docs/
 │   └── adr/                    # Architecture Decision Records
+├── hosts/
+│   ├── base/                   # Base configurations
+│   │   ├── default.nix         # Common settings
+│   │   └── wsl.nix            # WSL-specific base
+│   └── daimyo/                # Machine-specific config
+│       ├── default.nix         # Base configuration
+│       └── home.nix           # Home-manager config
 ├── modules/
 │   ├── core/                   # Core system components
-│   │   ├── network.nix
-│   │   └── security.nix
 │   ├── services/               # Service configurations
-│   │   ├── wsl.nix            # WSL support (enabled)
-│   │   └── containers.nix      # Container support (disabled)
 │   └── hardware/               # Hardware-specific settings
-│       ├── nvidia.nix          # NVIDIA support (disabled)
-│       └── amd.nix            # AMD support (disabled)
-├── profiles/                   # System profiles
-│   ├── base/                   # Base system configuration
-│   ├── dev/                    # Development environment (disabled)
-│   ├── gaming/                 # Gaming optimizations (disabled)
-│   └── server/                 # Server configurations (disabled)
 └── tests/                      # System tests
 ```
 
@@ -45,62 +42,64 @@ A modular, composable, and tested NixOS configuration using profiles and feature
    cd nix-config
    ```
 
-2. Enable WSL support in your `configuration.nix`:
+2. Choose your configuration:
 
-   ```nix
-   {
-     features.wsl = {
-       enable = true;  # Enabled by default
-       gui.enable = true;  # GUI support
-       cuda.enable = false;  # CUDA support (optional)
-     };
-   }
-   ```
-
-3. Apply the configuration:
    ```bash
-   sudo nixos-rebuild switch --flake .#
+   # WSL with CUDA support
+   sudo nixos-rebuild switch --flake .#daimyo --specialisation wsl-cuda
+
+   # WSL without CUDA
+   sudo nixos-rebuild switch --flake .#daimyo --specialisation wsl-nocuda
+
+   # Baremetal configuration
+   sudo nixos-rebuild switch --flake .#daimyo --specialisation baremetal
    ```
 
-## Module Activation
+3. Test before switching:
+   ```bash
+   # Test a specialisation
+   sudo nixos-rebuild test --flake .#daimyo --specialisation wsl-cuda
+   ```
 
-Modules are disabled by default (except WSL) and can be enabled incrementally:
+## Specialisations
 
-### Development Environment
-
-```nix
-{
-  features.dev = {
-    enable = true;  # Enable development environment
-    python.enable = true;  # Python support
-    rust.enable = true;  # Rust support
-    go.enable = true;  # Go support
-  };
-}
-```
-
-### Gaming Support
+### WSL with CUDA
 
 ```nix
 {
-  features.gaming = {
-    enable = true;  # Enable gaming support
-    steam.enable = true;  # Steam support
-    wine.enable = true;  # Wine support
-  };
-}
-```
-
-### Hardware Support
-
-```nix
-{
-  features = {
-    nvidia = {
-      enable = true;  # NVIDIA support
+  specialisation.wsl-cuda = {
+    inheritParentConfig = true;
+    configuration = {
+      wsl.enable = true;
+      wsl.cuda.enable = true;
     };
-    amd = {
-      enable = true;  # AMD support
+  };
+}
+```
+
+### WSL without CUDA
+
+```nix
+{
+  specialisation.wsl-nocuda = {
+    inheritParentConfig = true;
+    configuration = {
+      wsl.enable = true;
+      wsl.cuda.enable = false;
+    };
+  };
+}
+```
+
+### Baremetal
+
+```nix
+{
+  specialisation.baremetal = {
+    inheritParentConfig = true;
+    configuration = {
+      wsl.enable = false;
+      hardware.nvidia.enable = true;
     };
   };
 }
@@ -111,12 +110,13 @@ Modules are disabled by default (except WSL) and can be enabled incrementally:
 Run the test suite:
 
 ```bash
-# Test WSL configuration (enabled by default)
-nix build .#nixosTests.wsl
+# Test all specialisations
+nix build .#nixosTests.daimyo
 
-# Test specific module (when enabled)
-nix build .#nixosTests.dev  # Development environment
-nix build .#nixosTests.gaming  # Gaming support
+# Test specific specialisation
+nix build .#nixosTests.daimyo.wsl-cuda
+nix build .#nixosTests.daimyo.wsl-nocuda
+nix build .#nixosTests.daimyo.baremetal
 ```
 
 ## Development
@@ -139,39 +139,10 @@ nix build .#nixosTests.gaming  # Gaming support
    - Code is reviewed
    - Changes are merged
 
-## WSL Support
-
-Special support for Windows Subsystem for Linux:
-
-1. WSL features are enabled by default:
-
-   ```nix
-   {
-     features.wsl = {
-       enable = true;  # Already enabled by default
-       gui.enable = true;  # For GUI applications
-       cuda.enable = false;  # For NVIDIA support (optional)
-     };
-   }
-   ```
-
-2. Install in WSL:
-   ```bash
-   wsl --import NixOS ./nixos nixos.tar.gz --version 2
-   ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
 ## Best Practices
 
-1. Start with WSL configuration
-2. Enable modules incrementally
+1. Start with base configuration
+2. Use specialisations for variants
 3. Test changes locally
 4. Update documentation
 5. Write tests for new features
@@ -180,16 +151,18 @@ Special support for Windows Subsystem for Linux:
 
 Common issues and solutions:
 
-1. **Build failures**
+1. **Specialisation switch fails**
 
-   - Check the error message
-   - Verify dependencies
+   - Check error messages
+   - Test configuration first
    - Review recent changes
+   - Use rollback if needed
 
 2. **Test failures**
    - Run tests locally
    - Check test logs
-   - Verify test environment
+   - Verify dependencies
+   - Review changes
 
 ## License
 

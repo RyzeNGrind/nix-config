@@ -1,5 +1,5 @@
 {
-  description = "Your new nix config";
+  description = "NixOS configuration with specialisations";
 
   inputs = {
     # Nixpkgs
@@ -86,27 +86,16 @@
       };
     });
 
-    # Your custom packages and modifications
-    devShells = forAllSystems (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
-          cudaSupport = true;
-        };
-      };
-    in {
-      default = pkgs.mkShell {
-        buildInputs = with pkgs;
-          [
-            alejandra
-            deadnix
-            statix
-            nodePackages.prettier
-            pre-commit
-          ]
-          ++ self.checks.${system}.pre-commit-check.enabledPackages;
-
+    # Development shell
+    devShells = forAllSystems (system: {
+      default = nixpkgs.legacyPackages.${system}.mkShell {
+        buildInputs = with nixpkgs.legacyPackages.${system}; [
+          alejandra
+          deadnix
+          statix
+          nodePackages.prettier
+          pre-commit
+        ];
         shellHook = ''
           ${self.checks.${system}.pre-commit-check.shellHook}
 
@@ -135,58 +124,38 @@
       };
     });
 
-    # Rest of your flake outputs...
-    packages = forAllSystems (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
-          cudaSupport = system == "x86_64-linux" || system == "aarch64-linux";
-        };
-      };
-
-      # Create empty derivation with explicit structure
-      emptyDrv = derivation {
-        name = "empty";
-        inherit system;
-        builder = "${pkgs.bash}/bin/bash";
-        args = ["-c" "mkdir -p $out"];
-      };
-
-      # Create TensorRT package based on system support
-      tensorrtPkg =
-        if (builtins.elem system linuxSystems)
-        then (pkgs.callPackage ./pkgs/tensorrt {inherit (pkgs) cudaPackages;})
-        else emptyDrv;
-    in {
-      default = tensorrtPkg;
-      tensorrt = tensorrtPkg;
+    # Custom packages
+    packages = forAllSystems (system: {
+      default = nixpkgs.legacyPackages.${system}.hello;
     });
 
+    # Formatter
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
-    overlays =
-      import ./overlays {inherit inputs;}
-      // {
-        unstable = overlayUnstable;
-      };
+
+    # Overlays
+    overlays = import ./overlays {inherit inputs;} // {unstable = overlayUnstable;};
+
+    # NixOS modules
     nixosModules = import ./modules/nixos;
 
-    # NixOS configuration entrypoint
+    # NixOS configurations
     nixosConfigurations = {
-      # WSL configuration
-      daimyo00 = nixpkgs.lib.nixosSystem {
+      # Single configuration with specialisations
+      daimyo = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [
-          # Core modules
-          ./hosts/daimyo00/configuration.nix
+          # Base configuration
+          ./hosts/base/default.nix
 
-          # Global configuration
+          # Global settings
           {
             nixpkgs.config = {
-              allowBroken = true;
               allowUnfree = true;
+              allowBroken = true;
             };
+
+            # Nix settings
             nix = {
               settings = {
                 substituters = [
@@ -200,253 +169,79 @@
                   "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
                 ];
                 accept-flake-config = true;
+                experimental-features = ["nix-command" "flakes"];
+              };
+            };
+
+            # Specialisations
+            specialisation = {
+              # WSL with CUDA
+              wsl-cuda = {
+                inheritParentConfig = true;
+                configuration = {
+                  imports = [
+                    nixos-wsl.nixosModules.wsl
+                    ./hosts/daimyo/wsl-cuda.nix
+                  ];
+                  wsl = {
+                    enable = true;
+                    nativeSystemd = true;
+                    cuda.enable = true;
+                  };
+                };
+              };
+
+              # WSL without CUDA
+              wsl-nocuda = {
+                inheritParentConfig = true;
+                configuration = {
+                  imports = [
+                    nixos-wsl.nixosModules.wsl
+                    ./hosts/daimyo/wsl-nocuda.nix
+                  ];
+                  wsl = {
+                    enable = true;
+                    nativeSystemd = true;
+                    cuda.enable = false;
+                  };
+                };
+              };
+
+              # Baremetal
+              baremetal = {
+                inheritParentConfig = true;
+                configuration = {
+                  imports = [
+                    ./hosts/daimyo/baremetal.nix
+                  ];
+                  wsl.enable = false;
+                  hardware.nvidia.enable = true;
+                };
               };
             };
           }
 
-          # Home Manager module
+          # Home Manager
           home-manager.nixosModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.ryzengrind = import ./hosts/daimyo00/home.nix;
+              users.ryzengrind = import ./hosts/daimyo/home.nix;
               extraSpecialArgs = {inherit inputs outputs;};
             };
           }
         ];
       };
-
-      # No CUDA/TensorRT configuration
-      daimyo00-nocuda = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = {inherit inputs;};
-        modules = [
-          # WSL module
-          inputs.nixos-wsl.nixosModules.wsl
-
-          # Base configuration
-          ({
-            pkgs,
-            lib,
-            ...
-          }: {
-            # Basic system configuration
-            system.stateVersion = "24.05";
-
-            # System configuration
-            nixpkgs = {
-              config = {
-                allowUnfree = true;
-                allowBroken = true;
-                # Explicitly disable CUDA
-                cudaSupport = false;
-                cudaCapabilities = [];
-              };
-              # Ensure no CUDA overlays
-              overlays = [];
-            };
-
-            # Disable all NVIDIA/CUDA related features
-            hardware = {
-              nvidia = {
-                package = null;
-                modesetting.enable = false;
-              };
-              nvidia-container-toolkit.enable = false;
-              opengl.enable = lib.mkForce false;
-            };
-
-            # Explicitly disable WSL CUDA features
-            wsl = {
-              enable = true;
-              defaultUser = "ryzengrind";
-              docker-desktop.enable = true;
-              nativeSystemd = true;
-              startMenuLaunchers = true;
-              wslConf = {
-                automount = {
-                  enabled = true;
-                  options = "metadata,umask=22,fmask=11,uid=1000,gid=100";
-                  root = "/mnt";
-                };
-                network = {
-                  generateHosts = true;
-                  generateResolvConf = true;
-                  hostname = "daimyo00";
-                };
-                interop = {
-                  appendWindowsPath = false;
-                };
-              };
-              extraBin = with pkgs; [
-                {src = "${coreutils}/bin/cat";}
-                {src = "${coreutils}/bin/whoami";}
-                {src = "${su}/bin/groupadd";}
-                {src = "${su}/bin/usermod";}
-              ];
-            };
-
-            # Disable NVIDIA container runtime in Docker instead
-            virtualisation.docker = {
-              enable = true;
-              enableOnBoot = true;
-              autoPrune.enable = true;
-              # Disable NVIDIA runtime
-              enableNvidia = false;
-              extraOptions = "--add-runtime none=runc";
-            };
-
-            # Environment variables to prevent CUDA detection
-            environment.variables = {
-              CUDA_PATH = "";
-              LD_LIBRARY_PATH = "";
-              NVIDIA_DRIVER_CAPABILITIES = "";
-              NVIDIA_VISIBLE_DEVICES = "none";
-            };
-
-            nix = {
-              settings = {
-                experimental-features = ["nix-command" "flakes" "auto-allocate-uids"];
-                auto-optimise-store = true;
-                trusted-users = ["root" "ryzengrind" "@wheel"];
-                max-jobs = "auto";
-                cores = 0;
-                keep-outputs = true;
-                keep-derivations = true;
-                # Remove CUDA cache
-                substituters = [
-                  "https://cache.nixos.org"
-                  "https://nix-community.cachix.org"
-                ];
-                trusted-public-keys = [
-                  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-                  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-                ];
-              };
-              gc = {
-                automatic = true;
-                dates = "weekly";
-                options = "--delete-older-than 7d";
-              };
-              optimise = {
-                automatic = true;
-                dates = ["weekly"];
-              };
-            };
-
-            # Network configuration
-            networking = {
-              hostName = "daimyo00";
-              networkmanager.enable = true;
-            };
-            systemd.services.NetworkManager-wait-online.enable = false;
-
-            # Locale and time
-            time.timeZone = "America/Toronto";
-            i18n.defaultLocale = "en_CA.UTF-8";
-
-            # User configuration
-            users.users.ryzengrind = {
-              hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";
-              isNormalUser = true;
-              extraGroups = ["wheel" "docker" "audio" "networkmanager"];
-            };
-
-            # SSH configuration
-            services.openssh = {
-              enable = true;
-              settings = {
-                PermitRootLogin = "yes";
-                PasswordAuthentication = true;
-              };
-            };
-
-            # System packages (no CUDA packages)
-            environment.systemPackages = with pkgs; [
-              curl
-              git
-              wget
-              neofetch
-              pre-commit
-            ];
-          })
-
-          # Home Manager configuration
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.ryzengrind = import ./hosts/daimyo00/home.nix;
-              extraSpecialArgs = {inherit inputs;};
-            };
-          }
-        ];
-      };
-
-      # Minimal test configuration
-      daimyo00-test = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = {inherit inputs;};
-        modules = [
-          # Bare minimum NixOS configuration
-          ({pkgs, ...}: {
-            # Basic system configuration
-            system.stateVersion = "24.05";
-
-            nixpkgs = {
-              config = {
-                allowUnfree = true;
-                allowBroken = false;
-              };
-              # Disable all custom overlays for testing
-              overlays = [];
-            };
-
-            # Minimal nix settings
-            nix.settings = {
-              substituters = ["https://cache.nixos.org"];
-              trusted-public-keys = ["cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="];
-              accept-flake-config = true;
-              experimental-features = ["nix-command" "flakes"];
-            };
-
-            # Basic system packages
-            environment.systemPackages = with pkgs; [
-              git
-              vim
-              pre-commit
-            ];
-
-            # Basic user configuration
-            users.users.ryzengrind = {
-              isNormalUser = true;
-              extraGroups = ["wheel"];
-              initialPassword = "changeme";
-            };
-
-            # WSL-specific settings
-            wsl = {
-              enable = true;
-              defaultUser = "ryzengrind";
-              nativeSystemd = true;
-            };
-          })
-
-          # Include WSL module
-          nixos-wsl.nixosModules.wsl
-        ];
-      };
     };
 
-    # Standalone home-manager configuration entrypoint
+    # Home-manager configurations
     homeConfigurations = {
-      "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
+      "ryzengrind@daimyo" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
-          ./hosts/daimyo00/home.nix
+          ./hosts/daimyo/home.nix
         ];
       };
     };

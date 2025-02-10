@@ -31,6 +31,14 @@
       enabled = true;
       appendWindowsPath = false;
     };
+
+    # Extra binaries
+    extraBin = with pkgs; [
+      {src = "${coreutils}/bin/cat";}
+      {src = "${coreutils}/bin/whoami";}
+      {src = "${su}/bin/groupadd";}
+      {src = "${su}/bin/usermod";}
+    ];
   };
 
   # Base system configuration
@@ -170,5 +178,34 @@
         };
       };
     };
+  };
+
+  # Add docker group
+  users.groups.docker.members = [wsl.defaultUser];
+
+  # WSL-specific testing
+  testing = {
+    enable = true;
+    testScript = ''
+      # Test WSL configuration
+      with subtest("WSL configuration"):
+          machine.succeed("test -e /etc/wsl.conf")
+          machine.succeed("grep 'enabled=true' /etc/wsl.conf")
+
+      # Test automount
+      with subtest("Automount configuration"):
+          machine.succeed("test -d /mnt")
+          machine.succeed("mount | grep -q '/mnt'")
+
+      # Test WSL tools
+      with subtest("WSL tools"):
+          machine.succeed("which wslview")
+          machine.succeed("which wsl-open")
+
+      # Test Docker
+      with subtest("Docker configuration"):
+          machine.succeed("systemctl is-active docker")
+          machine.succeed("docker ps")
+    '';
   };
 }

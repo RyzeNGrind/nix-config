@@ -12,40 +12,16 @@
 
   # Hardware configuration
   hardware = {
-    # CPU microcode updates
     cpu.intel.updateMicrocode = true;
-
-    # NVIDIA configuration
-    nvidia = {
-      modesetting.enable = true;
-      powerManagement = {
-        enable = true;
-        finegrained = true;
-      };
-      nvidiaSettings = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
-      prime = {
-        sync.enable = true;
-        nvidiaBusId = "PCI:1:0:0";
-        intelBusId = "PCI:0:2:0";
-      };
-    };
-
-    # OpenGL configuration
     opengl = {
       enable = true;
       driSupport = true;
       driSupport32Bit = true;
-      extraPackages = with pkgs; [
-        intel-media-driver
-        vaapiIntel
-        vaapiVdpau
-        libvdpau-va-gl
-      ];
     };
-
-    # Audio configuration
-    pulseaudio.enable = false;
+    nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      modesetting.enable = true;
+    };
   };
 
   # Boot configuration
@@ -54,12 +30,8 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernelParams = [
-      "nvidia-drm.modeset=1"
-      "intel_pstate=active"
-    ];
     kernelModules = ["kvm-intel"];
-    extraModulePackages = [config.boot.kernelPackages.nvidia_x11];
+    kernelParams = ["nvidia-drm.modeset=1"];
   };
 
   # System services
@@ -72,7 +44,6 @@
       layout = "us";
       xkbVariant = "";
     };
-
     pipewire = {
       enable = true;
       alsa.enable = true;
@@ -80,68 +51,53 @@
       pulse.enable = true;
       jack.enable = true;
     };
-
     thermald.enable = true;
     power-profiles-daemon.enable = true;
   };
 
-  # Sound and security configuration
-  sound.enable = true;
-  security.rtkit.enable = true;
-
-  # Power management
-  powerManagement = {
-    enable = true;
-    cpuFreqGovernor = "performance";
-  };
-
   # Additional system packages
   environment.systemPackages = with pkgs; [
-    # Desktop utilities
-    gnome.gnome-tweaks
-    gnome.dconf-editor
-    gnome.adwaita-icon-theme
-    xdg-utils
-    xdg-desktop-portal-gtk
-
-    # Hardware monitoring
-    lm_sensors
+    # System utilities
+    htop
+    iotop
     powertop
-    s-tui
-
-    # Graphics utilities
-    glxinfo
-    vulkan-tools
-    nvidia-vaapi-driver
+    lm_sensors
+    # Hardware monitoring
+    nvtop
+    intel-gpu-tools
+    # Power management
+    tlp
+    powertop
   ];
 
   # Testing configuration
-  testing = {
+  testing.suites.baremetal = {
     enable = true;
-    testScript = ''
-      # Test X11 configuration
-      with subtest("X11 configuration"):
-          machine.wait_for_unit("display-manager.service")
-          machine.wait_for_x()
-          machine.succeed("xrandr --listproviders")
+    description = "Baremetal configuration tests";
+    script = ''
+      import pytest
+      from nixostest import Machine
 
-      # Test NVIDIA configuration
-      with subtest("NVIDIA configuration"):
+      def test_x11(machine: Machine) -> None:
+          """Test X11 configuration."""
+          machine.succeed("systemctl is-active display-manager")
+          machine.succeed("test -e /run/opengl-driver")
+
+      def test_nvidia(machine: Machine) -> None:
+          """Test NVIDIA configuration."""
           machine.succeed("nvidia-smi")
-          machine.succeed("glxinfo | grep -i nvidia")
-          machine.succeed("vulkaninfo | grep -i nvidia")
+          machine.succeed("test -e /dev/nvidia0")
 
-      # Test sound configuration
-      with subtest("Sound configuration"):
-          machine.wait_for_unit("pipewire.service")
+      def test_sound(machine: Machine) -> None:
+          """Test sound configuration."""
+          machine.succeed("systemctl is-active pipewire")
           machine.succeed("pactl info")
-          machine.succeed("pw-cli info")
 
-      # Test power management
-      with subtest("Power management"):
-          machine.succeed("powerprofilesctl")
-          machine.succeed("sensors")
-          machine.succeed("cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | grep performance")
+      def test_power(machine: Machine) -> None:
+          """Test power management."""
+          machine.succeed("systemctl is-active thermald")
+          machine.succeed("systemctl is-active power-profiles-daemon")
+          machine.succeed("tlp-stat")
     '';
   };
 }

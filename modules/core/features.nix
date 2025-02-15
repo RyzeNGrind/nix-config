@@ -144,21 +144,21 @@ in {
     # Conditional module loading based on features
     imports = lib.mkMerge [
       # Hardware modules (disabled by default)
-      (lib.mkIf cfg.nvidia.enable [../hardware/nvidia.nix])
-      (lib.mkIf cfg.amd.enable [../hardware/amd.nix])
+      (lib.mkIf cfg.nvidia.enable [../../modules/hardware/nvidia.nix])
+      (lib.mkIf cfg.amd.enable [../../modules/hardware/amd.nix])
 
       # Virtualization modules (disabled by default)
-      (lib.mkIf (cfg.docker.enable || cfg.podman.enable) [../services/containers.nix])
-      (lib.mkIf cfg.kvm.enable [../services/virtualization.nix])
+      (lib.mkIf (cfg.docker.enable || cfg.podman.enable) [../../modules/services/containers.nix])
+      (lib.mkIf cfg.kvm.enable [../../modules/services/virtualization.nix])
 
       # Development modules (disabled by default)
-      (lib.mkIf cfg.dev.enable [../profiles/dev])
+      (lib.mkIf cfg.dev.enable [../../modules/nixos/dev])
 
       # Gaming modules (disabled by default)
-      (lib.mkIf cfg.gaming.enable [../profiles/gaming])
+      (lib.mkIf cfg.gaming.enable [../../modules/nixos/gaming])
 
       # WSL modules (enabled by default)
-      (lib.mkIf cfg.wsl.enable [../services/wsl.nix])
+      (lib.mkIf cfg.wsl.enable [../../modules/services/wsl.nix])
     ];
 
     # Feature-specific configurations

@@ -1,133 +1,52 @@
-# Core system configuration module
 {
   config,
   lib,
-  pkgs,
+  inputs,
   ...
-}: {
+}: let
+  inherit (lib) mkOption types;
+  cfg = config.core.system;
+in {
   options.core.system = {
     enable = lib.mkEnableOption "Core system configuration";
 
-    optimization = {
-      enable = lib.mkEnableOption "System optimization features";
-
-      zram = {
-        enable = lib.mkEnableOption "ZRAM support";
-        size = lib.mkOption {
-          type = lib.types.str;
-          default = "4G";
-          description = "ZRAM size";
-        };
-      };
-
-      io = {
-        enable = lib.mkEnableOption "I/O optimization";
-        scheduler = lib.mkOption {
-          type = lib.types.enum ["none" "deadline" "cfq" "bfq"];
-          default = "bfq";
-          description = "I/O scheduler to use";
-        };
-      };
+    stateVersion = mkOption {
+      type = types.str;
+      default = "24.05";
+      description = "NixOS state version";
     };
 
-    security = {
-      enable = lib.mkEnableOption "Security hardening";
+    flakeInputs = mkOption {
+      type = types.attrs;
+      default = {};
+      description = "Flake inputs to expose in /etc";
+    };
 
-      kernel = {
-        enable = lib.mkEnableOption "Kernel hardening";
-        lockdown = lib.mkOption {
-          type = lib.types.enum ["none" "integrity" "confidentiality"];
-          default = "integrity";
-          description = "Kernel lockdown mode";
-        };
-      };
-
-      limits = {
-        enable = lib.mkEnableOption "System resource limits";
-        nofile = lib.mkOption {
-          type = lib.types.int;
-          default = 524288;
-          description = "Maximum number of open files";
-        };
-      };
+    tags = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      description = "System tags for version labeling";
     };
   };
 
-  config = lib.mkIf config.core.system.enable {
-    # System optimization
-    zramSwap = lib.mkIf config.core.system.optimization.zram.enable {
-      enable = true;
-      algorithm = "zstd";
-      inherit (config.core.system.optimization.zram) size;
+  config = lib.mkIf cfg.enable {
+    # Store flake inputs in /etc
+    environment.etc = {
+      self.source = cfg.flakeInputs.self;
+      nixpkgs.source = cfg.flakeInputs.nixpkgs;
     };
 
-    boot = {
-      # Kernel parameters for system optimization
-      kernelParams = lib.mkIf config.core.system.optimization.enable [
-        # CPU optimizations
-        "intel_pstate=active"
-        "mitigations=off"
-
-        # I/O optimizations
-        "elevator=${config.core.system.optimization.io.scheduler}"
-        "iommu=pt"
-
-        # Memory management
-        "transparent_hugepage=always"
-      ];
-
-      # Kernel hardening
-      kernel.sysctl = lib.mkIf config.core.system.security.kernel.enable {
-        # Kernel hardening
-        "kernel.kptr_restrict" = 2;
-        "kernel.dmesg_restrict" = 1;
-        "kernel.printk" = "3 3 3 3";
-        "kernel.unprivileged_bpf_disabled" = 1;
-        "net.core.bpf_jit_harden" = 2;
-
-        # Network hardening
-        "net.ipv4.tcp_syncookies" = 1;
-        "net.ipv4.tcp_rfc1337" = 1;
-        "net.ipv4.conf.all.rp_filter" = 1;
-        "net.ipv4.conf.default.rp_filter" = 1;
-
-        # File system hardening
-        "fs.protected_hardlinks" = 1;
-        "fs.protected_symlinks" = 1;
+    system = {
+      extraSystemBuilderCmds = "ln -s ${cfg.flakeInputs.self.sourceInfo.outPath} $out/src";
+      nixos = {
+        enable = true;
+        inherit (cfg) flakeInputs tags;
+        label = lib.concatStringsSep "-" (
+          (lib.sort (x: y: x < y) cfg.tags)
+          ++ ["${config.system.nixos.version}.${cfg.flakeInputs.self.sourceInfo.shortRev or "dirty"}"]
+        );
       };
+      inherit (cfg) stateVersion;
     };
-
-    # System resource limits
-    security.pam.loginLimits = lib.mkIf config.core.system.security.limits.enable [
-      {
-        domain = "*";
-        type = "soft";
-        item = "nofile";
-        value = toString config.core.system.security.limits.nofile;
-      }
-      {
-        domain = "*";
-        type = "hard";
-        item = "nofile";
-        value = toString config.core.system.security.limits.nofile;
-      }
-    ];
-
-    # Common system packages
-    environment.systemPackages = with pkgs; [
-      # System utilities
-      htop
-      iotop
-      lsof
-      psmisc
-
-      # Monitoring tools
-      sysstat
-      procps
-
-      # File system tools
-      e2fsprogs
-      btrfs-progs
-    ];
   };
 }

@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   # Import core modules
   imports = [
     ../../modules/core/features.nix
@@ -181,7 +185,7 @@
   };
 
   # Add docker group
-  users.groups.docker.members = [wsl.defaultUser];
+  users.groups.docker.members = [config.wsl.defaultUser];
 
   # WSL-specific testing
   testing = {

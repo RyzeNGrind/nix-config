@@ -38,7 +38,16 @@ in {
 
     network = {
       generateHosts = lib.mkEnableOption "Generate /etc/hosts entries";
-      generateResolvConf = lib.mkEnableOption "Generate resolv.conf";
+      nameservers = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = ["8.8.8.8" "8.8.4.4"];
+        description = "List of nameservers to use";
+      };
+      search = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "List of search domains";
+      };
     };
   };
 
@@ -60,7 +69,8 @@ in {
 
     # Network configuration
     networking = {
-      inherit (cfg.network) generateResolvConf;
+      nameservers = cfg.network.nameservers;
+      search = cfg.network.search;
       hostFiles = lib.mkIf cfg.network.generateHosts [
         (pkgs.writeText "wsl-hosts" ''
           127.0.0.1 localhost
@@ -130,7 +140,7 @@ in {
         inherit (cfg.automount) options;
       };
       network = {
-        inherit (cfg.network) generateResolvConf;
+        generateResolvConf = false; # We're managing DNS settings through networking options
       };
     };
   };

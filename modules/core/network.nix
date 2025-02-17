@@ -13,10 +13,15 @@
         default = false;
         description = "Whether to allow ICMP ping requests";
       };
-      openPorts = lib.mkOption {
+      allowedTCPPorts = lib.mkOption {
         type = lib.types.listOf lib.types.int;
         default = [];
-        description = "List of ports to open in the firewall";
+        description = "List of TCP ports to open in the firewall";
+      };
+      allowedUDPPorts = lib.mkOption {
+        type = lib.types.listOf lib.types.int;
+        default = [];
+        description = "List of UDP ports to open in the firewall";
       };
     };
     optimization = {
@@ -32,7 +37,9 @@
       useNetworkd = true;
       firewall = lib.mkIf config.core.network.firewall.enable {
         enable = true;
-        inherit (config.core.network.firewall) allowPing openPorts;
+        allowPing = config.core.network.firewall.allowPing;
+        allowedTCPPorts = config.core.network.firewall.allowedTCPPorts;
+        allowedUDPPorts = config.core.network.firewall.allowedUDPPorts;
       };
 
       # Network optimization

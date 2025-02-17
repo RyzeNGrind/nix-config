@@ -10,6 +10,9 @@
     # Import base configurations
     ../base/default.nix
     ../base/wsl.nix
+    # Import hardware configurations from nixos-hardware
+    inputs.nixos-hardware.nixosModules.common-cpu-amd
+    inputs.nixos-hardware.nixosModules.common-gpu-nvidia
   ];
 
   # Base configuration shared across all specialisations
@@ -39,26 +42,64 @@
     };
   };
 
-  # Common programs
+  # Common programs using standard NixOS modules
   programs = {
     nix-ld = {
       enable = true;
       package = pkgs.nix-ld-rs;
     };
 
+    # 1Password CLI with SSH agent and Git credential helper
     _1password = {
       enable = true;
       enableSshAgent = true;
       enableGitCredentialHelper = true;
       users = ["ryzengrind"];
       tokenFile = "/etc/1password/op-token";
+      package = pkgs._1password;
+    };
+
+    # 1Password GUI with polkit integration
+    _1password-gui = {
+      enable = true;
+      polkitPolicyOwners = ["ryzengrind"]; # Required for proper authorization
+      package = pkgs._1password-gui;
+    };
+
+    firefox = {
+      enable = true;
+      package = pkgs.firefox;
+    };
+
+    chromium = {
+      enable = true;
+      package = pkgs.chromium;
+    };
+
+    fish = {
+      enable = true;
+      package = pkgs.fish;
+    };
+
+    git = {
+      enable = true;
+      package = pkgs.git;
+      config = {
+        init.defaultBranch = "main";
+        pull.rebase = true;
+      };
+    };
+
+    ssh = {
+      startAgent = true;
+      extraConfig = '''';
     };
   };
 
   # Common user configuration
   users.users.ryzengrind = {
     isNormalUser = true;
-    extraGroups = ["wheel" "docker" "networkmanager"];
+    extraGroups = ["wheel" "docker" "networkmanager" "onepassword"];
     hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";
   };
 
@@ -264,4 +305,12 @@
               machine.succeed(f"nixos-rebuild test --specialisation {spec}")
     '';
   };
+
+  # Ensure polkit is available
+  security.polkit.enable = true;
+
+  # Create required directories with proper permissions
+  systemd.tmpfiles.rules = [
+    "d /etc/1password 0755 root onepassword"
+  ];
 }

@@ -1,4 +1,4 @@
-{ 
+{
   "rules": [
     {
       "_comment": "Source: github:jamesbrink/nix/.cursorrules",
@@ -16,7 +16,8 @@
     {
       "match": "flake.nix",
       "action": "open",
-      "description": "Always open the flake.nix file for reviewing or editing the core NixOS configuration entry point."
+      "priority": 20,
+      "description": "Core flake configuration - REQUIRES FULL CONTEXT CHECK before modifications"
     },
     {
       "match": "flake.lock",
@@ -24,16 +25,16 @@
       "description": "Open the flake.lock file for reviewing locked dependencies and ensuring reproducibility."
     },
     {
-      "match": "hosts/*/default.nix",
+      "match": "hosts/*/configuration.nix",
       "action": "open",
       "priority": 15,
-      "description": "Focus on host-specific default.nix files to configure and customize machine-level settings."
+      "description": "Host-specific configurations"
     },
     {
       "match": "modules/**/*.nix",
       "action": "open",
-      "priority": 8,
-      "description": "Dive into module configurations for shared services, packages, and system-specific setups."
+      "priority": 10,
+      "description": "Module configurations"
     },
     {
       "match": "profiles/**/*.nix",
@@ -75,39 +76,100 @@
     },
 
     "module_system": {
-      "features": {
-        "location": "modules/nixos/features/",
-        "properties": [
-          "Single .nix file per feature",
-          "Atomic and focused responsibility",
-          "No explicit enable option needed",
-          "Enabled by default unless disabled"
-        ]
-      },
-      "bundles": {
-        "location": "modules/nixos/bundles/",
-        "properties": [
-          "Single .nix file per bundle",
-          "Explicit enabling required",
-          "Groups related features"
-        ]
-      },
-      "services": {
-        "location": "modules/nixos/services/",
-        "properties": [
-          "Single .nix file per service",
-          "Explicit enabling required",
-          "Service-specific configuration focus"
-        ]
-      },
       "rules": [
-        "Keep modules simple and focused",
-        "Avoid nested feature directories",
-        "No manual enable options in features",
-        "Split related functionality",
-        "Use bundles for grouping",
-        "Follow existing conventions"
-      ]
+        "Keep modules focused and minimal",
+        "Use existing nixpkgs modules when available",
+        "Avoid unnecessary abstraction layers",
+        "Maintain clear specialisation boundaries",
+        "NEVER remove functionality without verifying dependencies",
+        "Check all related files before making structural changes",
+        "Preserve existing features unless explicitly requested to remove",
+        "Prevent duplicate module declarations",
+        "Check for module conflicts before importing"
+      ],
+      "verification": {
+        "pre_modification": [
+          "Check all imported modules",
+          "Verify feature dependencies",
+          "Review specialisation requirements",
+          "Analyze profile dependencies",
+          "Check test coverage",
+          "Verify no module import conflicts"
+        ],
+        "post_modification": [
+          "Verify all tests still pass",
+          "Confirm no unintended feature removal",
+          "Check specialisation integrity",
+          "Validate profile functionality",
+          "Test for module conflicts"
+        ]
+      },
+      "structure": {
+        "flake": {
+          "core": "Single entry point for all configurations",
+          "safety": [
+            "Always check dependent modules before changes",
+            "Preserve existing functionality unless explicitly removed",
+            "Document any removed features",
+            "Prevent duplicate module imports",
+            "Use conditional imports for optional modules"
+          ]
+        },
+        "hosts": {
+          "purpose": "Host-specific configurations and specialisations",
+          "safety": [
+            "Check specialisation dependencies",
+            "Verify profile compatibility",
+            "Maintain feature consistency",
+            "Avoid module conflicts"
+          ]
+        },
+        "modules": {
+          "features": {
+            "location": "modules/features/",
+            "properties": [
+              "Single .nix file per feature",
+              "Atomic and focused responsibility",
+              "No explicit enable option needed",
+              "Enabled by default unless disabled"
+            ],
+            "safety": [
+              "Check feature dependencies",
+              "Verify usage in hosts",
+              "Document feature relationships",
+              "Prevent duplicate declarations"
+            ]
+          },
+          "bundles": {
+            "location": "modules/bundles/",
+            "properties": [
+              "Single .nix file per bundle",
+              "Explicit enabling required",
+              "Groups related features"
+            ],
+            "safety": [
+              "Check bundle dependencies",
+              "Verify feature inclusion",
+              "Document bundle contents",
+              "Avoid module conflicts"
+            ]
+          },
+          "services": {
+            "location": "modules/services/",
+            "properties": [
+              "Single .nix file per service",
+              "Explicit enabling required",
+              "Service-specific configuration focus"
+            ],
+            "safety": [
+              "Check service dependencies",
+              "Verify configuration requirements",
+              "Document service interactions",
+              "Prevent duplicate service declarations"
+            ]
+          }
+        }
+      }
     },
 
     "technical_domains": {
@@ -185,6 +247,38 @@
       "modules": "./docs/modules/README.md",
       "troubleshooting": "./docs/troubleshooting/README.md",
       "adr": "./docs/adr/README.md"
+    }
+  },
+
+  "safety_checks": {
+    "pre_edit": [
+      "Review all imported modules",
+      "Check feature dependencies",
+      "Verify specialisation requirements",
+      "Analyze profile dependencies",
+      "Review test coverage",
+      "Check for module conflicts"
+    ],
+    "post_edit": [
+      "Verify tests pass",
+      "Check feature integrity",
+      "Validate specialisations",
+      "Confirm profile functionality",
+      "Test for module conflicts"
+    ],
+    "module_conflicts": {
+      "checks": [
+        "Verify no duplicate module declarations",
+        "Check for overlapping service configurations",
+        "Ensure consistent module versions",
+        "Validate module compatibility"
+      ],
+      "resolution": [
+        "Use conditional imports",
+        "Prefer nixpkgs modules when available",
+        "Document module source decisions",
+        "Handle optional modules gracefully"
+      ]
     }
   }
 }

@@ -15,6 +15,11 @@
     homeDirectory = "/home/ryzengrind";
     stateVersion = "24.05";
 
+    # Shell integration for 1Password
+    sessionVariables = {
+      SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
+    };
+
     # Common packages across all specialisations
     packages = with pkgs; [
       # Development tools
@@ -57,11 +62,20 @@
     ];
   };
 
-  # Enable home-manager
-  programs.home-manager.enable = true;
-
-  # Common program configurations
+  # Consolidated program configurations
   programs = {
+    # Enable home-manager
+    home-manager.enable = true;
+
+    # 1Password shell integration
+    _1password = {
+      enable = true;
+      enableZshIntegration = true;
+      enableBashIntegration = true;
+      enableFishIntegration = true;
+    };
+
+    # Git configuration
     git = {
       enable = true;
       userName = "ryzengrind";
@@ -123,10 +137,6 @@
         set shiftwidth=2
         syntax on
       '';
-    };
-
-    _1password = {
-      enable = true;
     };
 
     # Add VSCode with specialisation-specific extensions

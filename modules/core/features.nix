@@ -3,13 +3,78 @@
   lib,
   pkgs,
   ...
-}: let
-  cfg = config.features;
-in {
+}: {
   options.features = {
     # Core features (disabled by default)
     nix-ld.enable = lib.mkEnableOption "nix-ld support for running unpatched dynamic binaries";
     nix-index.enable = lib.mkEnableOption "nix-index for searching available packages";
+
+    # Desktop features
+    desktop = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable desktop environment";
+      };
+      hyprland.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Hyprland desktop environment";
+      };
+      gnome.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable GNOME desktop environment";
+      };
+    };
+
+    # Development features
+    development = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable development environment";
+      };
+      python.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Python development support";
+      };
+      rust.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Rust development support";
+      };
+      go.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Go development support";
+      };
+    };
+
+    # Gaming features
+    gaming = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable gaming support";
+      };
+      steam.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Steam support";
+      };
+      wine.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Wine support";
+      };
+      lutris.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable Lutris support";
+      };
+    };
 
     # Hardware features (disabled by default)
     nvidia = {
@@ -50,59 +115,6 @@ in {
       };
     };
 
-    # Development features (disabled by default)
-    dev = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable development environment";
-      };
-      python = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable Python development support";
-        };
-      };
-      rust = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable Rust development support";
-        };
-      };
-      go = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable Go development support";
-        };
-      };
-    };
-
-    # Gaming features (disabled by default)
-    gaming = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable gaming support";
-      };
-      steam = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable Steam support";
-        };
-      };
-      wine = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable Wine support";
-        };
-      };
-    };
-
     # WSL features (enabled by default)
     wsl = {
       enable = lib.mkOption {
@@ -127,61 +139,155 @@ in {
     };
   };
 
-  config = {
-    # Feature version tracking
-    system.nixos.version = lib.mkIf (cfg != {}) (
-      let
-        enabledFeatures = lib.concatStringsSep "," (
-          lib.mapAttrsToList (name: value:
-            if (value.enable or value)
-            then "${name}"
-            else null)
-          (lib.filterAttrs (name: _: name != "_module") cfg)
+  config = let
+    cfg = config.features;
+  in
+    lib.mkMerge [
+      # Feature version tracking
+      {
+        system.nixos.version = lib.mkIf (cfg != {}) (
+          let
+            enabledFeatures = lib.concatStringsSep "," (
+              lib.mapAttrsToList (name: value:
+                if (value.enable or value)
+                then "${name}"
+                else null)
+              (lib.filterAttrs (name: _: name != "_module") cfg)
+            );
+          in "${config.system.nixos.version}+features.${enabledFeatures}"
         );
-      in "${config.system.nixos.version}+features.${enabledFeatures}"
-    );
+      }
 
-    # Conditional module loading based on features
-    imports = lib.mkMerge [
-      # Hardware modules (disabled by default)
-      (lib.mkIf cfg.nvidia.enable [../../modules/hardware/nvidia.nix])
-      (lib.mkIf cfg.amd.enable [../../modules/hardware/amd.nix])
+      # Desktop features
+      (lib.mkIf cfg.desktop.enable {
+        # Common desktop settings
+        services.xserver = {
+          enable = true;
+          displayManager.gdm.enable = true;
+        };
 
-      # Virtualization modules (disabled by default)
-      (lib.mkIf (cfg.docker.enable || cfg.podman.enable) [../../modules/services/containers.nix])
-      (lib.mkIf cfg.kvm.enable [../../modules/services/virtualization.nix])
+        # Desktop environment specific settings
+        services.xserver.desktopManager.gnome.enable = lib.mkIf cfg.desktop.gnome.enable true;
+        programs = {
+          hyprland.enable = lib.mkIf cfg.desktop.hyprland.enable true;
+          hyprlock.enable = lib.mkIf cfg.desktop.hyprland.enable true;
+          hypridle.enable = lib.mkIf cfg.desktop.hyprland.enable true;
+        };
 
-      # Development modules (disabled by default)
-      (lib.mkIf cfg.dev.enable [../../modules/nixos/dev])
+        # Common desktop packages
+        environment.systemPackages = with pkgs; [
+          # Basic desktop utilities
+          xdg-utils
+          xdg-user-dirs
+          # Terminal emulator
+          alacritty
+          # File manager
+          pcmanfm
+          # Web browser
+          firefox
+        ];
+      })
 
-      # Gaming modules (disabled by default)
-      (lib.mkIf cfg.gaming.enable [../../modules/nixos/gaming])
+      # Development features
+      (lib.mkIf cfg.development.enable {
+        # Common development tools
+        environment.systemPackages = with pkgs; [
+          # Version control
+          git
+          git-lfs
+          # Build tools
+          gnumake
+          gcc
+          # Development tools
+          direnv
+          nixfmt
+          alejandra
+          statix
+        ];
+      })
 
-      # WSL modules (enabled by default)
-      (lib.mkIf cfg.wsl.enable [../../modules/services/wsl.nix])
+      # Gaming features
+      (lib.mkIf cfg.gaming.enable {
+        # Gaming-specific packages
+        environment.systemPackages = with pkgs;
+          [
+            # Gaming utilities
+            mangohud
+            gamemode
+          ]
+          ++ lib.optionals cfg.gaming.steam.enable [
+            steam
+            steam-run
+          ]
+          ++ lib.optionals cfg.gaming.wine.enable [
+            wine
+            winetricks
+          ]
+          ++ lib.optionals cfg.gaming.lutris.enable [
+            lutris
+          ];
+
+        # Gaming-specific services
+        services = {
+          # Steam configuration
+          steam.enable = cfg.gaming.steam.enable;
+          # Game Mode daemon
+          gamemode.enable = true;
+        };
+      })
+
+      # Virtualization features
+      (lib.mkIf cfg.docker.enable {
+        virtualisation.docker = {
+          enable = true;
+          autoPrune = {
+            enable = true;
+            dates = "weekly";
+          };
+        };
+      })
+
+      (lib.mkIf cfg.podman.enable {
+        virtualisation.podman = {
+          enable = true;
+          dockerCompat = true;
+          autoPrune = {
+            enable = true;
+            dates = "weekly";
+          };
+        };
+      })
+
+      (lib.mkIf cfg.kvm.enable {
+        virtualisation = {
+          libvirtd.enable = true;
+          spiceUSBRedirection.enable = true;
+        };
+        environment.systemPackages = with pkgs; [
+          virt-manager
+          qemu
+        ];
+      })
+
+      # Package configurations
+      {
+        environment.systemPackages = with pkgs;
+          lib.mkMerge [
+            # Nix tools (disabled by default)
+            (lib.mkIf cfg.nix-index.enable [nix-index])
+
+            # Development tools (disabled by default)
+            (lib.mkIf cfg.development.python.enable [python3Full python3Packages.pip])
+            (lib.mkIf cfg.development.rust.enable [rustup])
+            (lib.mkIf cfg.development.go.enable [go])
+
+            # WSL tools (enabled by default)
+            (lib.mkIf cfg.wsl.enable [
+              wslu
+              wsl-open
+              wsl-vpnkit
+            ])
+          ];
+      }
     ];
-
-    # Feature-specific configurations
-    environment.systemPackages = with pkgs;
-      lib.mkMerge [
-        # Nix tools (disabled by default)
-        (lib.mkIf cfg.nix-index.enable [nix-index])
-
-        # Development tools (disabled by default)
-        (lib.mkIf cfg.dev.python.enable [python3Full python3Packages.pip])
-        (lib.mkIf cfg.dev.rust.enable [rustup])
-        (lib.mkIf cfg.dev.go.enable [go])
-
-        # Gaming tools (disabled by default)
-        (lib.mkIf cfg.gaming.steam.enable [steam-run])
-        (lib.mkIf cfg.gaming.wine.enable [wine winetricks])
-
-        # WSL tools (enabled by default)
-        (lib.mkIf cfg.wsl.enable [
-          wslu
-          wsl-open
-          wsl-vpnkit
-        ])
-      ];
-  };
 }

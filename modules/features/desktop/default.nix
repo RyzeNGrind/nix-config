@@ -28,80 +28,61 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Basic desktop environment setup
-    services.xserver = {
-      enable = true;
-      displayManager.gdm.enable = cfg.environment == "gnome";
-      displayManager.sddm.enable = cfg.environment == "kde";
-      desktopManager = {
-        gnome.enable = cfg.environment == "gnome";
-        plasma5.enable = cfg.environment == "kde";
-        xfce.enable = cfg.environment == "xfce";
+    # Desktop environment configuration
+    services = {
+      xserver = {
+        enable = true;
+        displayManager.gdm.enable = true;
+        desktopManager.gnome.enable = true;
       };
-      windowManager = {
-        i3.enable = cfg.environment == "i3";
+      blueman.enable = true;
+      printing = {
+        enable = true;
+        drivers = with pkgs; [
+          gutenprint
+          gutenprintBin
+          hplip
+          hplipWithPlugin
+          brlaser
+          brgenml1lpr
+          brgenml1cupswrapper
+        ];
       };
     };
 
-    # Wayland support
-    programs.sway.enable = cfg.environment == "sway";
+    # Hardware configuration
+    hardware = {
+      pulseaudio.enable = true;
+      bluetooth.enable = true;
+      sane = {
+        enable = true;
+        extraBackends = with pkgs; [
+          sane-airscan
+          hplipWithPlugin
+        ];
+      };
+    };
 
-    # Common desktop packages
-    environment.systemPackages = with pkgs; [
-      # Basic utilities
-      gnome.gnome-terminal
-      gnome.nautilus
-      gnome.gedit
-      gparted
-      networkmanagerapplet
-
-      # Selected browser
-      (
-        if cfg.extras.browser == "firefox"
-        then firefox
-        else if cfg.extras.browser == "chromium"
-        then chromium
-        else brave
-      )
-
-      # Optional office suite
-      (mkIf cfg.extras.office [
-        libreoffice-qt
-        hunspell
-        hunspellDicts.en-us
-      ])
-
-      # Optional multimedia applications
-      (mkIf cfg.extras.multimedia [
-        vlc
-        gimp
-        inkscape
-        audacity
-      ])
-    ];
+    # Environment configuration
+    environment = {
+      systemPackages = with pkgs; [
+        # Desktop utilities
+        xdg-utils
+        xdg-user-dirs
+        # Terminal emulator
+        alacritty
+        # File manager
+        pcmanfm
+        # Web browser
+        firefox
+      ];
+    };
 
     # Enable sound
     sound.enable = true;
-    hardware.pulseaudio.enable = true;
 
     # Enable networking
     networking.networkmanager.enable = true;
-
-    # Enable bluetooth
-    hardware.bluetooth.enable = true;
-    services.blueman.enable = true;
-
-    # Enable printing
-    services.printing = {
-      enable = true;
-      drivers = [pkgs.gutenprint];
-    };
-
-    # Enable scanner support
-    hardware.sane = {
-      enable = true;
-      extraBackends = [pkgs.sane-airscan];
-    };
 
     # Enable firmware updates
     services.fwupd.enable = true;

@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: {
-  options.profiles.srv = {
+  options.profiles.server = {
     enable = lib.mkEnableOption "Server environment profile";
 
     role = lib.mkOption {
@@ -22,7 +22,7 @@
     };
   };
 
-  config = lib.mkIf config.profiles.srv.enable {
+  config = lib.mkIf config.profiles.server.enable {
     # Base server configuration
     services = {
       # SSH hardening
@@ -43,7 +43,7 @@
       fail2ban.enable = true;
 
       # Monitoring stack
-      prometheus = lib.mkIf config.profiles.srv.monitoring.enable {
+      prometheus = lib.mkIf config.profiles.server.monitoring.enable {
         enable = true;
         exporters = {
           node = {
@@ -53,7 +53,7 @@
         };
       };
 
-      grafana = lib.mkIf config.profiles.srv.monitoring.enable {
+      grafana = lib.mkIf config.profiles.server.monitoring.enable {
         enable = true;
         settings.server = {
           domain = "metrics.local";
@@ -62,7 +62,7 @@
       };
 
       # Automatic backup service
-      borgbackup.jobs = lib.mkIf config.profiles.srv.backup.enable {
+      borgbackup.jobs = lib.mkIf config.profiles.server.backup.enable {
         system = {
           paths = ["/etc" "/var/lib"];
           exclude = ["/var/lib/docker"];
@@ -123,7 +123,7 @@
     };
 
     # Role-specific configurations
-    services.kubernetes = lib.mkIf (config.profiles.srv.role == "controller") {
+    services.kubernetes = lib.mkIf (config.profiles.server.role == "controller") {
       roles = ["master"];
       masterAddress = "controller.local";
     };

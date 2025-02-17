@@ -49,13 +49,12 @@
       package = pkgs.nix-ld-rs;
     };
 
-    # 1Password CLI with SSH agent and Git credential helper
+    # Hyprland-related programs (disabled by default, enabled in baremetal)
+    hyprland.enable = false;
+
+    # 1Password CLI
     _1password = {
       enable = true;
-      enableSshAgent = true;
-      enableGitCredentialHelper = true;
-      users = ["ryzengrind"];
-      tokenFile = "/etc/1password/op-token";
       package = pkgs._1password;
     };
 
@@ -73,7 +72,6 @@
 
     chromium = {
       enable = true;
-      package = pkgs.chromium;
     };
 
     fish = {
@@ -81,18 +79,21 @@
       package = pkgs.fish;
     };
 
+    # Configure Git to use 1Password
     git = {
       enable = true;
       package = pkgs.git;
       config = {
         init.defaultBranch = "main";
         pull.rebase = true;
+        credential.helper = "${pkgs._1password-gui}/share/1password/op-credential-store";
+        user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPL6GOQ1zpvnxJK0Mz+vUHgEd0f/sDB0q3pa38yHHEsC";
+        commit.gpgsign = true;
+        gpg = {
+          format = "ssh";
+          ssh.program = "${pkgs._1password-gui}/share/1password/op-ssh-sign";
+        };
       };
-    };
-
-    ssh = {
-      startAgent = true;
-      extraConfig = '''';
     };
   };
 
@@ -130,7 +131,13 @@
       inheritParentConfig = true;
       configuration = {
         system.nixos.tags = ["wsl-cuda"];
-
+        features.desktop = {
+          enable = false;
+          hyprland.enable = false;
+        };
+        programs = {
+          hyprland.enable = false;
+        };
         nixpkgs.config = {
           allowUnfree = true;
           cudaSupport = true;
@@ -241,7 +248,13 @@
       inheritParentConfig = true;
       configuration = {
         system.nixos.tags = ["wsl-nocuda"];
-
+        features.desktop = {
+          enable = false;
+          hyprland.enable = false;
+        };
+        programs = {
+          hyprland.enable = false;
+        };
         nixpkgs.config = {
           allowUnfree = true;
           cudaSupport = false;
@@ -260,8 +273,39 @@
       inheritParentConfig = true;
       configuration = {
         system.nixos.tags = ["baremetal"];
-
-        # Baremetal-specific configurations can be added here
+        features.desktop = {
+          enable = true;
+          hyprland.enable = true;
+          gnome.enable = true;
+        };
+        # Enable Hyprland-related programs in baremetal
+        programs = {
+          hyprland.enable = true;
+        };
+        # Enable Hyprland-related home-manager programs in baremetal
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          users.ryzengrind = {
+            imports = [
+              (
+                if inputs.hyprlock ? homeManagerModules
+                then inputs.hyprlock.homeManagerModules.default
+                else {}
+              )
+              (
+                if inputs.hypridle ? homeManagerModules
+                then inputs.hypridle.homeManagerModules.default
+                else {}
+              )
+            ];
+            programs = {
+              hyprlock.enable = true;
+              hypridle.enable = true;
+            };
+          };
+        };
+        # Baremetal-specific configurations
         services.xserver = {
           enable = true;
           displayManager.gdm.enable = true;

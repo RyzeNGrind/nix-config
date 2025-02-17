@@ -75,6 +75,15 @@
       enableFishIntegration = true;
     };
 
+    # SSH configuration
+    ssh = {
+      enable = true;
+      extraConfig = ''
+        Host *
+          IdentityAgent ~/.1password/agent.sock
+      '';
+    };
+
     # Git configuration
     git = {
       enable = true;

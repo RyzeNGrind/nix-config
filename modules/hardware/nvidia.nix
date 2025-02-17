@@ -31,34 +31,35 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Enable OpenGL
-    hardware.opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
+    hardware = {
+      opengl = {
+        enable = true;
+        driSupport = true;
+        driSupport32Bit = true;
+        extraPackages = with pkgs; [
+          vaapiVdpau
+          libvdpau-va-gl
+        ];
+      };
+
+      nvidia = {
+        package = config.boot.kernelPackages.nvidiaPackages.stable;
+        modesetting.enable = true;
+        powerManagement = {
+          inherit (cfg.powerManagement) enable finegrained;
+        };
+        prime = mkIf cfg.prime.enable {
+          inherit (cfg.prime) intelBusId nvidiaBusId;
+          offload = {
+            enable = true;
+            enableOffloadCmd = true;
+          };
+        };
+      };
     };
 
     # Load nvidia driver
     services.xserver.videoDrivers = ["nvidia"];
-
-    # NVIDIA driver configuration
-    hardware.nvidia = {
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
-      modesetting.enable = true;
-      powerManagement = mkIf cfg.powerManagement.enable {
-        enable = true;
-        finegrained = cfg.powerManagement.finegrained;
-      };
-    };
-
-    # PRIME configuration
-    hardware.nvidia.prime = mkIf cfg.prime.enable {
-      inherit (cfg.prime) intelBusId nvidiaBusId;
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
-    };
 
     # Environment variables for NVIDIA
     environment.variables = {

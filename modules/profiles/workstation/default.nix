@@ -10,9 +10,10 @@ in {
   config = mkIf cfg.enable {
     # Enable required features
     features = {
-      desktop.enable = true;
-      audio.enable = true;
-      bluetooth.enable = true;
+      desktop = {
+        enable = true;
+        gnome.enable = true;
+      };
     };
 
     # Common workstation packages

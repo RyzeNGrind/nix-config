@@ -35,7 +35,7 @@
   } @ inputs: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
-    lib = nixpkgs.lib;
+    inherit (nixpkgs) lib;
 
     # Helper function to create host configurations
     mkHost = {
@@ -83,10 +83,28 @@
             nixos-wsl.nixosModules.wsl
             hyprland.nixosModules.default
             ({config, ...}: {
-              imports = [
-                (hyprlock.nixosModules.default or {})
-                (hypridle.nixosModules.default or {})
-              ];
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.ryzengrind = {
+                  imports = [
+                    (
+                      if hyprlock ? homeManagerModules
+                      then hyprlock.homeManagerModules.default
+                      else {}
+                    )
+                    (
+                      if hypridle ? homeManagerModules
+                      then hypridle.homeManagerModules.default
+                      else {}
+                    )
+                  ];
+                  programs = {
+                    hyprlock.enable = lib.mkDefault false;
+                    hypridle.enable = lib.mkDefault false;
+                  };
+                };
+              };
             })
 
             # Profile system
@@ -117,22 +135,75 @@
           gaming = {
             enable = true;
             nvidia = true;
+            amd = false;
+            virtualization = {
+              enable = false;
+              looking-glass = false;
+            };
           };
           development = {
             enable = true;
-            languages = ["rust" "go" "python"];
-            containers = true;
+            ide = "vscodium";
+            vscodeRemote = {
+              enable = true;
+              method = "nix-ld";
+            };
+            ml = {
+              enable = true;
+              cudaSupport = true;
+              pytorch = {
+                enable = true;
+              };
+            };
           };
         };
         modules = [
           # Base configuration
           {
             programs = {
-              hyprland.enable = true;
-              hyprlock.enable = true;
-              hypridle.enable = true;
+              hyprland.enable = lib.mkDefault false;
             };
+            environment.systemPackages = with pkgs; [
+              hyprland.packages.${system}.hyprland
+              (
+                if hyprlock ? packages
+                then hyprlock.packages.${system}.default
+                else {}
+              )
+              (
+                if hypridle ? packages
+                then hypridle.packages.${system}.default
+                else {}
+              )
+            ];
           }
+          # Import Hyprland module
+          hyprland.nixosModules.default
+          # Import hyprlock and hypridle as home-manager modules
+          ({config, ...}: {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.ryzengrind = {
+                imports = [
+                  (
+                    if hyprlock ? homeManagerModules
+                    then hyprlock.homeManagerModules.default
+                    else {}
+                  )
+                  (
+                    if hypridle ? homeManagerModules
+                    then hypridle.homeManagerModules.default
+                    else {}
+                  )
+                ];
+                programs = {
+                  hyprlock.enable = lib.mkDefault false;
+                  hypridle.enable = lib.mkDefault false;
+                };
+              };
+            };
+          })
         ];
       };
 
@@ -142,8 +213,18 @@
         profileConfig = {
           development = {
             enable = true;
-            languages = ["rust" "go" "python"];
-            containers = true;
+            ide = "vscodium";
+            vscodeRemote = {
+              enable = true;
+              method = "nix-ld";
+            };
+            ml = {
+              enable = false;
+              cudaSupport = false;
+              pytorch = {
+                enable = false;
+              };
+            };
           };
           wsl.enable = true;
         };

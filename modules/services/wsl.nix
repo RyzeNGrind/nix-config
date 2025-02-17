@@ -69,8 +69,7 @@ in {
 
     # Network configuration
     networking = {
-      nameservers = cfg.network.nameservers;
-      search = cfg.network.search;
+      inherit (cfg.network) nameservers search;
       hostFiles = lib.mkIf cfg.network.generateHosts [
         (pkgs.writeText "wsl-hosts" ''
           127.0.0.1 localhost

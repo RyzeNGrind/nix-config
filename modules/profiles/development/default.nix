@@ -5,9 +5,9 @@
   ...
 }:
 with lib; let
-  cfg = config.profiles.dev;
+  cfg = config.profiles.development;
 in {
-  options.profiles.dev = {
+  options.profiles.development = {
     enable = mkEnableOption "Development environment profile";
     ide = mkOption {
       type = types.enum ["vscode" "vscodium" "neovim" "cursor"];
@@ -34,7 +34,7 @@ in {
         package = mkOption {
           type = types.package;
           default = pkgs.python3Packages.pytorch.override {
-            inherit (config.profiles.dev.ml) cudaSupport;
+            inherit (config.profiles.development.ml) cudaSupport;
             inherit (pkgs) cudaPackages;
           };
           description = "PyTorch package to use";
@@ -211,12 +211,6 @@ in {
         enable = true;
         enableNvidia = cfg.ml.cudaSupport;
       };
-    };
-
-    # Update the configuration for the ml section
-    config = {
-      inherit (config.profiles.dev.ml) cudaSupport;
-      inherit (pkgs) cudaPackages;
     };
   };
 }

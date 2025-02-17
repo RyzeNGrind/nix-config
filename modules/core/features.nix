@@ -170,8 +170,14 @@
         services.xserver.desktopManager.gnome.enable = lib.mkIf cfg.desktop.gnome.enable true;
         programs = {
           hyprland.enable = lib.mkIf cfg.desktop.hyprland.enable true;
-          hyprlock.enable = lib.mkIf cfg.desktop.hyprland.enable true;
-          hypridle.enable = lib.mkIf cfg.desktop.hyprland.enable true;
+        };
+
+        # Home-manager desktop settings
+        home-manager.users.ryzengrind = lib.mkIf cfg.desktop.hyprland.enable {
+          programs = {
+            hyprlock.enable = true;
+            hypridle.enable = true;
+          };
         };
 
         # Common desktop packages
@@ -250,7 +256,6 @@
       (lib.mkIf cfg.podman.enable {
         virtualisation.podman = {
           enable = true;
-          dockerCompat = true;
           autoPrune = {
             enable = true;
             dates = "weekly";
@@ -259,35 +264,13 @@
       })
 
       (lib.mkIf cfg.kvm.enable {
-        virtualisation = {
-          libvirtd.enable = true;
-          spiceUSBRedirection.enable = true;
+        virtualisation.libvirtd = {
+          enable = true;
+          qemu = {
+            package = pkgs.qemu_kvm;
+            runAsRoot = true;
+          };
         };
-        environment.systemPackages = with pkgs; [
-          virt-manager
-          qemu
-        ];
       })
-
-      # Package configurations
-      {
-        environment.systemPackages = with pkgs;
-          lib.mkMerge [
-            # Nix tools (disabled by default)
-            (lib.mkIf cfg.nix-index.enable [nix-index])
-
-            # Development tools (disabled by default)
-            (lib.mkIf cfg.development.python.enable [python3Full python3Packages.pip])
-            (lib.mkIf cfg.development.rust.enable [rustup])
-            (lib.mkIf cfg.development.go.enable [go])
-
-            # WSL tools (enabled by default)
-            (lib.mkIf cfg.wsl.enable [
-              wslu
-              wsl-open
-              wsl-vpnkit
-            ])
-          ];
-      }
     ];
 }

@@ -67,9 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        host: [daimyo00]
+        host: [daimyo]
         include:
-          - host: daimyo00
+          - host: daimyo
             test-wsl: true
     steps:
       - uses: actions/checkout@v4.1.1
@@ -150,7 +150,7 @@ jobs:
 
           # Run vulnix for vulnerability scanning
           nix run nixpkgs#vulnix -- \
-            --system .#nixosConfigurations.daimyo00.config.system.build.toplevel
+            --system .#nixosConfigurations.daimyo.config.system.build.toplevel
 
   deploy:
     needs: [security-scan]
@@ -163,11 +163,11 @@ jobs:
       - name: Deploy configurations
         run: |
           # Final build check before deployment
-          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel --dry-run
+          nix build .#nixosConfigurations.daimyo.config.system.build.toplevel --dry-run
 
           # Deploy to Cachix
           nix path-info --json \
-            .#nixosConfigurations.daimyo00.config.system.build.toplevel | \
+            .#nixosConfigurations.daimyo.config.system.build.toplevel | \
             jq -r '.[].path' | \
             xargs nix copy --to "s3://ryzengrind-nix-cache?region=us-east-1"
         env:

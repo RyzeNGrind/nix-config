@@ -1,4 +1,4 @@
-# Host-specific home configuration for daimyo00
+# Host-specific home configuration for daimyo
 {pkgs, ...}: {
   imports = [
     ../../modules/home-manager/wsl.nix # Import our WSL module
@@ -60,7 +60,7 @@
     git = {
       enable = true;
       userName = "ryzengrind";
-      userEmail = "ryzengrind@daimyo00.local";
+      userEmail = "ryzengrind@daimyo.local";
       extraConfig = {
         init.defaultBranch = "main";
         pull.rebase = true;
@@ -76,7 +76,7 @@
         ll = "ls -la";
         ".." = "cd ..";
         "..." = "cd ../..";
-        rebuild = "sudo nixos-rebuild switch --flake .#daimyo00";
+        rebuild = "sudo nixos-rebuild switch --flake .#daimyo";
         update = "nix flake update";
       };
     };
@@ -96,6 +96,9 @@
         set shiftwidth=2
         syntax on
       '';
+    };
+    _1password = {
+      enable = true;
     };
   };
 

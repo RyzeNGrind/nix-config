@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        host: [daimyo00]
+        host: [daimyo]
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: cachix/install-nix-action@v23
@@ -66,10 +66,10 @@ jobs:
       - name: Deploy to Cachix
         run: |
           # Final build check before deployment
-          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel --dry-run
+          nix build .#nixosConfigurations.daimyo.config.system.build.toplevel --dry-run
           # Deploy to Cachix
           nix path-info --json \
-            .#nixosConfigurations.daimyo00.config.system.build.toplevel | \
+            .#nixosConfigurations.daimyo.config.system.build.toplevel | \
             jq -r '.[].path' | \
             xargs nix copy --to "cachix://ryzengrind-nix-config"
         env:

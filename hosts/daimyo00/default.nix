@@ -8,7 +8,7 @@
   ];
 
   # Machine-specific configuration
-  networking.hostName = "daimyo00";
+  networking.hostName = "daimyo";
 
   # Locale and time
   time.timeZone = "America/Toronto";

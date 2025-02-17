@@ -10,10 +10,10 @@ _: {
       virtualisation.memorySize = 2048;
     };
 
-    # daimyo00 with specializations
-    daimyo00 = {
+    # daimyo with specializations
+    daimyo = {
       imports = [
-        ../hosts/daimyo00/wsl.nix
+        ../hosts/daimyo/wsl.nix
       ];
       virtualisation.memorySize = 2048;
     };
@@ -30,64 +30,64 @@ _: {
         wsl.succeed("which wslu")
         wsl.succeed("which wsl-open")
 
-    # Test daimyo00 default configuration
-    with subtest("daimyo00 default configuration"):
-        daimyo00.wait_for_unit("multi-user.target")
-        daimyo00.succeed("test \"$(hostname)\" = \"daimyo00\"")
-        daimyo00.succeed("docker --version")
-        daimyo00.succeed("test -n \"$DISPLAY\"")
+    # Test daimyo default configuration
+    with subtest("daimyo default configuration"):
+        daimyo.wait_for_unit("multi-user.target")
+        daimyo.succeed("test \"$(hostname)\" = \"daimyo\"")
+        daimyo.succeed("docker --version")
+        daimyo.succeed("test -n \"$DISPLAY\"")
 
     # Test CUDA specialization
     with subtest("CUDA specialization"):
-        daimyo00.succeed("nixos-rebuild test --specialisation cuda")
-        daimyo00.succeed("test -n \"$NVIDIA_DRIVER_CAPABILITIES\"")
-        daimyo00.succeed("test -n \"$NVIDIA_VISIBLE_DEVICES\"")
-        daimyo00.succeed("test -n \"$NVIDIA_REQUIRE_CUDA\"")
+        daimyo.succeed("nixos-rebuild test --specialisation cuda")
+        daimyo.succeed("test -n \"$NVIDIA_DRIVER_CAPABILITIES\"")
+        daimyo.succeed("test -n \"$NVIDIA_VISIBLE_DEVICES\"")
+        daimyo.succeed("test -n \"$NVIDIA_REQUIRE_CUDA\"")
 
     # Test no-GUI specialization
     with subtest("No-GUI specialization"):
-        daimyo00.succeed("nixos-rebuild test --specialisation nogui")
-        daimyo00.fail("test -n \"$DISPLAY\"")
-        daimyo00.fail("test -n \"$WAYLAND_DISPLAY\"")
-        daimyo00.fail("test -n \"$XDG_RUNTIME_DIR\"")
+        daimyo.succeed("nixos-rebuild test --specialisation nogui")
+        daimyo.fail("test -n \"$DISPLAY\"")
+        daimyo.fail("test -n \"$WAYLAND_DISPLAY\"")
+        daimyo.fail("test -n \"$XDG_RUNTIME_DIR\"")
 
     # Test minimal specialization
     with subtest("Minimal specialization"):
-        daimyo00.succeed("nixos-rebuild test --specialisation minimal")
-        daimyo00.fail("test -n \"$DISPLAY\"")
-        daimyo00.fail("which docker")
-        daimyo00.succeed("which curl")
-        daimyo00.succeed("which git")
+        daimyo.succeed("nixos-rebuild test --specialisation minimal")
+        daimyo.fail("test -n \"$DISPLAY\"")
+        daimyo.fail("which docker")
+        daimyo.succeed("which curl")
+        daimyo.succeed("which git")
 
     # Test switching back to default
     with subtest("Switch back to default"):
-        daimyo00.succeed("nixos-rebuild test")
-        daimyo00.succeed("test -n \"$DISPLAY\"")
-        daimyo00.succeed("which docker")
-        daimyo00.succeed("which vscode")
+        daimyo.succeed("nixos-rebuild test")
+        daimyo.succeed("test -n \"$DISPLAY\"")
+        daimyo.succeed("which docker")
+        daimyo.succeed("which vscode")
 
     # Test backup functionality
     with subtest("Backup functionality"):
-        daimyo00.succeed("test -e /etc/nixos.bak")
-        daimyo00.succeed("test -e /etc/systemd.bak")
+        daimyo.succeed("test -e /etc/nixos.bak")
+        daimyo.succeed("test -e /etc/systemd.bak")
 
     # Test system services
     with subtest("System services"):
-        daimyo00.wait_for_unit("docker.service")
-        daimyo00.wait_for_unit("vscode-server.service")
-        daimyo00.succeed("systemctl is-active auto-upgrade.timer")
+        daimyo.wait_for_unit("docker.service")
+        daimyo.wait_for_unit("vscode-server.service")
+        daimyo.succeed("systemctl is-active auto-upgrade.timer")
 
     # Test development tools
     with subtest("Development tools"):
-        daimyo00.succeed("git --version")
-        daimyo00.succeed("python3 --version")
-        daimyo00.succeed("node --version")
-        daimyo00.succeed("rustup --version")
+        daimyo.succeed("git --version")
+        daimyo.succeed("python3 --version")
+        daimyo.succeed("node --version")
+        daimyo.succeed("rustup --version")
 
     # Test system monitoring
     with subtest("System monitoring"):
-        daimyo00.succeed("btop --version")
-        daimyo00.succeed("iotop --version")
-        daimyo00.succeed("ncdu --version")
+        daimyo.succeed("btop --version")
+        daimyo.succeed("iotop --version")
+        daimyo.succeed("ncdu --version")
   '';
 }

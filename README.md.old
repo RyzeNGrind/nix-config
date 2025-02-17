@@ -18,7 +18,7 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 .
 ├── flake.nix           # Main flake configuration
 ├── hosts/             # Host-specific configurations
-│   └── daimyo00/     # WSL development environment
+│   └── daimyo/     # WSL development environment
 ├── modules/           # Reusable NixOS and home-manager modules
 │   ├── nixos/        # NixOS modules
 │   │   └── profiles/ # System profiles (dev, gaming, srv)
@@ -61,8 +61,8 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 
 2. Build and activate:
    ```bash
-   sudo nixos-rebuild switch --flake .#daimyo00
-   home-manager switch --flake .#ryzengrind@daimyo00
+   sudo nixos-rebuild switch --flake .#daimyo
+   home-manager switch --flake .#ryzengrind@daimyo
    ```
 
 ### Testing
@@ -98,7 +98,7 @@ Configurations are automatically built and pushed to a binary cache when merged 
 3. Test locally:
    ```bash
    nix flake check
-   nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
+   nix build .#nixosConfigurations.daimyo.config.system.build.toplevel
    ```
 4. Push changes and create PR
 5. Wait for CI checks to pass
@@ -109,5 +109,5 @@ Configurations are automatically built and pushed to a binary cache when merged 
 In case of issues after deployment:
 
 ```bash
-sudo nixos-rebuild switch --flake .#daimyo00 --rollback
+sudo nixos-rebuild switch --flake .#daimyo --rollback
 ```

@@ -4,3 +4,6 @@ TensorRT-*.zip
 
 result
 .pre-commit-config.yaml
+demo.py
+
+hosts/daimyo00/

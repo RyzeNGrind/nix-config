@@ -8,7 +8,7 @@
   ];
 
   # Host-specific configuration
-  networking.hostName = "daimyo00";
+  networking.hostName = "daimyo";
 
   # WSL specialization
   specialisation = {

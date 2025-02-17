@@ -41,9 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        host: [daimyo00]
+        host: [daimyo]
         include:
-          - host: daimyo00
+          - host: daimyo
             test-wsl: true
     steps:
       - uses: actions/checkout@v4.1.1
@@ -76,7 +76,7 @@ jobs:
           nix run nixpkgs#statix -- check
 
           # Build the system first
-          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
+          nix build .#nixosConfigurations.daimyo.config.system.build.toplevel
 
           # Run vulnix for vulnerability scanning
           nix run nixpkgs#vulnix -- --system ./result

@@ -65,11 +65,34 @@
         // test
       );
 
+    # Define our own modules
+    nixosModules = {
+      # Core modules
+      core-system = import ./modules/core/system.nix;
+      core-spec = import ./modules/core/spec.nix;
+
+      # Feature modules
+      programs = import ./modules/programs;
+      hardware = import ./modules/hardware;
+      services = import ./modules/services;
+      system = import ./modules/system;
+      virtualisation = import ./modules/virtualisation;
+
+      # WSL-specific modules
+      wsl = import ./modules/wsl;
+
+      # Testing modules
+      testing = import ./modules/testing;
+
+      # Home-manager modules
+      home = import ./modules/home-manager;
+    };
+
     # Common modules for all configurations
     commonModules = [
       # Core modules
-      ./modules/core/system.nix
-      ./modules/core/spec.nix
+      self.nixosModules.core-system
+      self.nixosModules.core-spec
 
       # External modules
       home-manager.nixosModules.home-manager
@@ -80,18 +103,24 @@
       attic.nixosModules.atticd
 
       # Local modules
-      ./modules/programs
-      ./modules/hardware
-      ./modules/services
-      ./modules/system
-      ./modules/virtualisation
+      self.nixosModules.programs
+      self.nixosModules.hardware
+      self.nixosModules.services
+      self.nixosModules.system
+      self.nixosModules.virtualisation
     ];
   in {
+    # Export our modules
+    inherit nixosModules;
+
     # NixOS configurations
     nixosConfigurations = {
       daimyo = lib.nixosSystem {
         inherit system;
-        specialArgs = {inherit inputs;};
+        specialArgs = {
+          inherit inputs self;
+          inherit (inputs) nixpkgs home-manager;
+        };
         modules =
           commonModules
           ++ [
@@ -121,6 +150,19 @@
 
             # Machine-specific configuration
             ./hosts/daimyo/configuration.nix
+
+            # Home-manager configuration
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                extraSpecialArgs = {
+                  inherit inputs self;
+                  inherit (inputs) nixpkgs home-manager;
+                };
+                users.ryzengrind = import ./hosts/daimyo/home.nix;
+              };
+            }
           ];
       };
     };

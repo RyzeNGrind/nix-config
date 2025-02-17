@@ -85,7 +85,7 @@
   networking = {
     useHostResolvConf = false; # Don't use Windows DNS directly
     networkmanager.enable = true;
-    hostName = "daimyo00";
+    hostName = "daimyo";
     nameservers = ["1.1.1.1" "8.8.8.8"];
   };
 

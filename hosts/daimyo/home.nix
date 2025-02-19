@@ -3,13 +3,14 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }: {
   imports = [
     ../../modules/home-manager/wsl.nix # Import our WSL module
+    inputs.hyprland.homeManagerModules.default
   ];
 
-  # Basic home-manager settings
   home = {
     username = "ryzengrind";
     homeDirectory = "/home/ryzengrind";
@@ -20,45 +21,79 @@
       SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
     };
 
-    # Common packages across all specialisations
-    packages = with pkgs; [
-      # Development tools
-      git
-      gh
-      direnv
-      nix-direnv
-      pre-commit
-      nodePackages.prettier
-      black # Python formatting
-      alejandra # Nix formatting
-      statix # Nix static analysis
-      deadnix # Finding dead code
-      shellcheck # Shell script analysis
+    # Packages configuration
+    packages = lib.mkMerge [
+      # Common packages across all specialisations
+      (with pkgs; [
+        # Development tools
+        git
+        gh
+        direnv
+        nix-direnv
+        pre-commit
+        nodePackages.prettier
+        black # Python formatting
+        alejandra # Nix formatting
+        statix # Nix static analysis
+        deadnix # Finding dead code
+        shellcheck # Shell script analysis
 
-      # Build tools
-      gcc
-      gnumake
-      cargo
-      rustc
+        # Build tools
+        gcc
+        gnumake
+        cargo
+        rustc
 
-      # System tools
-      htop
-      btop
-      iotop
+        # System tools
+        htop
+        btop
+        iotop
 
-      # Network tools
-      curl
-      wget
-      dig
-      whois
+        # Network tools
+        curl
+        wget
+        dig
+        whois
 
-      # Terminal utilities
-      tmux
-      fzf
-      ripgrep
-      fd
-      jq
-      yq
+        # Terminal utilities
+        tmux
+        fzf
+        ripgrep
+        fd
+        jq
+        yq
+
+        # 1Password CLI
+        _1password
+      ])
+
+      # CUDA specialisation packages
+      (lib.mkIf (config.system.nixos.tags or [] == ["wsl-cuda"]) (with pkgs; [
+        cudaPackages.cuda_nvcc
+        cudaPackages.cuda_cupti
+        cudaPackages.cudnn
+        nvtop
+      ]))
+
+      # Baremetal specialisation packages
+      (lib.mkIf (config.system.nixos.tags or [] == ["baremetal"]) (with pkgs; [
+        # GUI applications
+        firefox
+        chromium
+        vlc
+        # System monitoring
+        gnome.gnome-system-monitor
+        powertop
+        # Hyprland utilities
+        waybar
+        wofi
+        dunst
+        swaylock
+        swayidle
+        grim
+        slurp
+        wl-clipboard
+      ]))
     ];
   };
 
@@ -66,14 +101,6 @@
   programs = {
     # Enable home-manager
     home-manager.enable = true;
-
-    # 1Password shell integration
-    _1password = {
-      enable = true;
-      enableZshIntegration = true;
-      enableBashIntegration = true;
-      enableFishIntegration = true;
-    };
 
     # SSH configuration
     ssh = {
@@ -170,96 +197,63 @@
     };
   };
 
-  # Specialisation-specific configurations
-  config = lib.mkMerge [
-    # Base configuration
-    {}
-
-    # CUDA specialisation
-    (lib.mkIf (config.system.nixos.tags or [] == ["wsl-cuda"]) {
-      home.packages = with pkgs; [
-        cudaPackages.cuda_nvcc
-        cudaPackages.cuda_cupti
-        cudaPackages.cudnn
-        nvtop
-      ];
-    })
-
-    # Baremetal specialisation
-    (lib.mkIf (config.system.nixos.tags or [] == ["baremetal"]) {
-      home.packages = with pkgs; [
-        # GUI applications
-        firefox
-        chromium
-        vlc
-        # System monitoring
-        gnome.gnome-system-monitor
-        powertop
-      ];
-
-      # Desktop-specific configurations
-      dconf.settings = {
-        "org/gnome/desktop/interface" = {
-          enable-hot-corners = false;
-          gtk-theme = "Adwaita-dark";
-        };
-      };
-    })
-  ];
-
   # Enable fonts in home-manager
   fonts.fontconfig.enable = true;
 
-  # Testing configuration
-  test.stubs.homeConfiguration = {
+  # Hyprland configuration
+  wayland.windowManager.hyprland = lib.mkIf (config.system.nixos.tags or [] == ["baremetal"]) {
     enable = true;
-    tests = {
-      common = {
-        description = "Test common configuration";
-        script = ''
-          import pytest
-          from pathlib import Path
-
-          def test_basic_setup(home):
-              """Test basic home configuration."""
-              assert home.username == "ryzengrind"
-              assert Path(home.homeDirectory).exists()
-
-          def test_git_config(home):
-              """Test git configuration."""
-              gitconfig = Path(home.homeDirectory) / ".gitconfig"
-              assert gitconfig.exists()
-              assert "ryzengrind@daimyo.local" in gitconfig.read_text()
-
-          def test_common_packages(home):
-              """Test common packages are installed."""
-              for cmd in ["git", "direnv", "tmux", "fzf"]:
-                  assert home.command_exists(cmd)
-        '';
-      };
-
-      cuda = {
-        description = "Test CUDA specialisation";
-        script = ''
-          def test_cuda_env(home):
-              """Test CUDA environment."""
-              if home.specialisation == "wsl-cuda":
-                  assert "CUDA_PATH" in home.env
-                  assert "CUDA_HOME" in home.env
-                  assert home.command_exists("nvcc")
-        '';
-      };
-
-      baremetal = {
-        description = "Test baremetal specialisation";
-        script = ''
-          def test_gui_packages(home):
-              """Test GUI packages."""
-              if home.specialisation == "baremetal":
-                  assert home.command_exists("firefox")
-                  assert home.command_exists("vlc")
-        '';
-      };
+    systemd.enable = true;
+    xwayland.enable = true;
+    package = null;
+    portalPackage = null;
+    settings = {
+      "$mod" = "SUPER";
+      bind = [
+        "$mod, Return, exec, alacritty"
+        "$mod, Q, killactive"
+        "$mod, M, exit"
+        "$mod, E, exec, pcmanfm"
+        "$mod, V, togglefloating"
+        "$mod, R, exec, wofi --show drun"
+        "$mod, P, pseudo"
+        "$mod, J, togglesplit"
+        "$mod, left, movefocus, l"
+        "$mod, right, movefocus, r"
+        "$mod, up, movefocus, u"
+        "$mod, down, movefocus, d"
+      ];
+      monitor = [
+        ",preferred,auto,1"
+      ];
+      exec-once = [
+        "waybar"
+        "dunst"
+        "hyprctl dispatch dpms on"
+      ];
     };
+    extraConfig = ''
+      # Screen locking
+      bind = $mod, L, exec, loginctl lock-session
+
+      # Idle configuration
+      exec-once = hypridle
+
+      general {
+        lock_cmd = hyprlock
+        before_sleep_cmd = hyprlock
+        after_sleep_cmd = hyprctl dispatch dpms on
+      }
+
+      listener {
+        timeout = 300
+        on-timeout = hyprlock
+      }
+
+      listener {
+        timeout = 600
+        on-timeout = systemctl suspend
+      }
+    '';
   };
 }

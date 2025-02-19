@@ -33,7 +33,7 @@
   config = lib.mkIf config.core.network.enable {
     networking = {
       # Basic network configuration
-      useDHCP = true;
+      useDHCP = lib.mkForce false;
       useNetworkd = true;
       firewall = lib.mkIf config.core.network.firewall.enable {
         enable = true;

@@ -58,12 +58,17 @@ in {
       defaultUser = "ryzengrind";
       startMenuLaunchers = true;
       nativeSystemd = true;
-
-      # Automount configuration
       automountPath = "/mnt";
-      automount = lib.mkIf cfg.automount.enable {
-        enable = true;
-        inherit (cfg.automount) options;
+      wslConf = {
+        automount = lib.mkIf cfg.automount.enable {
+          enabled = true;
+          mountFsTab = true;
+          root = "/mnt";
+          inherit (cfg.automount) options;
+        };
+        network = {
+          generateResolvConf = false; # We're managing DNS settings through networking options
+        };
       };
     };
 
@@ -130,16 +135,6 @@ in {
         device = "none";
         fsType = "tmpfs";
         options = ["defaults"];
-      };
-    };
-
-    # WSL configuration
-    wslConf = {
-      automount = {
-        inherit (cfg.automount) options;
-      };
-      network = {
-        generateResolvConf = false; # We're managing DNS settings through networking options
       };
     };
   };

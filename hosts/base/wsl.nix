@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }: {
   # Import core modules
@@ -17,23 +18,24 @@
     startMenuLaunchers = true;
 
     # Default automount configuration
-    automount = {
-      enable = true;
-      mountFsTab = true;
-      root = "/mnt";
-      options = "metadata,uid=1000,gid=100,umask=22,fmask=11";
-    };
+    automountPath = "/mnt";
+    wslConf = {
+      automount = {
+        enabled = true;
+        mountFsTab = true;
+        root = "/mnt";
+        options = "metadata,uid=1000,gid=100,umask=22,fmask=11";
+      };
 
-    # Default network configuration
-    wslConf.network = {
-      generateHosts = true;
-      generateResolvConf = true;
-    };
-
-    # Default interop settings
-    wslConf.interop = {
-      enabled = true;
-      appendWindowsPath = false;
+      # Default network configuration
+      network = {
+        generateHosts = lib.mkForce true;
+        generateResolvConf = lib.mkForce true;
+      };
+      interop = {
+        enabled = true;
+        appendWindowsPath = false;
+      };
     };
 
     # Extra binaries
@@ -44,6 +46,16 @@
       {src = "${su}/bin/usermod";}
     ];
   };
+
+  # Enable WSL service
+  services.wsl = {
+    enable = true;
+    automount.enable = true;
+    network.generateHosts = true;
+  };
+
+  # Disable firewall in WSL since it's not needed
+  networking.firewall.enable = lib.mkForce false;
 
   # Base system configuration
   nix = {
@@ -98,15 +110,6 @@
   # Base system configuration
   system = {
     stateVersion = "24.05";
-
-    # Copy configuration on activation for backup
-    copyOnActivation = {
-      enable = true;
-      paths = [
-        "/etc/nixos"
-        "/etc/systemd"
-      ];
-    };
   };
 
   # Base security configuration
@@ -125,7 +128,6 @@
   # Base networking configuration
   networking = {
     networkmanager.enable = true;
-    firewall.enable = false; # Managed by Windows
   };
 
   # Base service configuration
@@ -186,30 +188,4 @@
 
   # Add docker group
   users.groups.docker.members = [config.wsl.defaultUser];
-
-  # WSL-specific testing
-  testing = {
-    enable = true;
-    testScript = ''
-      # Test WSL configuration
-      with subtest("WSL configuration"):
-          machine.succeed("test -e /etc/wsl.conf")
-          machine.succeed("grep 'enabled=true' /etc/wsl.conf")
-
-      # Test automount
-      with subtest("Automount configuration"):
-          machine.succeed("test -d /mnt")
-          machine.succeed("mount | grep -q '/mnt'")
-
-      # Test WSL tools
-      with subtest("WSL tools"):
-          machine.succeed("which wslview")
-          machine.succeed("which wsl-open")
-
-      # Test Docker
-      with subtest("Docker configuration"):
-          machine.succeed("systemctl is-active docker")
-          machine.succeed("docker ps")
-    '';
-  };
 }

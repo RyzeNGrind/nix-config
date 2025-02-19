@@ -1,41 +1,10 @@
 {...}: {
   imports = [
-    ./xe-guest-utilities.nix
-    ./xen-dom0.nix
-    ./qemu-vm.nix
-    ./appvm.nix
-    ./build-vm.nix
-    ./container-config.nix
-    ./containerd.nix
-    ./containers.nix
-    ./cri-o.nix
-    ./docker-rootless.nix
-    ./docker.nix
-    ./ecs-agent.nix
-    ./hyperv-guest.nix
-    ./incus.nix
-    ./incus-agent.nix
-    ./kvmgt.nix
+    ./looking-glass.nix
     ./libvirtd.nix
-    ./lxc.nix
-    ./lxcfs.nix
-    ./lxd.nix
-    ./lxd-agent.nix
-    ./multipass.nix
-    ./nixos-containers.nix
-    ./oci-containers.nix
-    ./openstack-options.nix
-    ./oci-options.nix
-    ./openvswitch.nix
-    ./parallels-guest.nix
+    ./docker.nix
     ./podman
-    ./qemu-guest-agent.nix
-    ./rosetta.nix
+    ./qemu-vm.nix
     ./spice-usb-redirection.nix
-    ./virtualbox-guest.nix
-    ./virtualbox-host.nix
-    ./vmware-guest.nix
-    ./vmware-host.nix
-    ./waagent.nix
   ];
 }

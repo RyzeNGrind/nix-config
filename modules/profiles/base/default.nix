@@ -78,18 +78,11 @@ in {
 
         # System logging
         journald = {
-          enable = true;
           extraConfig = ''
             SystemMaxUse=100M
             MaxRetentionSec=1week
           '';
         };
-      };
-
-      # Security configurations
-      security = mkIf cfg.security.enable {
-        # Basic hardening
-        sudo.wheelNeedsPassword = true;
 
         # SSH configuration
         openssh = mkIf cfg.security.ssh.enable {
@@ -102,6 +95,12 @@ in {
             PasswordAuthentication = false;
           };
         };
+      };
+
+      # Security configurations
+      security = mkIf cfg.security.enable {
+        # Basic hardening
+        sudo.wheelNeedsPassword = true;
       };
 
       # Nix configuration

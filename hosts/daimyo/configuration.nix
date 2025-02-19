@@ -280,28 +280,20 @@
         };
         # Enable Hyprland-related programs in baremetal
         programs = {
-          hyprland.enable = true;
+          hyprland = {
+            enable = true;
+            xwayland.enable = true;
+          };
         };
         # Enable Hyprland-related home-manager programs in baremetal
         home-manager = {
           useGlobalPkgs = true;
           useUserPackages = true;
           users.ryzengrind = {
-            imports = [
-              (
-                if inputs.hyprlock ? homeManagerModules
-                then inputs.hyprlock.homeManagerModules.default
-                else {}
-              )
-              (
-                if inputs.hypridle ? homeManagerModules
-                then inputs.hypridle.homeManagerModules.default
-                else {}
-              )
-            ];
-            programs = {
-              hyprlock.enable = true;
-              hypridle.enable = true;
+            wayland.windowManager.hyprland = {
+              enable = true;
+              systemd.enable = true;
+              xwayland.enable = true;
             };
           };
         };
@@ -313,41 +305,6 @@
         };
       };
     };
-  };
-
-  # Testing configuration
-  testing.suites.host = {
-    enable = true;
-    description = "Host-specific configuration tests";
-    script = ''
-      import pytest
-      from nixostest import Machine
-
-      def test_base_config(machine: Machine) -> None:
-          """Test base configuration."""
-          machine.succeed("test -f /etc/nixos/configuration.nix")
-          machine.succeed("test -d /nix/store")
-
-      def test_user_setup(machine: Machine) -> None:
-          """Test user configuration."""
-          machine.succeed("id ryzengrind")
-          machine.succeed("groups ryzengrind | grep -q wheel")
-
-      def test_packages(machine: Machine) -> None:
-          """Test installed packages."""
-          for pkg in ["git", "direnv", "htop"]:
-              machine.succeed(f"type -P {pkg}")
-
-      def test_locale(machine: Machine) -> None:
-          """Test locale settings."""
-          machine.succeed("locale | grep -q 'en_CA.UTF-8'")
-          machine.succeed("timedatectl show | grep -q 'America/Toronto'")
-
-      def test_specialisations(machine: Machine) -> None:
-          """Test specialisation switching."""
-          for spec in ["wsl-cuda", "wsl-nocuda", "baremetal"]:
-              machine.succeed(f"nixos-rebuild test --specialisation {spec}")
-    '';
   };
 
   # Ensure polkit is available

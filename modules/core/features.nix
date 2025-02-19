@@ -233,12 +233,12 @@
             lutris
           ];
 
-        # Gaming-specific services
-        services = {
-          # Steam configuration
-          steam.enable = cfg.gaming.steam.enable;
+        # Gaming-specific programs
+        programs = {
           # Game Mode daemon
           gamemode.enable = true;
+          # Steam configuration
+          steam.enable = cfg.gaming.steam.enable;
         };
       })
 

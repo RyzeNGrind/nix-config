@@ -148,8 +148,40 @@ in {
       package = pkgs.nix-ld-rs;
     };
 
-    # If using patch method, include the vscode-remote-workaround module
-    vscode-remote-workaround.enable = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") true;
+    # VSCode Remote binary patching support
+    environment.etc = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") {
+      "vscode-remote-workaround" = {
+        text = ''
+          #!/usr/bin/env bash
+          # Patch VSCode binaries to work with NixOS
+          VSCODE_PATH="''${HOME}/.vscode-server/bin"
+
+          if [ -d "$VSCODE_PATH" ]; then
+            find "$VSCODE_PATH" -name "node" -type f -exec patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" {} \;
+            find "$VSCODE_PATH" -name "*.so" -type f -exec patchelf --set-rpath "${pkgs.stdenv.cc.cc.lib}/lib" {} \;
+          fi
+        '';
+        mode = "0755";
+      };
+    };
+
+    # Automatically run the patch script for VSCode Remote
+    systemd.user.services = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") {
+      vscode-remote-patch = {
+        description = "Patch VSCode Remote binaries for NixOS compatibility";
+        wantedBy = ["default.target"];
+        path = with pkgs; [
+          bash
+          findutils
+          patchelf
+        ];
+        script = "exec /etc/vscode-remote-workaround";
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+      };
+    };
 
     # Development environment configuration
     programs = {

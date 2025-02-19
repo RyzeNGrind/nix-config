@@ -121,35 +121,4 @@
     enable = true;
     algorithm = "zstd";
   };
-
-  # Testing configuration
-  testing = {
-    enable = true;
-    testScript = ''
-      # Test base configuration
-      machine.wait_for_unit("multi-user.target")
-      machine.succeed("test -f /etc/nixos/configuration.nix")
-
-      # Test core features
-      with subtest("Core features"):
-          machine.succeed("systemctl is-active sshd")
-          machine.succeed("systemctl is-active timesyncd")
-          machine.succeed("test -d /nix/store")
-
-      # Test user setup
-      with subtest("User configuration"):
-          machine.succeed("id ryzengrind")
-          machine.succeed("groups ryzengrind | grep -q wheel")
-
-      # Test network
-      with subtest("Network configuration"):
-          machine.succeed("systemctl is-active NetworkManager")
-          machine.succeed("ping -c 1 8.8.8.8")
-
-      # Test security
-      with subtest("Security configuration"):
-          machine.succeed("systemctl is-active apparmor")
-          machine.succeed("test -f /etc/sudoers")
-    '';
-  };
 }

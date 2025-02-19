@@ -11,9 +11,10 @@
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/Hyprland";
-    hyprlock.url = "github:hyprwm/hyprlock";
-    hypridle.url = "github:hyprwm/hypridle";
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     attic = {
       url = "github:zhaofengli/attic";
@@ -27,8 +28,6 @@
     home-manager,
     nixos-wsl,
     hyprland,
-    hyprlock,
-    hypridle,
     nixos-hardware,
     attic,
     ...
@@ -82,45 +81,27 @@
             home-manager.nixosModules.home-manager
             nixos-wsl.nixosModules.wsl
             hyprland.nixosModules.default
-            ({config, ...}: {
+            {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.ryzengrind = {
-                  imports = [
-                    (
-                      if hyprlock ? homeManagerModules
-                      then hyprlock.homeManagerModules.default
-                      else {}
-                    )
-                    (
-                      if hypridle ? homeManagerModules
-                      then hypridle.homeManagerModules.default
-                      else {}
-                    )
-                  ];
-                  programs = {
-                    hyprlock.enable = lib.mkDefault false;
-                    hypridle.enable = lib.mkDefault false;
-                  };
+                users.ryzengrind = import (./hosts + "/${name}/home.nix");
+                extraSpecialArgs = {
+                  inherit inputs;
                 };
               };
-            })
+              programs.hyprland = {
+                enable = lib.mkDefault false;
+                package = hyprland.packages.${system}.hyprland;
+                xwayland.enable = true;
+              };
+            }
 
             # Profile system
             ./modules/profiles
 
             # Host-specific configuration
             (./hosts + "/${name}/configuration.nix")
-
-            # Home-manager configuration
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.ryzengrind = import (./hosts + "/${name}/home.nix");
-              };
-            }
           ]
           ++ modules;
       };
@@ -160,50 +141,13 @@
         modules = [
           # Base configuration
           {
-            programs = {
-              hyprland.enable = lib.mkDefault false;
-            };
+            programs.hyprland.enable = lib.mkDefault false;
             environment.systemPackages = with pkgs; [
               hyprland.packages.${system}.hyprland
-              (
-                if hyprlock ? packages
-                then hyprlock.packages.${system}.default
-                else {}
-              )
-              (
-                if hypridle ? packages
-                then hypridle.packages.${system}.default
-                else {}
-              )
             ];
           }
           # Import Hyprland module
           hyprland.nixosModules.default
-          # Import hyprlock and hypridle as home-manager modules
-          ({config, ...}: {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.ryzengrind = {
-                imports = [
-                  (
-                    if hyprlock ? homeManagerModules
-                    then hyprlock.homeManagerModules.default
-                    else {}
-                  )
-                  (
-                    if hypridle ? homeManagerModules
-                    then hypridle.homeManagerModules.default
-                    else {}
-                  )
-                ];
-                programs = {
-                  hyprlock.enable = lib.mkDefault false;
-                  hypridle.enable = lib.mkDefault false;
-                };
-              };
-            };
-          })
         ];
       };
 
@@ -245,12 +189,48 @@
         nodes.machine = import ./tests/specialisation/default.nix;
         testScript = builtins.readFile ./tests/specialisation/test.py;
       };
+
+      profiles = pkgs.nixosTest {
+        name = "profile-test";
+        nodes = import ./tests/profiles/default.nix;
+      };
+
+      wsl = pkgs.nixosTest {
+        name = "wsl-test";
+        nodes = import ./tests/wsl/default.nix;
+      };
+
+      # Integration test that runs all tests
+      all = pkgs.nixosTest {
+        name = "integration-test";
+        nodes.machine = {
+          config,
+          pkgs,
+          ...
+        }: {
+          imports = [
+            ./tests/default.nix
+          ];
+          testing = {
+            enable = true;
+            levels = {
+              unit = true;
+              integration = true;
+              system = true;
+            };
+            coverage.enable = true;
+          };
+        };
+      };
     };
 
     # Checks
     checks.${system} = {
       test-core = self.nixosTests.core.driver;
       test-specialisation = self.nixosTests.specialisation.driver;
+      test-profiles = self.nixosTests.profiles.driver;
+      test-wsl = self.nixosTests.wsl.driver;
+      test-all = self.nixosTests.all.driver;
       format = pkgs.runCommand "check-format" {} ''
         ${pkgs.alejandra}/bin/alejandra --check ${./.}
         touch $out
@@ -261,7 +241,7 @@
       '';
     };
 
-    # Development shell
+    # Development shell with testing support
     devShells.${system}.default = pkgs.mkShell {
       buildInputs = with pkgs; [
         nixfmt
@@ -269,9 +249,13 @@
         nil
         alejandra
         pre-commit
+        python3Packages.pytest
+        python3Packages.pytest-xdist
+        python3Packages.pytest-cov
       ];
       shellHook = ''
         echo "Development environment ready"
+        echo "Run 'nix flake check' to run all tests"
       '';
     };
 

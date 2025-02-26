@@ -1,6 +1,8 @@
 # Base Profile
 
-The base profile provides core system settings and security configurations that serve as a foundation for all other profiles. It implements essential functionality while following the principle of composition over inheritance.
+The base profile provides core system settings and security configurations that serve as a
+foundation for all other profiles. It implements essential functionality while following the
+principle of composition over inheritance.
 
 ## Features
 

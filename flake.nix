@@ -1,5 +1,5 @@
 {
-  description = "Your new nix config";
+  description = "NixOS configurations for baremetal and WSL development/server/cluster environments";
 
   inputs = {
     # Nixpkgs
@@ -31,7 +31,6 @@
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
-    nixos-wsl,
     pre-commit-hooks,
     ...
   } @ inputs: let
@@ -54,10 +53,41 @@
       pre-commit-check = pre-commit-hooks.lib.${system}.run {
         src = ./.;
         hooks = {
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
-          prettier.enable = true;
+          alejandra = {
+            enable = true;
+            excludes = ["^modules/nixos/cursor/.*$"];
+            settings.verbosity = "quiet";
+          };
+          deadnix = {
+            enable = true;
+            excludes = ["^modules/nixos/cursor/.*$"];
+            settings.noLambdaPatternNames = true;
+          };
+          statix = {
+            enable = true;
+            excludes = ["^modules/nixos/cursor/.*$"];
+          };
+          prettier = {
+            enable = true;
+            excludes = [
+              "^modules/nixos/cursor/.*$"
+              "^.vscode/settings.json$"
+            ];
+            types_or = [
+              "markdown"
+              "yaml"
+              "json"
+            ];
+          };
+          test-flake = {
+            enable = true;
+            name = "NixOS Configuration Tests";
+            entry = "scripts/test-flake.sh";
+            language = "system";
+            pass_filenames = false;
+            stages = ["commit"];
+            always_run = true;
+          };
         };
       };
     });
@@ -68,21 +98,166 @@
         inherit system;
         config = {
           allowUnfree = true;
-          cudaSupport = true;
+          cudaSupport = system == "x86_64-linux" || system == "aarch64-linux";
+          amdgpuSupport = system == "x86_64-linux" || system == "aarch64-linux";
+          experimental-features = ["nix-command" "flakes" "repl-flake" "recursive-nix" "fetch-closure" "dynamic-derivations" "daemon-trust-override" "cgroups" "ca-derivations" "auto-allocate-uids" "impure-derivations"];
         };
       };
     in {
       default = pkgs.mkShell {
-        inherit (self.checks.${system}.pre-commit-check) shellHook;
-        buildInputs = with pkgs;
-          [
-            alejandra
-            deadnix
-            statix
-            nodePackages.prettier
-            pre-commit
-          ]
-          ++ self.checks.${system}.pre-commit-check.enabledPackages;
+        name = "nix-config-dev-shell";
+        nativeBuildInputs = with pkgs; [
+          # Formatters and linters
+          alejandra
+          deadnix
+          statix
+          nodePackages.prettier
+
+          # Git and pre-commit
+          git
+          pre-commit
+
+          # Nix tools
+          nixpkgs-fmt
+          nil
+          nix-output-monitor
+
+          # Home Manager
+          inputs.home-manager.packages.${system}.default
+
+          # Shell tools
+          starship
+          bash
+          bash-completion
+          bash-preexec
+          fzf
+          zoxide
+          direnv
+        ];
+
+        buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
+
+        shellHook = ''
+          # Set colors
+          GREEN='\033[0;32m'
+          BLUE='\033[0;34m'
+          YELLOW='\033[1;33m'
+          RED='\033[0;31m'
+          NC='\033[0m'
+
+          # Print welcome message
+          echo -e "\n''${BLUE}Welcome to the NixOS Configuration Development Shell''${NC}"
+          echo -e "''${YELLOW}Project: ClusterLab/nix-config''${NC}\n"
+
+          # Display available tools
+          echo -e "''${GREEN}Available Tools:''${NC}"
+          echo -e "''${BLUE}Formatters & Linters:''${NC}"
+          echo -e "  • alejandra    - Format Nix files"
+          echo -e "  • deadnix      - Find dead code in Nix files"
+          echo -e "  • statix       - Lint Nix files"
+          echo -e "  • prettier     - Format other files"
+
+          echo -e "\n''${BLUE}Git & Version Control:''${NC}"
+          echo -e "  • git          - Version control"
+          echo -e "  • pre-commit   - Run pre-commit hooks"
+
+          echo -e "\n''${BLUE}Nix Tools:''${NC}"
+          echo -e "  • nixpkgs-fmt  - Alternative Nix formatter"
+          echo -e "  • nil          - Nix language server"
+          echo -e "  • nom          - Nix output monitor"
+          echo -e "  • home-manager - User environment manager"
+
+          echo -e "\n''${BLUE}Common Commands:''${NC}"
+          echo -e "  • ./scripts/test-flake.sh                                  - Run basic tests"
+          echo -e "  • RUN_SYSTEM_TEST=1 RUN_HOME_TEST=1 ./scripts/test-flake.sh - Run comprehensive tests"
+          echo -e "  • nix flake check                                         - Check flake integrity"
+          echo -e "  • home-manager switch                                     - Update user environment"
+          echo -e "  • nixos-rebuild test --flake .                           - Test system configuration"
+          echo -e "  • pre-commit run --all-files                             - Run all pre-commit hooks"
+
+          echo -e "\n''${BLUE}Development Workflow:''${NC}"
+          echo -e "1. Make changes to configuration files"
+          echo -e "2. Run formatters (alejandra, prettier)"
+          echo -e "3. Run pre-commit hooks"
+          echo -e "4. Test changes with test-flake.sh"
+          echo -e "5. Rebuild system to apply changes"
+
+          # Ensure TMPDIR exists and has correct permissions
+          if [ -w /tmp ]; then
+            export TMPDIR="/tmp"
+          else
+            export TMPDIR="$HOME/.cache/tmp"
+            mkdir -p "$TMPDIR"
+          fi
+
+          # Configure git for better WSL performance
+          git config --local core.fsmonitor false
+          git config --local core.untrackedcache false
+
+          # Create custom pre-commit hook
+          mkdir -p .git/hooks
+          cat > .git/hooks/pre-commit << 'EOF'
+          #!/usr/bin/env bash
+          set -e
+
+          # Helper function to check if we're in a Nix shell
+          in_nix_shell() {
+            [[ -n "$IN_NIX_SHELL" ]] || [[ -n "$NIX_SHELL_ACTIVE" ]]
+          }
+
+          # Check if we're in the development shell
+          if ! in_nix_shell; then
+            echo -e "\033[1;33mWarning: Not in development shell. Running git commit outside of development shell may skip hooks.\033[0m"
+            echo -e "\033[1;33mPlease run 'nix develop' first.\033[0m"
+            exit 1
+          fi
+
+          # Use pre-commit from the development shell
+          if ! command -v pre-commit >/dev/null 2>&1; then
+            echo -e "\033[1;31mError: pre-commit command not found. Are you in the development shell?\033[0m"
+            exit 1
+          fi
+
+          exec pre-commit run --config .pre-commit-config.yaml --hook-type pre-commit
+          EOF
+
+          chmod +x .git/hooks/pre-commit
+
+          # Export shell indicator
+          export NIX_SHELL_ACTIVE=1
+
+          # Set up bash shell environment
+          mkdir -p ~/.bashrc.d
+          cat > ~/.bashrc.d/nix-develop.bash << EOF
+          # Initialize starship
+          if command -v starship >/dev/null; then
+            eval "\$(starship init bash)"
+          fi
+
+          # Initialize direnv
+          if command -v direnv >/dev/null; then
+            eval "\$(direnv hook bash)"
+          fi
+
+          # Initialize zoxide
+          if command -v zoxide >/dev/null; then
+            eval "\$(zoxide init bash)"
+          fi
+
+          # Enable bash completion
+          if [ -f /usr/share/bash-completion/bash_completion ]; then
+            . /usr/share/bash-completion/bash_completion
+          elif [ -f /etc/bash_completion ]; then
+            . /etc/bash_completion
+          fi
+          EOF
+
+          # Run initial pre-commit check
+          pre-commit run --all-files || true
+
+          echo -e "\n''${GREEN}Development shell activated with pre-commit hooks''${NC}"
+          echo -e "''${YELLOW}Type 'exit' to leave the shell''${NC}\n"
+        '';
       };
     });
 
@@ -93,6 +268,7 @@
         config = {
           allowUnfree = true;
           cudaSupport = system == "x86_64-linux" || system == "aarch64-linux";
+          amdgpuSupport = system == "x86_64-linux" || system == "aarch64-linux";
         };
       };
 
@@ -120,17 +296,32 @@
       // {
         unstable = overlayUnstable;
       };
-    nixosModules = import ./modules/nixos;
+    nixosModules = let
+      moduleList = import ./modules/nixos;
+    in {
+      # Re-export core modules individually
+      inherit (moduleList) core features profiles default;
+
+      # Additional module combinations
+      all = {...}: {
+        imports = with moduleList; [
+          core
+          features
+          profiles
+        ];
+      };
+    };
 
     # NixOS configuration entrypoint
     nixosConfigurations = {
-      # WSL configuration
-      daimyo00 = nixpkgs.lib.nixosSystem {
+      # Workstation WSL configuration
+      nix-ws = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [
           # Core modules
-          ./hosts/daimyo00/configuration.nix
+          self.nixosModules.default
+          ./hosts/nix-ws/configuration.nix
 
           # Global configuration
           {
@@ -138,20 +329,18 @@
               allowBroken = true;
               allowUnfree = true;
             };
-            nix = {
-              settings = {
-                substituters = [
-                  "https://cache.nixos.org"
-                  "https://cuda-maintainers.cachix.org"
-                  "https://nix-community.cachix.org"
-                ];
-                trusted-public-keys = [
-                  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-                  "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-                  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-                ];
-                accept-flake-config = true;
-              };
+            nix.settings = {
+              substituters = [
+                "https://cache.nixos.org"
+                "https://cuda-maintainers.cachix.org"
+                "https://nix-community.cachix.org"
+              ];
+              trusted-public-keys = [
+                "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+                "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+              ];
+              accept-flake-config = true;
             };
           }
 
@@ -161,243 +350,93 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.ryzengrind = import ./hosts/daimyo00/home.nix;
+              users.ryzengrind = import ./hosts/nix-ws/home.nix;
               extraSpecialArgs = {inherit inputs outputs;};
             };
           }
         ];
       };
 
-      # No CUDA/TensorRT configuration
-      daimyo00-nocuda = nixpkgs.lib.nixosSystem {
+      # Surface Book 3 WSL configuration
+      nix-pc = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs outputs;};
         modules = [
-          # WSL module
-          inputs.nixos-wsl.nixosModules.wsl
+          # Core modules
+          self.nixosModules.default
+          ./hosts/nix-pc/configuration.nix
 
-          # Base configuration
-          ({
-            pkgs,
-            lib,
-            ...
-          }: {
-            # Basic system configuration
-            system.stateVersion = "24.05";
-
-            # System configuration
+          # Global configuration
+          {
             nixpkgs = {
               config = {
-                allowUnfree = true;
                 allowBroken = true;
-                # Explicitly disable CUDA
-                cudaSupport = false;
-                cudaCapabilities = [];
+                allowUnfree = true;
               };
-              # Ensure no CUDA overlays
-              overlays = [];
-            };
-
-            # Disable all NVIDIA/CUDA related features
-            hardware = {
-              nvidia = {
-                package = null;
-                modesetting.enable = false;
-              };
-              nvidia-container-toolkit.enable = false;
-              opengl.enable = lib.mkForce false;
-            };
-
-            # Explicitly disable WSL CUDA features
-            wsl = {
-              enable = true;
-              defaultUser = "ryzengrind";
-              docker-desktop.enable = true;
-              nativeSystemd = true;
-              startMenuLaunchers = true;
-              wslConf = {
-                automount = {
-                  enabled = true;
-                  options = "metadata,umask=22,fmask=11,uid=1000,gid=100";
-                  root = "/mnt";
-                };
-                network = {
-                  generateHosts = true;
-                  generateResolvConf = true;
-                  hostname = "daimyo00";
-                };
-                interop = {
-                  appendWindowsPath = false;
-                };
-              };
-              extraBin = with pkgs; [
-                {src = "${coreutils}/bin/cat";}
-                {src = "${coreutils}/bin/whoami";}
-                {src = "${su}/bin/groupadd";}
-                {src = "${su}/bin/usermod";}
+              overlays = [
+                outputs.overlays.unstable
               ];
             };
-
-            # Disable NVIDIA container runtime in Docker instead
-            virtualisation.docker = {
-              enable = true;
-              enableOnBoot = true;
-              autoPrune.enable = true;
-              # Disable NVIDIA runtime
-              enableNvidia = false;
-              extraOptions = "--add-runtime none=runc";
+            nix.settings = {
+              substituters = [
+                "https://cache.nixos.org"
+                "https://nix-community.cachix.org"
+              ];
+              trusted-public-keys = [
+                "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+              ];
             };
+          }
 
-            # Environment variables to prevent CUDA detection
-            environment.variables = {
-              CUDA_PATH = "";
-              LD_LIBRARY_PATH = "";
-              NVIDIA_DRIVER_CAPABILITIES = "";
-              NVIDIA_VISIBLE_DEVICES = "none";
-            };
-
-            nix = {
-              settings = {
-                experimental-features = ["nix-command" "flakes" "auto-allocate-uids"];
-                auto-optimise-store = true;
-                trusted-users = ["root" "ryzengrind" "@wheel"];
-                max-jobs = "auto";
-                cores = 0;
-                keep-outputs = true;
-                keep-derivations = true;
-                # Remove CUDA cache
-                substituters = [
-                  "https://cache.nixos.org"
-                  "https://nix-community.cachix.org"
-                ];
-                trusted-public-keys = [
-                  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-                  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-                ];
-              };
-              gc = {
-                automatic = true;
-                dates = "weekly";
-                options = "--delete-older-than 7d";
-              };
-              optimise = {
-                automatic = true;
-                dates = ["weekly"];
-              };
-            };
-
-            # Network configuration
-            networking = {
-              hostName = "daimyo00";
-              networkmanager.enable = true;
-            };
-            systemd.services.NetworkManager-wait-online.enable = false;
-
-            # Locale and time
-            time.timeZone = "America/Toronto";
-            i18n.defaultLocale = "en_CA.UTF-8";
-
-            # User configuration
-            users.users.ryzengrind = {
-              hashedPassword = "$6$VOP1Yx5OUXwpOFaG$tVWf3Ai0.kzXpblhnatoeHHZb1xGKUuSEEQO79y1efrSyXR0sGmvFjo7oHbZBuQgZ3NFZi0MahU5hbyzsIwqq.";
-              isNormalUser = true;
-              extraGroups = ["wheel" "docker" "audio" "networkmanager"];
-            };
-
-            # SSH configuration
-            services.openssh = {
-              enable = true;
-              settings = {
-                PermitRootLogin = "yes";
-                PasswordAuthentication = true;
-              };
-            };
-
-            # System packages (no CUDA packages)
-            environment.systemPackages = with pkgs; [
-              curl
-              git
-              wget
-              neofetch
-              pre-commit
-            ];
-          })
-
-          # Home Manager configuration
+          # Home Manager module
           home-manager.nixosModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.ryzengrind = import ./hosts/daimyo00/home.nix;
-              extraSpecialArgs = {inherit inputs;};
+              users.ryzengrind = import ./hosts/nix-pc/home.nix;
+              extraSpecialArgs = {inherit inputs outputs;};
             };
           }
         ];
       };
 
-      # Minimal test configuration
-      daimyo00-test = nixpkgs.lib.nixosSystem {
+      # Test configuration
+      test = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {inherit inputs;};
         modules = [
-          # Bare minimum NixOS configuration
-          ({pkgs, ...}: {
-            # Basic system configuration
-            system.stateVersion = "24.05";
+          # Base configuration
+          self.nixosModules.default
+          ./hosts/wsl/default.nix
 
-            nixpkgs = {
-              config = {
-                allowUnfree = true;
-                allowBroken = false;
-              };
-              # Disable all custom overlays for testing
-              overlays = [];
-            };
-
-            # Minimal nix settings
-            nix.settings = {
-              substituters = ["https://cache.nixos.org"];
-              trusted-public-keys = ["cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="];
-              accept-flake-config = true;
-              experimental-features = ["nix-command" "flakes"];
-            };
-
-            # Basic system packages
-            environment.systemPackages = with pkgs; [
-              git
-              vim
-              pre-commit
-            ];
-
-            # Basic user configuration
+          # Test-specific settings
+          {
             users.users.ryzengrind = {
               isNormalUser = true;
               extraGroups = ["wheel"];
-              initialPassword = "changeme";
             };
-
-            # WSL-specific settings
-            wsl = {
-              enable = true;
-              defaultUser = "ryzengrind";
-              nativeSystemd = true;
-            };
-          })
-
-          # Include WSL module
-          nixos-wsl.nixosModules.wsl
+          }
         ];
       };
     };
 
     # Standalone home-manager configuration entrypoint
     homeConfigurations = {
-      "ryzengrind@daimyo00" = home-manager.lib.homeManagerConfiguration {
+      "ryzengrind@nix-ws" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         extraSpecialArgs = {inherit inputs outputs;};
         modules = [
-          ./hosts/daimyo00/home.nix
+          ./hosts/nix-ws/home.nix
+        ];
+      };
+
+      "ryzengrind@nix-pc" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        extraSpecialArgs = {inherit inputs outputs;};
+        modules = [
+          ./hosts/nix-pc/home.nix
         ];
       };
     };

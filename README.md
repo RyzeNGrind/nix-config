@@ -4,13 +4,14 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 
 ## Features
 
-- Profile-based configuration
-- Automated testing
-- Feature flag system
-- WSL support
-- Development environments
-- Gaming optimizations
-- Server configurations
+- Profile-based configuration with fine-grained control
+- Automated testing and validation
+- Feature flag system for granular customization
+- WSL support with GUI capabilities
+- Development environments with IDE integration
+- Gaming optimizations and Steam support
+- Security and VPN configurations
+- Desktop environment with modern UI/UX
 
 ## Structure
 
@@ -22,18 +23,70 @@ A modular, composable, and tested NixOS configuration using profiles and feature
 │   ├── core/                   # Core system components
 │   │   ├── network.nix
 │   │   └── security.nix
-│   ├── services/               # Service configurations
-│   │   ├── wsl.nix
-│   │   └── containers.nix
-│   └── hardware/               # Hardware-specific settings
-│       ├── nvidia.nix
-│       └── amd.nix
-├── profiles/                   # System profiles
-│   ├── base/                   # Base system configuration
-│   ├── dev/                    # Development environment
-│   ├── gaming/                 # Gaming optimizations
-│   └── server/                 # Server configurations
-└── tests/                      # System tests
+│   ├── nixos/
+│   │   └── profiles/          # System profiles
+│   │       ├── dev.nix        # Development environment
+│   │       ├── desktop.nix    # Desktop and GUI applications
+│   │       ├── security.nix   # Security and VPN tools
+│   │       ├── gaming.nix     # Gaming optimizations
+│   │       └── srv.nix        # Server configurations
+│   ├── services/              # Service configurations
+│   └── hardware/              # Hardware-specific settings
+├── profiles/                  # High-level system profiles
+└── tests/                    # System tests
+```
+
+## Profile System
+
+### Development Profile
+
+```nix
+{
+  profiles.dev = {
+    enable = true;
+    tools = {
+      enable = true;  # Basic dev tools
+      nix = true;     # Nix development
+      shell = true;   # Shell utilities
+    };
+  };
+}
+```
+
+### Desktop Profile
+
+```nix
+{
+  profiles.desktop = {
+    enable = true;
+    apps = {
+      browsers.enable = true;      # Firefox, Chromium
+      communication.enable = true;  # Discord, Teams
+      media.enable = true;         # VLC, media tools
+    };
+    wm.hyprland.enable = true;     # Modern Wayland compositor
+  };
+}
+```
+
+### Security Profile
+
+```nix
+{
+  profiles.security = {
+    enable = true;
+    vpn = {
+      enable = true;
+      proton.enable = true;    # ProtonVPN
+      tailscale.enable = true; # Tailscale mesh VPN
+    };
+    tools = {
+      enable = true;
+      onepassword.enable = true; # 1Password
+      tor.enable = true;         # Tor Browser
+    };
+  };
+}
 ```
 
 ## Quick Start
@@ -45,14 +98,23 @@ A modular, composable, and tested NixOS configuration using profiles and feature
    cd nix-config
    ```
 
-2. Enable the profiles you need in your `configuration.nix`:
+2. Enable desired profiles in your `configuration.nix`:
 
    ```nix
    {
      profiles = {
-       base.enable = true;
-       dev.enable = true;  # For development
-       gaming.enable = true;  # For gaming
+       dev = {
+         enable = true;
+         tools.enable = true;
+       };
+       desktop = {
+         enable = true;
+         apps.browsers.enable = true;
+       };
+       security = {
+         enable = true;
+         vpn.enable = true;
+       };
      };
    }
    ```
@@ -61,71 +123,6 @@ A modular, composable, and tested NixOS configuration using profiles and feature
    ```bash
    sudo nixos-rebuild switch --flake .#
    ```
-
-## Profiles
-
-### Base Profile
-
-- Core system settings
-- Security configurations
-- System optimization
-- Common utilities
-
-### Development Profile
-
-- Programming languages
-- Development tools
-- Container support
-- WSL integration
-
-### Gaming Profile
-
-- Steam support
-- Wine configuration
-- GPU optimization
-- Game streaming
-
-### Server Profile
-
-- Service configurations
-- Container orchestration
-- Monitoring setup
-- Backup solutions
-
-## Feature Flags
-
-Enable features using the feature flag system:
-
-```nix
-{
-  features = {
-    nvidia.enable = true;
-    wsl = {
-      enable = true;
-      gui.enable = true;
-    };
-    dev = {
-      python.enable = true;
-      rust.enable = true;
-    };
-  };
-}
-```
-
-## Testing
-
-Run the test suite:
-
-```bash
-# Run all tests
-nix build .#nixosTests.all
-
-# Test specific profile
-nix build .#nixosTests.dev
-
-# Test WSL configuration
-nix build .#nixosTests.wsl
-```
 
 ## Development
 
@@ -136,68 +133,36 @@ nix build .#nixosTests.wsl
    pre-commit install
    ```
 
-2. Make changes and commit:
+2. Make changes:
 
-   - Changes are automatically formatted
-   - Tests run on commit
-   - Documentation is verified
+   - Follow the module system structure
+   - Add tests for new features
+   - Update documentation
 
-3. Submit a pull request:
-   - CI runs all tests
-   - Code is reviewed
-   - Changes are merged
+3. Test your changes:
 
-## WSL Support
-
-Special support for Windows Subsystem for Linux:
-
-1. Enable WSL features:
-
-   ```nix
-   {
-     features.wsl = {
-       enable = true;
-       gui.enable = true;  # For GUI applications
-       cuda.enable = true;  # For NVIDIA support
-     };
-   }
-   ```
-
-2. Install in WSL:
    ```bash
-   wsl --import NixOS ./nixos nixos.tar.gz --version 2
+   # Test all profiles
+   nix flake check
+
+   # Test specific profile
+   nix build .#nixosTests.dev
    ```
+
+## Best Practices
+
+1. Use upstream modules when available
+2. Follow the profile system structure
+3. Document feature flags and options
+4. Add tests for new functionality
+5. Keep profiles focused and composable
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## Best Practices
-
-1. Always enable the base profile
-2. Test changes locally before pushing
-3. Update documentation
-4. Follow the coding style
-5. Write tests for new features
-
-## Troubleshooting
-
-Common issues and solutions:
-
-1. **Build failures**
-
-   - Check the error message
-   - Verify dependencies
-   - Review recent changes
-
-2. **Test failures**
-   - Run tests locally
-   - Check test logs
-   - Verify test environment
+3. Add tests and documentation
+4. Submit a pull request
 
 ## License
 

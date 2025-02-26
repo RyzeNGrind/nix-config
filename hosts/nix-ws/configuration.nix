@@ -8,7 +8,6 @@
 }: {
   imports = [
     inputs.nixos-wsl.nixosModules.wsl
-    # ../../modules/nixos/wsl.nix  # Commenting out to avoid conflicts
     ./cachix.nix
   ];
 

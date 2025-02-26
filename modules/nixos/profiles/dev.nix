@@ -1,3 +1,4 @@
+# Development environment profile
 {
   config,
   lib,
@@ -7,216 +8,150 @@
 with lib; let
   cfg = config.profiles.dev;
 in {
+  imports = [
+    ../cursor
+  ];
+
   options.profiles.dev = {
     enable = mkEnableOption "Development environment profile";
-    ide = mkOption {
-      type = types.enum ["vscode" "vscodium" "neovim" "cursor"];
-      default = "vscodium";
-      description = "Primary IDE to use";
-    };
-    vscodeRemote = {
-      enable = mkEnableOption "VSCode Remote support";
-      method = mkOption {
-        type = types.enum ["nix-ld" "patch"];
-        default = "nix-ld";
-        description = "Method to enable VSCode Remote support (nix-ld or patch)";
+
+    tools = {
+      enable = mkEnableOption "Development tools";
+
+      languages = {
+        python.enable = mkEnableOption "Python development support";
+        node.enable = mkEnableOption "Node.js development support";
+        rust.enable = mkEnableOption "Rust development support";
+        go.enable = mkEnableOption "Go development support";
       };
-    };
-    ml = {
-      enable = mkEnableOption "Machine Learning support";
-      cudaSupport = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable CUDA support for ML frameworks";
+
+      editors = {
+        vscode.enable = mkEnableOption "VSCode IDE support";
+        cursor.enable = mkEnableOption "Cursor IDE support";
+        neovim.enable = mkEnableOption "Neovim editor support";
       };
-      pytorch = {
-        enable = mkEnableOption "PyTorch support";
-        package = mkOption {
-          type = types.package;
-          default = pkgs.python3Packages.pytorch.override {
-            inherit (config.profiles.dev.ml) cudaSupport;
-            inherit (pkgs) cudaPackages;
-          };
-          description = "PyTorch package to use";
-        };
+
+      containers = {
+        enable = mkEnableOption "Container development support";
+        docker.enable = mkEnableOption "Docker support";
+        podman.enable = mkEnableOption "Podman support";
+      };
+
+      cloud = {
+        enable = mkEnableOption "Cloud development tools";
+        aws.enable = mkEnableOption "AWS development tools";
+        azure.enable = mkEnableOption "Azure development tools";
+        gcp.enable = mkEnableOption "GCP development tools";
       };
     };
   };
 
-  config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs;
-      [
-        # Version Control
+  config = mkIf cfg.enable (mkMerge [
+    {
+      # Base development tools
+      environment.systemPackages = with pkgs; [
         git
-        git-lfs
         gh
-
-        # Build tools
         gnumake
+        gcc
+        gdb
         cmake
         ninja
-
-        # Development tools
-        direnv
-        nix-direnv
-        wget # Required for VSCode Remote
-
-        # Debugging and profiling
-        gdb
-        lldb
-        strace
-        ltrace
-
-        # IDE and editor
-        (mkIf (cfg.ide == "vscode") vscode)
-        (
-          mkIf (cfg.ide == "vscodium")
-          (vscode-with-extensions.override {
-            vscode = vscodium;
-            vscodeExtensions = with pkgs.vscode-extensions; [
-              # Development
-              ms-vscode.cpptools
-              ms-python.python
-              ms-vscode.cmake-tools
-
-              # Remote Development
-              ms-vscode-remote.remote-ssh
-
-              # Git
-              eamodio.gitlens
-
-              # Nix
-              bbenoist.nix
-              jnoortheen.nix-ide
-              arrterian.nix-env-selector
-
-              # Theme and UI
-              pkief.material-icon-theme
-            ];
-          })
-        )
-        (mkIf (cfg.ide == "neovim") neovim)
-
-        # Language servers and formatters
-        nil # Nix LSP
-        nixpkgs-fmt
-        alejandra
-        statix # Nix static analysis
-
-        # Python ML stack with known working versions
-        (python3.withPackages (ps:
-          with ps; [
-            pip
-            virtualenv
-            poetry
-            (numpy.override {blas = pkgs.mkl;})
-            pandas
-            matplotlib
-            scikit-learn
-            jupyter
-            ipython
-            black
-            pylint
-            mypy
-            pytest
-            # PyTorch with CUDA if enabled
-            (mkIf cfg.ml.pytorch.enable cfg.ml.pytorch.package)
-            (mkIf cfg.ml.pytorch.enable torchvision)
-            (mkIf cfg.ml.pytorch.enable torchaudio)
-            transformers
-            pytorch-lightning
-            tensorboard
-            wandb
-            ray
-            optuna
-          ]))
-
-        # CUDA development tools
-      ]
-      ++ optionals (cfg.ml.enable && cfg.ml.cudaSupport) [
-        cudaPackages.cuda_cudart
-        cudaPackages.cuda_cupti
-        cudaPackages.cuda_nvcc
-        cudaPackages.cudnn
-        nvidia-docker
-        nvtopPackages.full
+        meson
+        pkg-config
       ];
+    }
 
-    # VSCode Remote support configuration
-    programs.nix-ld = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "nix-ld") {
-      enable = true;
-      package = pkgs.nix-ld-rs;
-    };
+    (mkIf cfg.tools.enable {
+      # Additional development tools configuration
+      environment.systemPackages = with pkgs; [
+        ripgrep
+        fd
+        jq
+        yq
+        tree
+        htop
+        tmux
+      ];
+    })
 
-    # If using patch method, include the vscode-remote-workaround module
-    vscode-remote-workaround.enable = mkIf (cfg.vscodeRemote.enable && cfg.vscodeRemote.method == "patch") true;
+    # Language-specific configurations
+    (mkIf cfg.tools.languages.python.enable {
+      environment.systemPackages = with pkgs; [
+        python3
+        python3Packages.pip
+        python3Packages.virtualenv
+        poetry
+      ];
+    })
 
-    # Development environment configuration
-    programs = {
-      direnv = {
-        enable = true;
-        nix-direnv.enable = true;
+    (mkIf cfg.tools.languages.node.enable {
+      environment.systemPackages = with pkgs; [
+        nodejs_20
+        yarn
+        nodePackages.pnpm
+      ];
+    })
+
+    (mkIf cfg.tools.languages.rust.enable {
+      environment.systemPackages = with pkgs; [
+        rustc
+        cargo
+        rustfmt
+        rust-analyzer
+      ];
+    })
+
+    (mkIf cfg.tools.languages.go.enable {
+      environment.systemPackages = with pkgs; [
+        go
+        gopls
+        delve
+      ];
+    })
+
+    # Editor configurations
+    (mkIf cfg.tools.editors.vscode.enable {
+      services.vscode.enable = true;
+    })
+
+    (mkIf cfg.tools.editors.cursor.enable {
+      services.cursor.enable = true;
+    })
+
+    (mkIf cfg.tools.editors.neovim.enable {
+      environment.systemPackages = with pkgs; [
+        neovim
+        tree-sitter
+      ];
+    })
+
+    # Container support
+    (mkIf cfg.tools.containers.enable {
+      virtualisation = {
+        docker.enable = mkIf cfg.tools.containers.docker.enable true;
+        podman.enable = mkIf cfg.tools.containers.podman.enable true;
       };
-    };
+    })
 
-    # Nix development settings
-    nix = {
-      settings = {
-        experimental-features = ["nix-command" "flakes" "repl-flake"];
-        warn-dirty = false;
-        keep-outputs = true;
-        keep-derivations = true;
-        # Optimizations for ML development
-        auto-optimise-store = true;
-        cores = 0; # Use all cores
-        max-jobs = "auto";
-        # Increase timeout for large package downloads
-        connect-timeout = 5;
-        stalled-download-timeout = 90;
-        timeout = 3600;
-        # Increase resource limits for ML workloads
-        sandbox = true;
-        trusted-users = ["root" "@wheel"];
-        # Cache settings for better performance
-        substituters = [
-          "https://cache.nixos.org"
-          "https://cuda-maintainers.cachix.org"
-        ];
-        trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-        ];
-      };
-    };
-
-    # Enable NVIDIA support if ML is enabled
-    hardware.nvidia = mkIf (cfg.ml.enable && cfg.ml.cudaSupport) {
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
-      modesetting.enable = true;
-      powerManagement = {
-        enable = false;
-        finegrained = false;
-      };
-      open = false;
-      nvidiaSettings = true;
-    };
-
-    # Container support for ML
-    virtualisation = mkIf cfg.ml.enable {
-      docker = {
-        enable = true;
-        enableNvidia = cfg.ml.cudaSupport;
-      };
-      podman = {
-        enable = true;
-        enableNvidia = cfg.ml.cudaSupport;
-      };
-    };
-
-    # Update the configuration for the ml section
-    config = {
-      inherit (config.profiles.dev.ml) cudaSupport;
-      inherit (pkgs) cudaPackages;
-    };
-  };
+    # Cloud tools
+    (mkIf cfg.tools.cloud.enable {
+      environment.systemPackages = with pkgs;
+        [
+          terraform
+          kubectl
+          kubernetes-helm
+        ]
+        ++ (optionals cfg.tools.cloud.aws.enable [
+          awscli2
+          ssm-session-manager-plugin
+        ])
+        ++ (optionals cfg.tools.cloud.azure.enable [
+          azure-cli
+        ])
+        ++ (optionals cfg.tools.cloud.gcp.enable [
+          google-cloud-sdk
+        ]);
+    })
+  ]);
 }

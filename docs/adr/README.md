@@ -1,5 +1,16 @@
-#ADR README
+# Architecture Decision Records
 
-This directory contains the ADR (Architecture Decision Record) for the project.
+This directory contains Architecture Decision Records (ADRs) for the NixOS configuration.
 
-The ADR is a document that captures the rationale for a particular design decision made in the project.
+## Testing Strategy ADRs
+
+- [003-wsl-configuration-testing.md](./003-wsl-configuration-testing.md) - Base WSL testing strategy
+- [004-comprehensive-testing-strategy.md](./004-comprehensive-testing-strategy.md) - Extends WSL
+  testing with comprehensive flake testing
+
+## Configuration ADRs
+
+- [001-profile-based-configuration.md](./001-profile-based-configuration.md) - Profile-based system
+  configuration
+- [002-multi-architecture-cache.md](./002-multi-architecture-cache.md) - Multi-architecture binary
+  cache strategy

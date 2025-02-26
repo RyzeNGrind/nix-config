@@ -8,7 +8,8 @@ Accepted
 
 ## Context
 
-The NixOS configuration needed to be restructured to support multiple use cases (development, gaming, server) while maintaining:
+The NixOS configuration needed to be restructured to support multiple use cases (development,
+gaming, server) while maintaining:
 
 - Clear separation of concerns
 - Easy composition of features

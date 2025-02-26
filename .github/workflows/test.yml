@@ -41,9 +41,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        host: [daimyo00]
+        host: [nix-ws, nix-pc]
         include:
-          - host: daimyo00
+          - host: nix-ws
+            test-wsl: true
+          - host: nix-pc
             test-wsl: true
     steps:
       - uses: actions/checkout@v4.1.1
@@ -63,6 +65,12 @@ jobs:
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wslu"
           nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.environment.systemPackages | grep -q "wsl-open"
 
+          # Test nix-ld configuration
+          nix eval --json .#nixosConfigurations.${{ matrix.host }}.config.programs.nix-ld.enable
+
+          # Test home-manager configuration
+          nix eval --json .#homeConfigurations."ryzengrind@${{ matrix.host }}".config.home.username
+
   security-scan:
     needs: [test-configurations]
     runs-on: ubuntu-latest
@@ -75,8 +83,9 @@ jobs:
           # Run statix for static analysis
           nix run nixpkgs#statix -- check
 
-          # Build the system first
-          nix build .#nixosConfigurations.daimyo00.config.system.build.toplevel
+          # Build both configurations
+          nix build .#nixosConfigurations.nix-ws.config.system.build.toplevel
+          nix build .#nixosConfigurations.nix-pc.config.system.build.toplevel
 
           # Run vulnix for vulnerability scanning
           nix run nixpkgs#vulnix -- --system ./result

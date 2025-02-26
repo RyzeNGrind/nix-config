@@ -7,6 +7,17 @@
   options.profiles.gaming = {
     enable = lib.mkEnableOption "Gaming environment profile";
     streaming.enable = lib.mkEnableOption "Game streaming support";
+    gpu-passthrough = {
+      enable = lib.mkEnableOption "GPU passthrough support";
+      looking-glass = {
+        enable = lib.mkEnableOption "Looking Glass shared memory support";
+        memSize = lib.mkOption {
+          type = lib.types.str;
+          default = "128M";
+          description = "Size of shared memory for Looking Glass";
+        };
+      };
+    };
   };
 
   config = lib.mkIf config.profiles.gaming.enable {
@@ -22,7 +33,18 @@
       };
 
       # QEMU/KVM for testing
-      libvirtd.enable = true;
+      libvirtd = {
+        enable = true;
+        qemu = {
+          package = pkgs.qemu_kvm;
+          runAsRoot = true;
+          swtpm.enable = true;
+          ovmf = {
+            enable = true;
+            packages = with pkgs; [OVMFFull.fd];
+          };
+        };
+      };
       spiceUSBRedirection.enable = true;
     };
 
@@ -57,20 +79,11 @@
       pulseaudio.support32Bit = true;
     };
 
-    # Gaming-specific services
-    services = {
-      # Looking Glass shared memory
-      looking-glass = {
-        enable = true;
-        memSize = "128M"; # Adjust based on resolution
-      };
-
-      # Sunshine streaming service
-      sunshine = lib.mkIf config.profiles.gaming.streaming.enable {
-        enable = true;
-        package = pkgs.sunshine;
-      };
-    };
+    # Looking Glass shared memory setup
+    systemd.tmpfiles.rules = lib.mkIf config.profiles.gaming.gpu-passthrough.looking-glass.enable [
+      "f /dev/shm/looking-glass 0660 ${config.users.users.ryzengrind.name} qemu-libvirtd -"
+      "w /dev/shm/looking-glass - - - - ${config.profiles.gaming.gpu-passthrough.looking-glass.memSize}"
+    ];
 
     # Gaming-specific kernel parameters
     boot = {
@@ -86,12 +99,23 @@
     security = {
       rtkit.enable = true;
       wrappers = {
-        looking-glass-client = {
+        looking-glass-client = lib.mkIf config.profiles.gaming.gpu-passthrough.looking-glass.enable {
           owner = "root";
           group = "root";
           capabilities = "cap_sys_nice+ep";
           source = "${pkgs.looking-glass-client}/bin/looking-glass-client";
         };
+      };
+    };
+
+    # Streaming service configuration
+    systemd.services.sunshine = lib.mkIf config.profiles.gaming.streaming.enable {
+      description = "Sunshine streaming service";
+      wantedBy = ["multi-user.target"];
+      serviceConfig = {
+        ExecStart = "${pkgs.sunshine}/bin/sunshine";
+        Restart = "always";
+        RestartSec = "5";
       };
     };
   };

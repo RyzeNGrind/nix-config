@@ -13,10 +13,51 @@
         default = false;
         description = "Whether to allow ICMP ping requests";
       };
-      openPorts = lib.mkOption {
-        type = lib.types.listOf lib.types.int;
-        default = [];
-        description = "List of ports to open in the firewall";
+      tcp = {
+        ports = lib.mkOption {
+          type = lib.types.listOf lib.types.int;
+          default = [];
+          description = "List of TCP ports to open in the firewall";
+        };
+        portRanges = lib.mkOption {
+          type = lib.types.listOf (lib.types.submodule {
+            options = {
+              from = lib.mkOption {
+                type = lib.types.int;
+                description = "Start of port range";
+              };
+              to = lib.mkOption {
+                type = lib.types.int;
+                description = "End of port range";
+              };
+            };
+          });
+          default = [];
+          description = "List of TCP port ranges to open in the firewall";
+        };
+      };
+      udp = {
+        ports = lib.mkOption {
+          type = lib.types.listOf lib.types.int;
+          default = [];
+          description = "List of UDP ports to open in the firewall";
+        };
+        portRanges = lib.mkOption {
+          type = lib.types.listOf (lib.types.submodule {
+            options = {
+              from = lib.mkOption {
+                type = lib.types.int;
+                description = "Start of port range";
+              };
+              to = lib.mkOption {
+                type = lib.types.int;
+                description = "End of port range";
+              };
+            };
+          });
+          default = [];
+          description = "List of UDP port ranges to open in the firewall";
+        };
       };
     };
     optimization = {
@@ -32,7 +73,11 @@
       useNetworkd = true;
       firewall = lib.mkIf config.core.network.firewall.enable {
         enable = true;
-        inherit (config.core.network.firewall) allowPing openPorts;
+        inherit (config.core.network.firewall) allowPing;
+        allowedTCPPorts = config.core.network.firewall.tcp.ports;
+        allowedTCPPortRanges = config.core.network.firewall.tcp.portRanges;
+        allowedUDPPorts = config.core.network.firewall.udp.ports;
+        allowedUDPPortRanges = config.core.network.firewall.udp.portRanges;
       };
 
       # Network optimization

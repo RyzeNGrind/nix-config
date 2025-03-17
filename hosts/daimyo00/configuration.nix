@@ -135,6 +135,10 @@
   };
 
   environment.systemPackages = with pkgs; [
+    (writeShellScriptBin "ollama" ''
+      #!/bin/sh
+      /mnt/c/Users/ryzengrind/AppData/Local/Programs/Ollama/ollama.exe "$@"
+    '')
     curl
     git
     wget
